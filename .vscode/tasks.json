@@ -1,0 +1,31 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "Build with g++",
+        "type": "shell",
+        "command": "g++",
+        "args": [
+          "-g",
+          "-Wall",
+          "-Wextra",
+          "-Wpedantic",
+          "-std=c++17",
+          "src/*.cpp",
+          "-o",
+          "${fileDirname}/${fileBasenameNoExtension}"
+        ],
+        "group": {
+          "kind": "build",
+          "isDefault": true
+        }
+      },
+      {
+        "label": "run",
+        "type": "shell",
+        "command": "cd ${fileDirname}/ && ./${fileBasenameNoExtension}",
+        "dependsOn": ["Build with g++"]
+      }
+    ]
+  }
+  
