@@ -24,6 +24,15 @@ bool function_exist(std::string name, std::map<std::string, w_function *> variab
     return false;
 }
 
+bool class_exist(std::string name, std::map<std::string, w_class_template *> variables_t)
+{
+    if (variables_t.find(name) != variables_t.end() || visitor_is_inbuild(name))
+    {
+        return true;
+    }
+    return false;
+}
+
 bool variable_exist(std::string name, std::map<std::string, w_variable *> variables_t)
 {
     if (variables_t.find(name) != variables_t.end())
@@ -135,10 +144,6 @@ w_variable *visitor_function_inbuild(std::string name, node *args, std::map<std:
 {
     if (name == "!print")
     {
-        if (args->children.size() != 1)
-        {
-            // [TODO]: Errors
-        }
         for (auto arg_t : args->children)
         {
             w_variable *arg = visitor_compute(arg_t, variables_t);
@@ -154,7 +159,8 @@ w_variable *visitor_function_inbuild(std::string name, node *args, std::map<std:
     {
         if (args->children.size() != 1)
         {
-            // [TODO]: Errors
+            std::string err = "la fonction !type necessite un argument";
+            error(err);
         }
         w_variable *arg = visitor_compute(args->children[0], variables_t);
         return type(arg);
@@ -163,7 +169,8 @@ w_variable *visitor_function_inbuild(std::string name, node *args, std::map<std:
     {
         if (args->children.size() != 1)
         {
-            // [TODO]: Errors
+            std::string err = "la fonction !input necessite un argument";
+            error(err);
         }
         w_variable *arg = visitor_compute(args->children[0], variables_t);
         return input(arg, variables_t);
@@ -253,7 +260,8 @@ w_variable *visitor_use_inbuild_int(int a, int b, std::string opera)
     {
         return int_ne(a, b);
     }
-    // [TODO]: Errors
+    std::string err = "operateur inconnu : '" + opera + "'";
+    error(err);
     // Throw an error, unknown operator
     return nullptr;
 }
@@ -272,7 +280,8 @@ w_variable *visitor_use_inbuild_char(std::string a, std::string b, std::string o
     {
         return char_plus(a, b);
     }
-    // [TODO]: Errors
+    std::string err = "operateur inconnu : '" + opera + "'";
+    error(err);
     // Throw an error, unknown operator
     return nullptr;
 }
@@ -282,7 +291,11 @@ w_variable *visitor_use_inbuild(w_variable *a, w_variable *b, std::string opera)
     // We check if both value have the same type
     if (a->get_type() != b->get_type())
     {
-        // [TODO]: Errors
+        w_variable *r = new w_variable();
+        int *p = new int(0);
+        r->type = 2; // int
+        r->content = (void *)p;
+        return r;
     }
     if (a->get_type() == "int")
     {
@@ -321,6 +334,8 @@ w_variable *visitor_link_operator(w_variable *a, w_variable *b, std::string oper
         func = functions["!" + a->get_type() + ".power"];
     else if (opera == "!=")
         func = functions["!" + a->get_type() + ".ne"];
+    else if (opera == "*")
+        func = functions["!" + a->get_type() + ".times"];
 
     if (func->inbuild)
     { // This is an inbuild function
@@ -333,6 +348,11 @@ w_variable *visitor_link_operator(w_variable *a, w_variable *b, std::string oper
 
 w_variable *visitor_new_object(std::string name, node *args, std::map<std::string, w_variable *> variables_t)
 {
+    if (!class_exist(name, classes))
+    {
+        std::string err = "la classe '"+name+"' n'existe pas";
+        error(err);
+    }
     w_class_template *temp = classes[name];
     w_object *r = new w_object();
     for (auto attr : temp->trunc->children[1]->children)
@@ -398,14 +418,15 @@ w_variable *visitor_compute(node *c, std::map<std::string, w_variable *> variabl
 
                 if (!variable_exist(first_var_n, variables_t))
                 {
-                    // [TODO]: Errors
+                    std::string err = "la variable '" + first_var_n + "' n'existe pas";
+                    error(err);
                 }
                 w_variable *first_var = variables_t[first_var_n];
 
                 if (!first_var->is_object())
                 {
-
-                    // [TODO]: Errors
+                    std::string err = "la variable '" + first_var_n + "' doit être un objet";
+                    error(err);
                 }
                 w_object *last_o = (w_object *)first_var->content;
                 w_variable *last_var = first_var;
@@ -418,7 +439,7 @@ w_variable *visitor_compute(node *c, std::map<std::string, w_variable *> variabl
                         {
                             if (!last_o->attribute_exist(patent))
                             {
-                                std::string err = last_o->name + " n'as pas d'attribut " + patent;
+                                std::string err = "'" + last_o->name + "' n'as pas d'attribut '" + patent + "'";
                                 error(err);
                             }
 
@@ -454,10 +475,16 @@ w_variable *visitor_compute(node *c, std::map<std::string, w_variable *> variabl
                     first_var_n += expr[index];
                     index++;
                 }
+                if (!variable_exist(first_var_n, variables_t))
+                {
+                    std::string err = "la variable '" + first_var_n + "' n'existe pas";
+                    error(err);
+                }
                 w_variable *first_var = variables_t[first_var_n];
                 if (!first_var->is_object())
                 {
-                    // [TODO]: Errors
+                    std::string err = "la variable '" + first_var_n + "' doit être un objet";
+                    error(err);
                 }
                 w_object *last_o = (w_object *)first_var->content;
 
@@ -470,12 +497,14 @@ w_variable *visitor_compute(node *c, std::map<std::string, w_variable *> variabl
                         {
                             if (!last_o->attribute_exist(patent))
                             {
-                                // [TODO]: Errors
+                                std::string err = "'" + last_o->name + " n'as pas d'attribut '" + patent + "'";
+                                error(err);
                             }
                             w_variable *last_var = last_o->get_attribute(patent);
                             if (!last_var->is_object())
                             {
-                                // [TODO]: Errors
+                                std::string err = "la variable '" + last_o->name + "." + patent + " doit être un objet";
+                                error(err);
                             }
                             last_o = (w_object *)last_var->content;
                             patent.clear();
@@ -488,7 +517,8 @@ w_variable *visitor_compute(node *c, std::map<std::string, w_variable *> variabl
                 {
                     if (!last_o->attribute_exist(patent))
                     {
-                        // [TODO]: Errors
+                        std::string err = "'" + last_o->name + "' n'as pas d'attribut '" + patent + "'";
+                        error(err);
                     }
                     last_value = last_o->get_attribute(patent);
                 }
@@ -513,7 +543,8 @@ w_variable *visitor_compute(node *c, std::map<std::string, w_variable *> variabl
         { // call a function
             if (c->children[i + 1]->value != "()")
             {
-                // [TODO]: Errors
+                std::string err = "l'appel d'une fonction doit etre suivie de ses arguments";
+                error(err);
             }
             last_value = visitor_funcall(expr, c->children[i + 1], variables_t);
             i++; // we need to increment by one, because of the parenthesis
@@ -544,7 +575,8 @@ w_variable *visitor_keyword_return(node *trunc, std::map<std::string, w_variable
 {
     if (trunc->children.size() < 1)
     {
-        // [TODO]: Errors
+        std::string err = "le mot-clé 'renvoie' doit avoir au moins un argument";
+        error(err);
     }
     node *arg = trunc->children[0];
     w_variable *result = visitor_compute(arg, variables_t);
@@ -577,12 +609,17 @@ void visitor_vardef(node *trunc, std::map<std::string, w_variable *> &variables_
             first_var_n += expr[index];
             index++;
         }
-
+        if (!variable_exist(first_var_n, variables_t))
+        {
+            std::string err = "la variable " + first_var_n + " n'existe pas";
+            error(err);
+        }
         w_variable *first_var = variables_t[first_var_n];
 
         if (!first_var->is_object())
         {
-            // [TODO]: Errors
+            std::string err = "la variable " + first_var_n + " doit être un objet";
+            error(err);
         }
         w_object *last_o = (w_object *)first_var->content;
         w_variable *last_var = first_var;
@@ -595,12 +632,14 @@ void visitor_vardef(node *trunc, std::map<std::string, w_variable *> &variables_
                 {
                     if (!last_o->attribute_exist(patent))
                     {
-                        // [TODO]: Errors
+                        std::string err = "'" + last_o->name + "' n'as pas d'attribut '" + patent + "'";
+                        error(err);
                     }
                     last_var = last_o->get_attribute(patent);
                     if (!last_var->is_object())
                     {
-                        // [TODO]: Errors
+                        std::string err = "la variable " + last_o->name + "." + patent + " doit être un objet";
+                        error(err);
                     }
                     last_o = (w_object *)last_var->content;
                     patent.clear();
@@ -613,7 +652,8 @@ void visitor_vardef(node *trunc, std::map<std::string, w_variable *> &variables_
         {
             if (!last_var->is_object())
             {
-                // [TODO]: Errors
+                std::string err = "la variable " + patent + " doit être un objet";
+                error(err);
             }
             last_o = (w_object *)last_var->content;
             last_o->attribute_attribution(patent, result);
@@ -673,7 +713,8 @@ void visitor_forloop(node *trunc, std::map<std::string, w_variable *> &variables
     w_variable *first_b = visitor_compute(conde, variables_t);
     if (first_b->get_type() != "int")
     {
-        // [TODO]: Errors
+        std::string err = "les bornes de la boucle doivent être de type int";
+        error(err);
     }
     int borne1 = first_b->convert_to_int();
 
@@ -682,7 +723,8 @@ void visitor_forloop(node *trunc, std::map<std::string, w_variable *> &variables
     w_variable *second_b = visitor_compute(conde, variables_t);
     if (second_b->get_type() != "int")
     {
-        // [TODO]: Errors
+        std::string err = "les bornes de la boucle doivent être de type int";
+        error(err);
     }
     int borne2 = second_b->convert_to_int();
 
@@ -729,8 +771,9 @@ std::string visitor_visit_incode(node *trunc, std::map<std::string, w_variable *
     // Use for loops and if statements
     std::string to_return;
 
-    for (auto instruction : trunc->children)
+    for (int i = 0; i < trunc->children.size(); i++)
     {
+        node *instruction = trunc->children[i];
         if (instruction->value == "funcdef")
         {
             visitor_funcdef(instruction);
@@ -758,6 +801,19 @@ std::string visitor_visit_incode(node *trunc, std::map<std::string, w_variable *
         else if (instruction->value == "()")
         { // we just computes what is in parenthesis
             visitor_compute(instruction, variables_t);
+        }
+        else if (instruction->value[0] == '!')
+        { // we call the function
+            if (trunc->children[i + 1]->value != "()")
+            {
+                std::string err = "l'appel d'une fonction doit etre suivie de ses arguments";
+                error(err);
+            }
+            node *r = new node("*");
+            r->push_child(instruction);
+            r->push_child(trunc->children[i + 1]);
+            visitor_compute(r, variables_t);
+            i++; // we increment by one because of the parenthesis
         }
         // we need to do a function for keywords
         else if (instruction->value == "casse")
@@ -816,7 +872,8 @@ w_variable *visitor_visit(node *trunc, std::map<std::string, w_variable *> varia
         { // we call the function
             if (trunc->children[i + 1]->value != "()")
             {
-                // [TODO]: Errors
+                std::string err = "l'appel d'une fonction doit etre suivie de ses arguments";
+                error(err);
             }
             node *r = new node("*");
             r->push_child(instruction);

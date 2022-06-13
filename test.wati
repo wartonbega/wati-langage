@@ -89,6 +89,14 @@ classe string contient
         renvoie self;
     fin
 
+    methode times (int) fait
+        patent = string("");
+        pour i allant de 0 a int fait
+            patent = patent + self;
+        fin
+        renvoie patent;
+    fin
+
     methode en_string () fait
         res = "";
         pour y allant de 0 a self.content.taille fait
@@ -98,15 +106,35 @@ classe string contient
     fin
 fin
 
+classe dictionnaire contient
+    methode constructeur () fait
+        self.keys = list();
+        self.value = list();
+    fin
+
+    methode associe (clef, valeur) fait
+        self.keys = self.keys + clef;
+        self.value = self.value + valeur;
+    fin
+
+    methode trouve (clef) fait
+        valeur = 0;
+        pour i allant de 0 a (self.keys.taille) fait
+            si (!self.keys.en(i) == clef) alors
+                valeur = !self.value.en(i);
+            fin
+        fin
+        renvoie valeur;
+    fin
+fin
+
 s = string("");
 s = s + "a";
 s = s + "a";
 s = s + "a";
 
-sp = string("");
-sp = sp + "c";
-sp = sp + "c";
-sp = sp + "c";
 
-s = s + sp;
-!println(s)
+m = dictionnaire();
+!m.associe("createur", "anton appel")
+!m.associe("nom", "wati-lang")
+!println(!m.trouve("nom"))
