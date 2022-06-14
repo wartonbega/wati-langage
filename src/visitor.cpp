@@ -175,6 +175,16 @@ w_variable *visitor_function_inbuild(std::string name, node *args, std::map<std:
         w_variable *arg = visitor_compute(args->children[0], variables_t);
         return input(arg, variables_t);
     }
+    if (name == "!system")
+    {
+        if (args->children.size() != 1)
+        {
+            std::string err = "la fonction !system necessite un argument";
+            error(err);
+        }
+        w_variable *arg = visitor_compute(args->children[0], variables_t);
+        return w_system(arg, variables_t);
+    }
     return nullptr;
 }
 
@@ -200,11 +210,34 @@ w_variable *visitor_funcall(std::string name, node *args, std::map<std::string, 
             w_variable *arg_v = visitor_compute(args->children[i], variables_t);
             variables_t[arg_n] = arg_v;
         }
-        if (name == "!list.en")
+        w_variable *res = visitor_visit(func->trunc, variables_t);
+        return res;
+    }
+}
+
+w_variable *visitor_funcall_methode(std::string name, node *args, std::map<std::string, w_variable *> variables_t, w_variable *self)
+{
+
+    if (!function_exist(name, functions))
+    {
+        std::string err = "la fonction " + name + " n'existe pas";
+        error(err);
+    }
+    w_function *func = functions[name];
+    args = visitor_separate_listed(args);
+    if (visitor_is_inbuild(name))
+    {
+        return visitor_function_inbuild(name, args, variables_t);
+    }
+    else
+    {
+        for (int i = 0; i < args->children.size(); i++)
         {
-            w_variable *res = visitor_visit(func->trunc, variables_t);
-            return res;
+            std::string arg_n = func->arguments->children[i]->children[0]->value;
+            w_variable *arg_v = visitor_compute(args->children[i], variables_t);
+            variables_t[arg_n] = arg_v;
         }
+        variables_t["self"] = self;
         w_variable *res = visitor_visit(func->trunc, variables_t);
         return res;
     }
@@ -461,8 +494,7 @@ w_variable *visitor_compute(node *c, std::map<std::string, w_variable *> variabl
                 {
                     std::string name = last_var->get_type();
                     std::map<std::string, w_variable *> variables_t_bis = std::map<std::string, w_variable *>(variables_t);
-                    variables_t_bis["self"] = last_var;
-                    last_value = visitor_funcall("!" + name + "." + patent, c->children[i + 1], variables_t_bis);
+                    last_value = visitor_funcall_methode("!" + name + "." + patent, c->children[i + 1], variables_t_bis, last_var);
                     i++; // we increment by one because they are parenthesis
                 }
             }

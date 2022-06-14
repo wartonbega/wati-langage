@@ -76,8 +76,8 @@ bool is_int_true(w_variable *r)
     if (r->get_type() != "int")
         return false;
     
-    if (r->convert_to_int() == 0)
-        return false;
+    if (r->convert_to_int() == 1)
+        return true;
 
-    return true;
+    return false;
 }

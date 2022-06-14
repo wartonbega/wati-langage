@@ -1,3 +1,4 @@
+#include <curses.h>
 #include <string>
 #include <map>
 #include <vector>
@@ -25,7 +26,9 @@ w_variable *int_mod(int a, int b);
 w_variable *int_power(int a, int b);
 w_variable *int_ne(int a, int b);
 
+std::string convert_to_string(w_variable *, std::map<std::string, w_variable *> variables_t);
 void print(w_variable *content, std::map<std::string, w_variable *> variables_t);
 w_variable *type(w_variable *content);
 w_variable *input(w_variable *content, std::map<std::string, w_variable *> variables_t);
+w_variable *w_system(w_variable *content, std::map<std::string, w_variable *> variables_t);
 #endif

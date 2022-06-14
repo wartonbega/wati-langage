@@ -2,6 +2,65 @@ fonction println(x) fait
     (!print(x, "\n"))
 fin
 
+
+fonction inputln(x) fait
+    e = "";
+    total = "";
+    !print(x)
+    tant que (e != "\n") fait
+        total = total + e;
+        e = !input("");
+    fin
+    renvoie total;
+fin
+
+fonction abs(x) fait
+    r = x;
+    si (x < 0) alors
+        r = x * (0 - 1);
+    fin
+    renvoie r;
+fin
+
+fonction et(cond1, cond2) fait
+    r = 3;
+    si cond1 alors
+        r = r - 1;
+    fin
+
+    si cond2 alors
+        r = r - 1;
+    fin
+    renvoie r;
+fin
+
+
+fonction ou(cond1, cond2) fait
+    r = 0;
+    si cond1 alors
+        r = 1;
+    fin
+
+    si cond2 alors
+        r = 1;
+    fin
+    renvoie r;
+fin
+
+classe random contient
+    methode constructeur (seed) fait
+        self.a = 31415821;
+        self.m = 10^8;
+        self.seed = seed;
+    fin
+
+    methode rand (max) fait
+        r = self.a * self.seed + 1;
+        self.seed = r % max;
+        renvoie self.seed;
+    fin
+fin
+
 classe node contient
     methode constructeur (content) fait
         self.content = content;
@@ -44,6 +103,16 @@ classe list contient
         renvoie self;
     fin
     
+    methode modifie (index, content) fait
+        i = 0;
+        n = self.head.next;
+        tant que (i != x) fait
+            n = n.next;
+            i = i + 1;
+        fin
+        n.content = content;
+    fin
+
     methode print() fait
         (!print("[ "))
         n = self.head.next;
@@ -54,7 +123,7 @@ classe list contient
         (!print(n.content, " ]\n"))
     fin
 
-    methode en(x) fait
+    methode en (x) fait
         i = 0;
         n = self.head.next;
         tant que i != x fait
@@ -65,44 +134,19 @@ classe list contient
 
         renvoie p;
     fin
-fin
 
-classe string contient
-    methode constructeur (contenu) fait
-        self.content = list();
-    fin
-
-    methode plus_string (str) fait
-        pour i allant de 0 a str.content.taille fait
-            self = self + !str.content.en(i);
+    methode pop (x) fait
+        i = 0;
+        n = self.head.next;
+        tant que i != x fait
+            n = n.next;
+            i = i + 1;
         fin
-        renvoie self;
-    fin
-
-    methode plus (char) fait
-        si !type(char) == "char" fait
-            (self.content + char)
-        fin
-        si !type(char) == "string" fait
-            (!self.plus_string(char))
-        fin
-        renvoie self;
-    fin
-
-    methode times (int) fait
-        patent = string("");
-        pour i allant de 0 a int fait
-            patent = patent + self;
-        fin
-        renvoie patent;
-    fin
-
-    methode en_string () fait
-        res = "";
-        pour y allant de 0 a self.content.taille fait
-            res = res + !self.content.en(y);
-        fin
-        renvoie res;
+        p = n.prev;
+        next = n.next;
+        p.next = next;
+        next.prev = p;
+        self.taille = self.taille - 1;
     fin
 fin
 
@@ -128,13 +172,134 @@ classe dictionnaire contient
     fin
 fin
 
-s = string("");
-s = s + "a";
-s = s + "a";
-s = s + "a";
 
 
-m = dictionnaire();
-!m.associe("createur", "anton appel")
-!m.associe("nom", "wati-lang")
-!println(!m.trouve("nom"))
+classe game contient
+    methode constructeur () fait
+        self.x = 5;
+        self.y = 5;
+        self.taille = 1;
+        self.queuex = list();
+        self.queuey = list();
+
+        self.pommex = 0;
+        self.pommey = 0;
+
+        self.haut = "z";
+        self.bas = "s";
+        self.droite = "d";
+        self.gauche = "q";
+
+        self.random = random(320);
+        !system("stty -icanon")
+    fin
+
+    methode haut () fait
+        self.x = self.x - 1 % 10;
+        si (self.x < 0) alors
+            self.x = 10 + self.x;
+        fin
+    fin
+
+    methode bas () fait
+        self.x = self.x + 1 % 10;
+        si (self.x < 0) alors
+            self.x = 10 + self.x;
+        fin
+    fin
+
+    methode droite () fait
+        self.y = self.y + 1 % 10;
+        si (self.y < 0) alors
+            self.y = 10 + self.y;
+        fin
+    fin
+
+    methode gauche () fait
+        self.y = self.y - 1 % 10;
+        si (self.y < 0) alors
+            self.y = 10 + self.y;
+        fin
+    fin
+
+    methode print () fait
+        fillchar = ". ";
+        pour x allant de 0 a 10 fait
+            pour y allant de 0 a 10 fait
+                pour j allant de 0 a self.queuex.taille fait
+                    si !et(!self.queuex.en(j) == x, !self.queuey.en(j) == y) alors
+                        fillchar = "* ";
+                    fin
+                fin
+                si (x == self.pommex) alors
+                    si (y == self.pommey) alors
+                        fillchar = "o ";
+                    fin
+                fin
+                si (x == self.x) alors
+                    si (y == self.y) alors
+                        fillchar = "# ";
+                    fin
+                fin
+                !print(fillchar)
+                si (fillchar != ". ") alors
+                    fillchar = ". ";
+                fin
+            fin
+            !print("\n")
+        fin
+    fin
+
+    methode queue () fait
+        si (self.queuex.taille < self.taille) alors
+            !self.queuex.plus(self.x)
+            !self.queuey.plus(self.y)
+        fin
+        si (self.queuex.taille >= self.taille) alors
+            !self.queuex.pop(0);
+            !self.queuey.pop(0);
+            !self.queuex.plus(self.x)
+            !self.queuey.plus(self.y)
+        fin
+    fin
+
+    methode boucle () fait
+        action = "run";
+        tant que (action == "run") fait
+
+            !self.print()
+            dir = !input("");
+            
+            !self.queue()
+            si dir == self.haut alors
+                !self.haut()
+            fin
+            si dir == self.bas alors
+                !self.bas()
+            fin
+            si dir == self.gauche alors
+                !self.gauche()
+            fin
+            si dir == self.droite alors
+                !self.droite()
+            fin
+
+            si !et(self.x == self.pommex, self.y == self.pommey) alors
+                self.taille = self.taille + 1;
+                self.pommex = !self.random.rand(10);
+                self.pommey = !self.random.rand(10);
+            fin
+
+            pour j allant de 0 a self.queuex.taille fait
+                si !et(!self.queuex.en(j) == self.x, !self.queuey.en(j) == self.y) alors
+                    action = "";
+                fin
+            fin
+            !system("clear")
+        fin
+        !println("PERDU !")
+    fin
+fin
+
+g = game();
+!g.boucle()

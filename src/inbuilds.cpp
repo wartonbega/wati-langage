@@ -1,4 +1,6 @@
+#include <curses.h>
 #include <iostream>
+#include <stdio.h>
 #include "include/inbuilds.hpp"
 #include "include/visitor.hpp"
 
@@ -145,17 +147,16 @@ w_variable *int_ne(int a, int b)
     return r;
 }
 
-void print(w_variable *content, std::map<std::string, w_variable *> variables_t)
-{ // !print (content)
-    // ==> 0
+std::string convert_to_string(w_variable *content, std::map<std::string, w_variable *> variables_t)
+{
     std::string type = content->get_type();
     if (type == "char")
     {
-        std::cout << content->convert_to_char();
+        return content->convert_to_char();
     }
     else if (type == "int")
     {
-        std::cout << content->convert_to_int();
+        return std::to_string(content->convert_to_int());
     }
     else
     { // it is therefor an object
@@ -163,8 +164,14 @@ void print(w_variable *content, std::map<std::string, w_variable *> variables_t)
         std::string name = "!" + r->name + ".en_string";
         variables_t["self"] = content;
         node *args = new node("*");
-        print(visitor_funcall(name, args, variables_t), variables_t);
+        return convert_to_string(visitor_funcall(name, args, variables_t), variables_t);
     }
+}
+
+void print(w_variable *content, std::map<std::string, w_variable *> variables_t)
+{ // !print (content)
+    // ==> 0
+    std::cout << convert_to_string(content, variables_t);
 }
 
 w_variable *type(w_variable *content)
@@ -177,13 +184,30 @@ w_variable *type(w_variable *content)
 }
 
 w_variable *input(w_variable *content, std::map<std::string, w_variable *> variables_t)
-{
+{ // we use c input to get one caracter by one
     print(content, variables_t);
+    char chr;
+    scanf("%c",&chr);
     std::string *res = new std::string();
-    std::cin >> *res;
+    *res += chr;
+    
     w_variable *var = new w_variable();
     var->type = 1; // Char
     var->content = (void *)res;
     return var;
 }
 
+
+w_variable *w_system(w_variable *content, std::map<std::string, w_variable *> variables_t)
+{
+    if (content->get_type() != "char")
+    {
+        // [TODO]: Errors
+    }
+    std::string to_exec = *(std::string *)content->content;
+    int *r = new int(system(to_exec.c_str()));
+    w_variable *result = new w_variable();
+    result->type = 2; // int
+    result->content = (void *)r;
+    return result;
+}

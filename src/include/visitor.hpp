@@ -14,6 +14,7 @@ w_variable *visitor_function_inbuild(std::string name, node *args, std::map<std:
 bool visitor_is_inbuild(std::string name);
 w_variable *visitor_new_object(std::string name, node *args, std::map<std::string, w_variable *> variables_t);
 w_variable *visitor_funcall(std::string name, node *args, std::map<std::string, w_variable *> variables_t);
+w_variable *visitor_funcall_methode(std::string name, node *args, std::map<std::string, w_variable *> variables_t, w_variable *self);
 w_variable *visitor_use_inbuild_int(int a, int b, std::string opera);
 w_variable *visitor_use_inbuild_char(std::string a,  std::string b, std::string opera);
 w_variable *visitor_use_inbuild(w_variable *a, w_variable *b, std::string opera);

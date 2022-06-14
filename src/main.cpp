@@ -1,7 +1,10 @@
+#include <stdio.h>  
+
 #include "include/main.hpp"
 #include "include/lexer.hpp"
 #include "include/parser.hpp"
 #include "include/visitor.hpp"
+
 
 std::string open_file(const char *name)
 {
@@ -21,6 +24,7 @@ std::string open_file(const char *name)
 
 int main(int argc, char *argv[])
 {
+	system("stty -icanon");
 	std::string r = open_file("test.wati");
 	std::vector<std::string> lexemes = lexer(r);
 	node *ast = parser(lexemes, "main");
