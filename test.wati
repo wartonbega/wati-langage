@@ -172,10 +172,10 @@ classe dictionnaire contient
     fin
 fin
 
-
-
 classe game contient
     methode constructeur () fait
+
+        self.name = !inputln("TON WATI-NOM : ");
         self.x = 5;
         self.y = 5;
         self.taille = 1;
@@ -191,6 +191,7 @@ classe game contient
         self.gauche = "q";
 
         self.random = random(320);
+        self.action = "run";
         !system("stty -icanon")
     fin
 
@@ -230,6 +231,9 @@ classe game contient
                     si !et(!self.queuex.en(j) == x, !self.queuey.en(j) == y) alors
                         fillchar = "* ";
                     fin
+                    si !et(!self.queuex.en(j) == self.x, !self.queuey.en(j) == self.y) alors
+                        self.action = "";
+                    fin
                 fin
                 si (x == self.pommex) alors
                     si (y == self.pommey) alors
@@ -264,8 +268,8 @@ classe game contient
     fin
 
     methode boucle () fait
-        action = "run";
-        tant que (action == "run") fait
+        self.action = "run";
+        tant que (self.action == "run") fait
 
             !self.print()
             dir = !input("");
@@ -289,15 +293,9 @@ classe game contient
                 self.pommex = !self.random.rand(10);
                 self.pommey = !self.random.rand(10);
             fin
-
-            pour j allant de 0 a self.queuex.taille fait
-                si !et(!self.queuex.en(j) == self.x, !self.queuey.en(j) == self.y) alors
-                    action = "";
-                fin
-            fin
             !system("clear")
         fin
-        !println("PERDU !")
+        !print("T'AS WATI-PERDU, ", self.name, "\n");
     fin
 fin
 
