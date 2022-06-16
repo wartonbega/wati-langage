@@ -1,5 +1,6 @@
 #include <map>
 #include <string>
+#include <tuple>
 #include "node.hpp"
 #include "variables.hpp"
 
@@ -24,10 +25,10 @@ w_variable *visitor_keyword_return(node *trunc, std::map<std::string, w_variable
 void visitor_funcdef(node *trunc);
 void visitor_vardef(node *trunc, std::map<std::string, w_variable *> &variables_t);
 void visitor_classdef(node *trunc);
-void visitor_if_declaration(node *trunc, std::map<std::string, w_variable *> &variables_t);
-void visitor_forloop(node *trunc, std::map<std::string, w_variable *> &variables_t);
-void visitor_whileloop(node *trunc, std::map<std::string, w_variable *> &variables_t);
-std::string visitor_visit_incode(node *trunc, std::map<std::string, w_variable *> &variables_t);
+std::tuple<std::string, w_variable*> visitor_if_declaration(node *trunc, std::map<std::string, w_variable *> &variables_t);
+std::tuple<std::string, w_variable*> visitor_forloop(node *trunc, std::map<std::string, w_variable *> &variables_t);
+std::tuple<std::string, w_variable *> visitor_whileloop(node *trunc, std::map<std::string, w_variable *> &variables_t);
+std::tuple<std::string, w_variable*> visitor_visit_incode(node *trunc, std::map<std::string, w_variable *> &variables_t);
 w_variable *visitor_visit(node *trunc, std::map<std::string, w_variable *> variables_t);
 
 #endif

@@ -710,7 +710,7 @@ void visitor_classdef(node *trunc)
     }
 }
 
-void visitor_if_declaration(node *trunc, std::map<std::string, w_variable *> &variables_t)
+std::tuple<std::string, w_variable*> visitor_if_declaration(node *trunc, std::map<std::string, w_variable *> &variables_t)
 {
     // We need to pass the variables table by reference, as we can modifie it later on
     // the if declaration :
@@ -721,13 +721,17 @@ void visitor_if_declaration(node *trunc, std::map<std::string, w_variable *> &va
     //          ...
     node *condition = trunc->children[0];
     w_variable *result = visitor_compute(condition, variables_t);
+
     if (is_int_true(result))
     {
-        visitor_visit_incode(trunc->children[1], variables_t);
+        std::tuple<std::string, w_variable*> ret = visitor_visit_incode(trunc->children[1], variables_t);
+        if (std::get<0>(ret) == "return")
+            return ret;
     }
+    return std::tuple<std::string, w_variable*>{"", nullptr};
 }
 
-void visitor_forloop(node *trunc, std::map<std::string, w_variable *> &variables_t)
+std::tuple<std::string, w_variable*> visitor_forloop(node *trunc, std::map<std::string, w_variable *> &variables_t)
 {
     // the for loop
     // pour
@@ -770,15 +774,16 @@ void visitor_forloop(node *trunc, std::map<std::string, w_variable *> &variables
         var_cont = new int(index);
         var->content = (void *)var_cont;
         variables_t[var_name] = var;
-        std::string ret = visitor_visit_incode(code, variables_t);
-        if (ret == "break")
-        {
-            return;
-        }
+        std::tuple<std::string, w_variable *> ret = visitor_visit_incode(code, variables_t);
+        if (std::get<0>(ret) == "break")
+            return std::tuple<std::string, w_variable*>{"", nullptr};;
+        if (std::get<0>(ret) == "return")
+            return ret;
     }
+    return std::tuple<std::string, w_variable*>{"", nullptr};
 }
 
-void visitor_whileloop(node *trunc, std::map<std::string, w_variable *> &variables_t)
+std::tuple<std::string, w_variable *> visitor_whileloop(node *trunc, std::map<std::string, w_variable *> &variables_t)
 {
     // the while loop
     // tant
@@ -792,16 +797,20 @@ void visitor_whileloop(node *trunc, std::map<std::string, w_variable *> &variabl
     w_variable *cond = visitor_compute(condition, variables_t);
     while (is_int_true(cond))
     {
-        if (visitor_visit_incode(code, variables_t) == "break")
-            return;
+        std::tuple<std::string, w_variable *> ret = visitor_visit_incode(code, variables_t);
+        if (std::get<0>(ret) == "break")
+            return std::tuple<std::string, w_variable *>{"", nullptr};
+        if (std::get<0>(ret) == "return")
+            return ret;
         cond = visitor_compute(condition, variables_t);
     }
+    return std::tuple<std::string, w_variable*>{"", nullptr};
 }
 
-std::string visitor_visit_incode(node *trunc, std::map<std::string, w_variable *> &variables_t)
+std::tuple<std::string, w_variable*> visitor_visit_incode(node *trunc, std::map<std::string, w_variable *> &variables_t)
 {
     // Use for loops and if statements
-    std::string to_return;
+    std::tuple<std::string, w_variable *> to_return = {"", nullptr};
 
     for (int i = 0; i < trunc->children.size(); i++)
     {
@@ -820,15 +829,21 @@ std::string visitor_visit_incode(node *trunc, std::map<std::string, w_variable *
         }
         else if (instruction->value == "ifdec")
         {
-            visitor_if_declaration(instruction, variables_t);
+            std::tuple<std::string, w_variable*> ret = visitor_if_declaration(instruction, variables_t);
+            if (std::get<0>(ret) == "return")
+                return ret;
         }
         else if (instruction->value == "forloop")
         {
-            visitor_forloop(instruction, variables_t);
+            std::tuple<std::string, w_variable*> ret = visitor_forloop(instruction, variables_t);
+            if (std::get<0>(ret) == "return")
+                return ret;
         }
         else if (instruction->value == "whileloop")
         {
-            visitor_whileloop(instruction, variables_t);
+            std::tuple<std::string, w_variable*> ret = visitor_whileloop(instruction, variables_t);
+            if (std::get<0>(ret) == "return")
+                return ret;
         }
         else if (instruction->value == "()")
         { // we just computes what is in parenthesis
@@ -847,9 +862,13 @@ std::string visitor_visit_incode(node *trunc, std::map<std::string, w_variable *
             visitor_compute(r, variables_t);
             i++; // we increment by one because of the parenthesis
         }
-        // we need to do a function for keywords
+        else if (instruction->value == "renvoie")
+        { // The renvoie keyword
+            w_variable *res = visitor_keyword_return(instruction, variables_t);
+            return std::tuple<std::string, w_variable *>{"return", res};
+        }
         else if (instruction->value == "casse")
-            return "break";
+            return std::tuple<std::string, w_variable *>{"break", nullptr};
     }
     return to_return;
 }
@@ -886,15 +905,21 @@ w_variable *visitor_visit(node *trunc, std::map<std::string, w_variable *> varia
         }
         else if (instruction->value == "ifdec")
         {
-            visitor_if_declaration(instruction, variables_t);
+            std::tuple<std::string, w_variable*> ret = visitor_if_declaration(instruction, variables_t);
+            if (std::get<0>(ret) == "return")
+                return std::get<1>(ret);
         }
         else if (instruction->value == "forloop")
         {
-            visitor_forloop(instruction, variables_t);
+            std::tuple<std::string, w_variable*> ret = visitor_forloop(instruction, variables_t);
+            if (std::get<0>(ret) == "return")
+                return std::get<1>(ret);
         }
         else if (instruction->value == "whileloop")
         {
-            visitor_whileloop(instruction, variables_t);
+            std::tuple<std::string, w_variable*> ret = visitor_whileloop(instruction, variables_t);
+            if (std::get<0>(ret) == "return")
+                return std::get<1>(ret);
         }
         else if (instruction->value == "()")
         { // we just computes what is in parenthesis

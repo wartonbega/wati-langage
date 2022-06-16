@@ -200,6 +200,7 @@ classe game contient
         si (self.x < 0) alors
             self.x = 10 + self.x;
         fin
+        !self.queue()
     fin
 
     methode bas () fait
@@ -207,6 +208,7 @@ classe game contient
         si (self.x < 0) alors
             self.x = 10 + self.x;
         fin
+        !self.queue()
     fin
 
     methode droite () fait
@@ -214,6 +216,7 @@ classe game contient
         si (self.y < 0) alors
             self.y = 10 + self.y;
         fin
+        !self.queue()
     fin
 
     methode gauche () fait
@@ -221,6 +224,7 @@ classe game contient
         si (self.y < 0) alors
             self.y = 10 + self.y;
         fin
+        !self.queue()
     fin
 
     methode print () fait
@@ -274,7 +278,7 @@ classe game contient
             !self.print()
             dir = !input("");
             
-            !self.queue()
+            
             si dir == self.haut alors
                 !self.haut()
             fin
@@ -294,10 +298,11 @@ classe game contient
                 self.pommey = !self.random.rand(10);
             fin
             !system("clear")
+
         fin
         !print("T'AS WATI-PERDU, ", self.name, "\n");
     fin
 fin
 
 g = game();
-!g.boucle()
+r = !g.boucle();
