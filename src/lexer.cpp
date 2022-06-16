@@ -91,7 +91,7 @@ std::string add_char(char one, char two)
     return res;
 }
 
-std::vector<std::string> lexer(std::string content)
+std::vector<std::string> lexer(std::string content, std::vector<std::string> &reference)
 {
     std::vector<std::string> lexemes;
     std::string word;
@@ -101,6 +101,11 @@ std::vector<std::string> lexer(std::string content)
     int index = 0;
     while (index < content.size())
     {
+        if (content[index] == '\n')
+        {
+            lines ++;
+
+        }
         if (content[index] == '"')
         {
             std::string between = "\"";

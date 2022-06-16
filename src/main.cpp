@@ -29,7 +29,8 @@ int main(int argc, char *argv[])
 		std::cout << "On as besoin de au moins 1 argument a l'appel du programme (le nom du fichier)" << std::endl;
 	}
 	std::string r = open_file(argv[1]);
-	std::vector<std::string> lexemes = lexer(r);
+	std::vector<std::string> ref;
+	std::vector<std::string> lexemes = lexer(r, ref);
 	node *ast = parser(lexemes, "main");
 	//std::cout << ast->to_string(0) << std::endl;
 	visitor_visit(ast, std::__1::map<std::__1::string, w_variable *>());

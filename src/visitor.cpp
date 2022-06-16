@@ -615,6 +615,25 @@ w_variable *visitor_keyword_return(node *trunc, std::map<std::string, w_variable
     return result;
 }
 
+void visitor_keyword_free(node *trunc, std::map<std::string, w_variable *> variables_t)
+{
+    if (trunc->children.size() < 1)
+    {
+        std::string err = "le mot-clé 'libere' doit avoir au moins un argument";
+        error(err);
+    }
+    node *arg = trunc->children[0];
+    w_variable *result = visitor_compute(arg, variables_t);
+    if (!result->is_object())
+    {
+        std::string err = "ne peux pas libérer un non-object";
+        error(err);
+    }
+
+    delete result;
+}
+
+
 void visitor_funcdef(node *trunc)
 {
     w_function *func = new w_function();
@@ -727,6 +746,8 @@ std::tuple<std::string, w_variable*> visitor_if_declaration(node *trunc, std::ma
         std::tuple<std::string, w_variable*> ret = visitor_visit_incode(trunc->children[1], variables_t);
         if (std::get<0>(ret) == "return")
             return ret;
+        if (std::get<0>(ret) == "continue")
+            return ret;
     }
     return std::tuple<std::string, w_variable*>{"", nullptr};
 }
@@ -779,6 +800,8 @@ std::tuple<std::string, w_variable*> visitor_forloop(node *trunc, std::map<std::
             return std::tuple<std::string, w_variable*>{"", nullptr};;
         if (std::get<0>(ret) == "return")
             return ret;
+        if (std::get<0>(ret) == "continue")
+            continue;
     }
     return std::tuple<std::string, w_variable*>{"", nullptr};
 }
@@ -802,6 +825,8 @@ std::tuple<std::string, w_variable *> visitor_whileloop(node *trunc, std::map<st
             return std::tuple<std::string, w_variable *>{"", nullptr};
         if (std::get<0>(ret) == "return")
             return ret;
+        if (std::get<0>(ret) == "continue")
+            continue;
         cond = visitor_compute(condition, variables_t);
     }
     return std::tuple<std::string, w_variable*>{"", nullptr};
@@ -831,6 +856,8 @@ std::tuple<std::string, w_variable*> visitor_visit_incode(node *trunc, std::map<
         {
             std::tuple<std::string, w_variable*> ret = visitor_if_declaration(instruction, variables_t);
             if (std::get<0>(ret) == "return")
+                return ret;
+            if (std::get<0>(ret) == "continue")
                 return ret;
         }
         else if (instruction->value == "forloop")
@@ -867,8 +894,14 @@ std::tuple<std::string, w_variable*> visitor_visit_incode(node *trunc, std::map<
             w_variable *res = visitor_keyword_return(instruction, variables_t);
             return std::tuple<std::string, w_variable *>{"return", res};
         }
+        else if (instruction->value == "libere")
+        { // The libere keyword
+            visitor_keyword_free(instruction, variables_t);
+        }
         else if (instruction->value == "casse")
             return std::tuple<std::string, w_variable *>{"break", nullptr};
+        else if (instruction->value == "continue") // just continue the loop for the next iteration
+            return std::tuple<std::string, w_variable *>{"continue", nullptr};
     }
     return to_return;
 }
@@ -940,9 +973,13 @@ w_variable *visitor_visit(node *trunc, std::map<std::string, w_variable *> varia
         }
         // we need to do a function for keywords
         else if (instruction->value == "renvoie")
-        { // The renvoie keyword
+        { // The libere keyword
             w_variable *res = visitor_keyword_return(instruction, variables_t);
             return res;
+        }
+        else if (instruction->value == "libere")
+        { // The renvoie keyword
+            visitor_keyword_free(instruction, variables_t);
         }
     }
     return to_return;

@@ -2,6 +2,7 @@
 #include <iostream>
 
 
+
 std::string w_variable::get_type()
 {
     switch (this->type)
@@ -24,7 +25,7 @@ std::string w_variable::get_type()
 
 bool w_variable::is_object()
 {
-    if (this->get_type() != "char" and this->get_type() != "int")
+    if (this->get_type() != "char" and this->get_type() != "int" and this->get_type() != "none")
     {
         return true;
     }
@@ -70,6 +71,13 @@ void w_object::attribute_attribution(std::string name, w_variable * value)
 {
     this->attributes[name] = value;    
 }
+
+w_variable::~w_variable()
+{
+    if (this->is_object())
+        delete ((w_object *)this->content);
+}
+
 
 void w_function::set_arguments(node *args)
 {

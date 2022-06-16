@@ -6,8 +6,8 @@ std::vector<std::string> keywords; // the vector containing all the keywords
 void paser_init_keywords()
 {
     keywords.push_back("renvoie");
-    keywords.push_back("arrete");
-    keywords.push_back("affiche");
+    keywords.push_back("libere");
+    keywords.push_back("casse");
 }
 
 bool parser_is_keyword(std::string expr)

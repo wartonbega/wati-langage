@@ -147,6 +147,7 @@ classe list contient
         p.next = next;
         next.prev = p;
         self.taille = self.taille - 1;
+        libere n;
     fin
 fin
 
@@ -196,39 +197,39 @@ classe game contient
     fin
 
     methode haut () fait
+        !self.queue()
         self.x = self.x - 1 % 10;
         si (self.x < 0) alors
             self.x = 10 + self.x;
         fin
-        !self.queue()
     fin
 
     methode bas () fait
+        !self.queue()
         self.x = self.x + 1 % 10;
         si (self.x < 0) alors
             self.x = 10 + self.x;
         fin
-        !self.queue()
     fin
 
     methode droite () fait
+        !self.queue()
         self.y = self.y + 1 % 10;
         si (self.y < 0) alors
             self.y = 10 + self.y;
         fin
-        !self.queue()
     fin
 
     methode gauche () fait
+        !self.queue()
         self.y = self.y - 1 % 10;
         si (self.y < 0) alors
             self.y = 10 + self.y;
         fin
-        !self.queue()
     fin
 
     methode print () fait
-        fillchar = ". ";
+        fillchar = "  ";
         pour x allant de 0 a 10 fait
             pour y allant de 0 a 10 fait
                 pour j allant de 0 a self.queuex.taille fait
@@ -250,8 +251,8 @@ classe game contient
                     fin
                 fin
                 !print(fillchar)
-                si (fillchar != ". ") alors
-                    fillchar = ". ";
+                si (fillchar != "  ") alors
+                    fillchar = "  ";
                 fin
             fin
             !print("\n")
@@ -277,7 +278,10 @@ classe game contient
 
             !self.print()
             dir = !input("");
-            
+
+            si dir == "p" alors
+                continue;
+            fin
             
             si dir == self.haut alors
                 !self.haut()
@@ -298,7 +302,6 @@ classe game contient
                 self.pommey = !self.random.rand(10);
             fin
             !system("clear")
-
         fin
         !print("T'AS WATI-PERDU, ", self.name, "\n");
     fin
