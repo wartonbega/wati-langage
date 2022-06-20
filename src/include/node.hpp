@@ -8,6 +8,8 @@ struct node
     std::vector<node *> children;
     std::string value;
     
+    std::string reference;
+
     node(std::string);
 
     std::vector<std::string> get_childs_value();

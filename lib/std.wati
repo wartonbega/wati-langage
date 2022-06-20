@@ -1,0 +1,6 @@
+inclue "list.wati";
+inclue "dictionnaire.wati";
+inclue "inout.wati";
+inclue "maths.wati";
+inclue "random.wati";
+inclue "string.wati";

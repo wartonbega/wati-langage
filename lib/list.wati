@@ -1,27 +1,9 @@
-
-classe node contient
-    methode constructeur (content) fait
-        self.content = content;
-    fin
-
-    methode en_string() fait
-        renvoie self.content;
-    fin
-
-    methode equals (autre) fait
-        renvoie self.content == autre.content;
-    fin
-
-    methode ne (autre) fait
-        renvoie self.content != autre.content;
-    fin
-fin
+inclue "node.wati";
 
 classe list contient 
     methode constructeur () fait
-        self.head = node("fin-de-liste");
+        self.head = node("debut-de-liste");
         self.tail = node("fin-de-liste");
-        
         self.head.next = self.tail;
         self.tail.prev = self.head;
 
@@ -37,6 +19,18 @@ classe list contient
         prev.next = n;
         self.tail.prev = n;
         
+        self.taille = self.taille + 1;
+        renvoie self;
+    fin
+
+    methode debut(content) fait
+        n = node(content);
+
+        r = self.head.next;
+        r.prev = n;
+        n.next = r;
+        self.head.next = n;
+        n.prev = self.head;
         self.taille = self.taille + 1;
         renvoie self;
     fin
@@ -87,5 +81,28 @@ classe list contient
         self.taille = self.taille - 1;
         libere n;
     fin
-fin
 
+
+    methode envers () fait
+        l = list();
+        pour i allant de 0 a self.taille fait
+            !l.debut(!self.en(i))
+        fin
+        renvoie l;
+    fin
+
+    methode destructeur () fait
+        to_d = self.head.next;
+        si (to_d.content == "fin-de-liste") fait
+            libere self.head;
+            libere self.tail;
+            renvoie;
+        fin
+        tant que to_d.next.content != self.tail.content fait
+            p = to_d;
+            to_d = to_d.next;
+            libere p;
+        fin
+        libere self.head;
+    fin
+fin

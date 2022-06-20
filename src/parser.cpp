@@ -8,6 +8,7 @@ void paser_init_keywords()
     keywords.push_back("renvoie");
     keywords.push_back("libere");
     keywords.push_back("casse");
+    keywords.push_back("inclue");
 }
 
 bool parser_is_keyword(std::string expr)
@@ -70,6 +71,7 @@ node *parser_eat_function(node *trunc)
     node *argument;                  // All the arguments between ()
     node *name;                      // The name
     node *elements = new node("{}"); // The code inside 'fait' et 'fin'
+    elements->reference = trunc->reference;
 
     name = trunc->children[0];
     argument = trunc->children[1];
@@ -93,6 +95,7 @@ node *parser_eat_function(node *trunc)
     //          ...
 
     node *func = new node("funcdef");
+    func->reference = trunc->reference;
     func->push_child(name);
     func->push_child(argument);
     func->push_child(elements);
@@ -114,6 +117,7 @@ node *parser_eat_method(node *trunc)
     node *argument;                  // All the arguments between ()
     node *name;                      // The name
     node *elements = new node("{}"); // The code inside 'fait' et 'fin'
+    elements->reference = trunc->reference;
 
     name = trunc->children[0];
     argument = trunc->children[1];
@@ -137,6 +141,7 @@ node *parser_eat_method(node *trunc)
     //          ...
 
     node *meth = new node("methdef");
+    meth->reference = trunc->reference;
     meth->push_child(name);
     meth->push_child(argument);
     meth->push_child(elements);
@@ -176,6 +181,7 @@ node *parser_eat_class(node *trunc)
     //      * attributes
     //      * methods
     node *classdef = new node("classdef");
+    classdef->reference = trunc->reference;
     classdef->push_child(name);
     classdef->push_child(attributes);
     classdef->push_child(methods);
@@ -203,6 +209,7 @@ node *parser_eat_if(node *trunc)
     while (trunc->children[i]->value != "alors" and trunc->children[i]->value != "fait")
     { // the condition before 'alors'
         condition->push_child(trunc->children[i]);
+        condition->reference = trunc->children[i]->reference;
         i++;
     }
 
@@ -210,13 +217,15 @@ node *parser_eat_if(node *trunc)
     { // The code
         code->push_child(trunc->children[y]);
     }
+    code->reference = trunc->reference;
 
     // we don't need this
     free(trunc);
 
     node *res = new node("ifdec"); // ifdec is the codename
-    res->push_child(condition);    // first condition
-    res->push_child(code);         // then code
+    res->reference = trunc->reference;
+    res->push_child(condition); // first condition
+    res->push_child(code);      // then code
     return res;
 }
 
@@ -249,6 +258,7 @@ node *parser_eat_forloop(node *trunc)
     varname = trunc->children[0];           // varname
     bornes->push_child(trunc->children[3]); // _num1
     bornes->push_child(trunc->children[5]); // _num2
+    bornes->reference = trunc->children[3]->reference;
 
     for (int i = 7; i < trunc->children.size(); i++)
     { // the code
@@ -257,25 +267,27 @@ node *parser_eat_forloop(node *trunc)
 
     free(trunc);
     node *forloop = new node("forloop");
+    forloop->reference = trunc->reference;
     forloop->push_child(varname);
     forloop->push_child(bornes);
     forloop->push_child(code);
     return forloop;
 }
 
-
 node *parser_eat_whileloop(node *trunc)
 {
     // the while loop declaration
-    // tant 
+    // tant
     //      que       (0)
-    //      condition (1)  
+    //      condition (1)
     //          ...       (*)
     //      fait    (+)
     //          ...    (+++)
     node *total = new node("whileloop");
+    total->reference = trunc->reference;
     node *condition = new node("condition"); // contains both _num1 and _num2
     node *code = new node("{}");
+    code->reference = trunc->reference;
 
     // the result :
     // tant
@@ -287,29 +299,36 @@ node *parser_eat_whileloop(node *trunc)
     while (trunc->children[i]->value != "fait")
     {
         condition->push_child(trunc->children[i]);
-        i ++;
+        condition->reference = trunc->children[i]->reference;
+        i++;
     }
     for (int y = i + 1; y < trunc->children.size(); y++)
     { // the code
         code->push_child(trunc->children[y]);
     }
-    
+
     total->push_child(condition);
     total->push_child(code);
     return total;
 }
 
-node *parser(std::vector<std::string> lexemes, std::string first_value)
+node *parser(std::vector<std::string> lexemes, std::string first_value, std::vector<std::string> ref, std::string first_ref)
 {
     paser_init_keywords();
     // Parse the lexemes vector and returns an ast with all the instructions
     node *ast = new node(first_value); // the trunc of the ast
+    if (!ref.empty())
+        ast->reference = ref[0];
+    else
+        ast->reference = first_ref;
     for (int i = 0; i < lexemes.size(); i++)
     {
         if (lexemes[i] == "(")
         {
             std::vector<std::string> b;
+            std::vector<std::string> r;
             i++;
+            std::string c_reference = ref[i];
             int between = 0;
             while (true)
             {
@@ -332,13 +351,14 @@ node *parser(std::vector<std::string> lexemes, std::string first_value)
                     between++;
                 }
                 b.push_back(lexemes[i]);
+                r.push_back(ref[i]);
                 i++;
             }
-            node *parenthesis = parser(b, "()");
+            node *parenthesis = parser(b, "()", r, c_reference);
             ast->push_child(parenthesis);
         }
         else if (lexemes[i] == "=")
-        { // A variable assignement
+        {              // A variable assignement
             if (i > 1) // We need to know the variable name
             {
                 // the disposition of the variable assignement node :
@@ -346,40 +366,50 @@ node *parser(std::vector<std::string> lexemes, std::string first_value)
                 // -> name
                 // -> *
                 //     -> ...
+                std::string c_reference = ref[i];
                 node *var_asign = new node("vardef");
+                var_asign->reference = ref[i];
                 node *name = new node(lexemes[i - 1]);
+                name->reference = ref[i - 1];
                 var_asign->push_child(name);
                 i++;
                 std::vector<std::string> b;
-
+                std::vector<std::string> r;
                 while (lexemes[i] != ";")
                 {
                     b.push_back(lexemes[i]);
+                    r.push_back(ref[i]);
                     i++;
                 }
-                node *value = parser(b, "*");
+                node *value = parser(b, "*", r, c_reference);
                 var_asign->push_child(value);
                 ast->push_child(var_asign);
             }
         }
         else if (parser_is_keyword(lexemes[i]))
         { // works the same way than a variable definition
+            std::string c_reference = ref[i];
             node *keyword_call = new node(lexemes[i]);
+            keyword_call->reference = ref[i];
             i++;
             std::vector<std::string> b;
+            std::vector<std::string> r;
             while (lexemes[i] != ";")
             {
                 b.push_back(lexemes[i]);
+                r.push_back(ref[i]);
                 i++;
             }
-            node *value = parser(b, "*");
+            node *value = parser(b, "*", r, c_reference);
             keyword_call->push_child(value);
             ast->push_child(keyword_call);
         }
         else if (parser_is_opening_keyword(lexemes[i]))
         {
             std::string name = lexemes[i];
+            std::string c_reference = ref[i];
             std::vector<std::string> b;
+            std::vector<std::string> r;
             int between = 0;
             i++;
             while (true)
@@ -402,9 +432,10 @@ node *parser(std::vector<std::string> lexemes, std::string first_value)
                     between++;
                 }
                 b.push_back(lexemes[i]);
+                r.push_back(ref[i]);
                 i++;
             }
-            node *function = parser(b, name);
+            node *function = parser(b, name, r, c_reference);
             if (name == "fonction")
                 function = parser_eat_function(function);
             else if (name == "methode")
@@ -424,6 +455,7 @@ node *parser(std::vector<std::string> lexemes, std::string first_value)
             if (lexemes[i + 1] != "=")
             {
                 node *expr = new node(lexemes[i]);
+                expr->reference = ref[i];
                 ast->push_child(expr);
             }
         }

@@ -17,6 +17,6 @@ node *parser_eat_class(node *);
 node *parser_eat_if(node *);
 node *parser_eat_forloop(node *);
 
-node *parser(std::vector<std::string>, std::string);
+node *parser(std::vector<std::string> lexemes, std::string first_value, std::vector<std::string> ref, std::string first_ref);
 
 #endif

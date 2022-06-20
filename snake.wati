@@ -1,0 +1,173 @@
+inclue "lib/std.wati";
+
+classe game contient
+    methode constructeur () fait
+
+        self.name = !inputln("TON WATI-NOM : ");
+        self.x = 5;
+        self.y = 5;
+        self.taille = 1;
+        self.queuex = list();
+        self.queuey = list();
+
+        self.pommex = 0;
+        self.pommey = 0;
+
+        self.haut = "z";
+        self.bas = "s";
+        self.droite = "d";
+        self.gauche = "q";
+
+        self.pomme_skin = terminal_bold + terminal_red + "@" + terminal_reset;
+        self.snake_head_skin = terminal_bold + terminal_yellow + "#" + terminal_reset;
+        self.snake_body_skin = terminal_bold + terminal_green + "*" + terminal_reset;
+        self.snake_tail_skin = terminal_bold + terminal_blue + "o" + terminal_reset;
+
+        self.random = random();
+        self.action = "run";
+        !system("stty -icanon")
+    fin
+
+    methode haut () fait
+        !self.queue()
+        self.x = self.x - 1 % 10;
+        si (self.x < 0) alors
+            self.x = 10 + self.x;
+        fin
+        pour j allant de 0 a self.queuex.taille fait
+            si !et(!self.queuex.en(j) == self.x, !self.queuey.en(j) == self.y) alors
+                self.action = "";
+            fin
+        fin
+    fin
+
+    methode bas () fait
+        !self.queue()
+        self.x = self.x + 1 % 10;
+        si (self.x < 0) alors
+            self.x = 10 + self.x;
+        fin
+        pour j allant de 0 a self.queuex.taille fait
+            si !et(!self.queuex.en(j) == self.x, !self.queuey.en(j) == self.y) alors
+                self.action = "";
+            fin
+        fin
+    fin
+
+    methode droite () fait
+        !self.queue()
+        self.y = self.y + 1 % 10;
+        si (self.y < 0) alors
+            self.y = 10 + self.y;
+        fin
+        pour j allant de 0 a self.queuex.taille fait
+            si !et(!self.queuex.en(j) == self.x, !self.queuey.en(j) == self.y) alors
+                self.action = "";
+            fin
+        fin
+    fin
+
+    methode gauche () fait
+        !self.queue()
+        self.y = self.y - 1 % 10;
+        si (self.y < 0) alors
+            self.y = 10 + self.y;
+        fin
+        pour j allant de 0 a self.queuex.taille fait
+            si !et(!self.queuex.en(j) == self.x, !self.queuey.en(j) == self.y) alors
+                self.action = "";
+            fin
+        fin
+    fin
+
+    methode print () fait
+        fillchar = "  ";
+        !print("=======================\n")
+        pour x allant de 0 a 10 fait
+            !print("||")
+            pour y allant de 0 a 10 fait
+                pour j allant de 0 a self.queuex.taille fait
+                    si !et(!self.queuex.en(j) == x, !self.queuey.en(j) == y) alors
+                        fillchar = self.snake_body_skin + " ";
+                        si (j == 0) alors
+                            fillchar = self.snake_tail_skin + " ";
+                        fin
+                        casse;
+                    fin
+                fin
+                si (x == self.pommex) alors
+                    si (y == self.pommey) alors
+                        fillchar = self.pomme_skin + " ";
+                    fin
+                fin
+                si (x == self.x) alors
+                    si (y == self.y) alors
+                        fillchar = self.snake_head_skin + " ";
+                    fin
+                fin
+                !print(fillchar)
+                si (fillchar != "  ") alors
+                    fillchar = "  ";
+                fin
+            fin
+            !print("\b||\n")
+        fin
+        !print("=======================\n")
+        !print(terminal_underline + terminal_bold + "score : ", self.taille, terminal_reset)
+    fin
+
+    methode queue () fait
+        si (self.queuex.taille < self.taille) alors
+            !self.queuex.plus(self.x)
+            !self.queuey.plus(self.y)
+        fin
+        si (self.queuex.taille >= self.taille) alors
+            !self.queuex.pop(0)
+            !self.queuey.pop(0)
+            !self.queuex.plus(self.x)
+            !self.queuey.plus(self.y)
+        fin
+    fin
+
+    methode boucle () fait
+        self.action = "run";
+        tant que (self.action == "run") fait
+
+            !self.print()
+            dir = !input_caché("", "");
+
+            si dir == "p" alors
+                continue;
+            fin
+            
+            si dir == self.haut alors
+                !self.haut()
+            fin
+            
+            si dir == self.bas alors
+                !self.bas()
+            fin
+            
+            si dir == self.gauche alors
+                !self.gauche()
+            fin
+
+            si dir == self.droite alors
+                !self.droite()
+            fin
+
+            si !et(self.x == self.pommex, self.y == self.pommey) alors
+                self.taille = self.taille + 1;
+                self.pommex = !abs(!self.random.rand(10));
+                self.pommey = !abs(!self.random.rand(10));
+            fin
+            si self.action == "run" alors
+                !system("clear")
+            fin
+        fin
+        !print("\nT'AS WATI-PERDU, ", self.name, "\n")
+    fin
+fin
+
+g = game();
+!g.boucle()

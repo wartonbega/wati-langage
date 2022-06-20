@@ -1,0 +1,17 @@
+classe node contient
+    methode constructeur (content) fait
+        self.content = content;
+    fin
+
+    methode en_string() fait
+        renvoie self.content;
+    fin
+
+    methode equals (autre) fait
+        renvoie self.content == autre.content;
+    fin
+
+    methode ne (autre) fait
+        renvoie self.content != autre.content;
+    fin
+fin

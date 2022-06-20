@@ -1,0 +1,32 @@
+fonction abs(x) fait
+    r = x;
+    si (x < 0) alors
+        r = x * (0 - 1);
+    fin
+    renvoie r;
+fin
+
+fonction et(cond1, cond2) fait
+    r = 3;
+    si cond1 alors
+        r = r - 1;
+    fin
+
+    si cond2 alors
+        r = r - 1;
+    fin
+    renvoie r;
+fin
+
+
+fonction ou(cond1, cond2) fait
+    r = 0;
+    si cond1 alors
+        r = 1;
+    fin
+
+    si cond2 alors
+        r = 1;
+    fin
+    renvoie r;
+fin

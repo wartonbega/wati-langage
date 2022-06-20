@@ -16,6 +16,6 @@ bool lexer_is_withespace(std::string expr);
 
 bool lexer_is_breaking_expr(std::string);
 
-std::vector<std::string> lexer(std::string content, std::vector<std::string> &reference);
+std::vector<std::string> lexer(std::string content, std::vector<std::string> &reference, std::string filename);
 
 #endif

@@ -1,0 +1,43 @@
+inclue "./lib/std.wati";
+
+lists = list();
+
+pour i allant de 0 a 100 fait
+    n = list();
+    pour j allant de 0 a 100 fait
+        n = n + " ";
+    fin
+    lists = lists + n;
+fin
+
+fonction f(x) fait
+    renvoie x ^ 2 +  10;
+fin
+
+decal = 20;
+
+pour i allant de (0 - decal) a 70 fait
+    y = !f(i);
+    si (y < lists.taille) alors
+        l = !lists.en(y);
+        !l.modifie(i + decal, "#")
+    fin
+fin
+
+lists = !lists.envers();
+
+pour i allant de 0 a 100 fait
+    l = !lists.en(i);
+    !print(100-i-1, "\t")
+    pour j allant de 0 a 45 fait
+        !print(!l.en(j), "\t")
+    fin
+    !print("\n")
+fin
+
+!print("\t")
+
+pour i allant de 0 a 45 fait
+    !print(i-decal, "\t")
+fin
+!print("f(x) = x ^ 2 + 10\n")

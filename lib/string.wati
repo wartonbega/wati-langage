@@ -1,0 +1,81 @@
+inclue "list.wati";
+
+classe string contient
+    methode constructeur (char) fait
+        self.content = list();
+        self.taille = 0;
+        si (!type(char) == "char") alors
+            pour i allant de 0 a (!c_len(char)) fait
+                self.content = self.content + !c_en(char, i);
+                self.taille = self.taille + 1;
+            fin
+        fin
+        si (!type(char) == "string") alors
+            pour i allant de 0 a char.taille alors
+                self.content = self.content + !char.en(i);
+            fin 
+            self.taille = char.taille;
+        fin
+    fin
+
+    methode en_string () fait
+        total = "";
+        pour i allant de 0 a self.taille fait
+            total = total + !self.content.en(i);
+        fin
+        renvoie total;
+    fin
+
+    methode plus (char) fait
+        si (!type(char) == "char") alors
+            si (!c_len(char) != 0) alors
+                pour i allant de 0 a (!c_len(char)) fait
+                    self.content = self.content + !c_en(char, i);
+                    self.taille = self.taille + 1;
+                fin
+            fin
+            renvoie self;
+        fin
+        si (!type(char) == "string") alors
+            pour i allant de 0 a char.taille alors
+                self.content = self.content + !char.en(i);
+                self.taille = self.taille + 1;
+            fin 
+            renvoie self;
+        fin
+        !erreur("type 'string' ne peut pas supporter l'opération '+' avec le type " + !type(char))
+        renvoie self;
+    fin
+
+    methode en (int) fait
+        renvoie !self.content.en(int);
+    fin
+
+    methode pop (int) fait
+        c = !self.content.en(int);
+        self.content = !self.content.pop(int);
+        self.taille = self.taille - 1;
+        renvoie c;
+    fin
+
+    methode times (int) fait
+        si (!type(int) != "int") alors
+            !erreur("type 'string' ne peut pas supporter l'opération '*' avec le type " + !type(int))
+        fin
+
+        si (int < 0) alors
+            !erreur("la valeur de 'times' doit être positive")
+        fin
+
+        bis = string("");
+        
+        pour i allant de 0 a int fait
+            bis = bis + self;
+        fin
+        
+        libere self.content;
+
+        self.content = bis.content;
+        renvoie bis;
+    fin
+fin
