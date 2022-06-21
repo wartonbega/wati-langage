@@ -915,7 +915,7 @@ void visitor_keyword_include(node *trunc, std::map<std::string, w_variable *> va
         std::vector<std::string> ref;
         std::vector<std::string> lexemes = lexer(r, ref, filename2);
 
-        node *ast = parser(lexemes, filename2, ref, filename2 + "0:0");
+        node *ast = parser(lexemes, filename2, ref, filename2 + "1:1");
         visitor_visit(ast, variables_t);
     }    
     base_dir = dir;

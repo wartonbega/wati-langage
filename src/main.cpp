@@ -138,7 +138,7 @@ int main(int argc, char *argv[])
 	std::vector<std::string> ref;
 	std::vector<std::string> lexemes = lexer(r, ref, filename);
 
-	node *ast = parser(lexemes, "main", ref, filename + "0:0");
+	node *ast = parser(lexemes, "main", ref, filename + "1:1");
 	// std::cout << ast->to_string(0) << std::endl; // the ast
 	std::map<std::string, w_variable *> variables_t;
 	init_vars(variables_t);

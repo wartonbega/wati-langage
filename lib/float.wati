@@ -1,0 +1,160 @@
+
+
+fonction puissance_de_dix (int) fait
+    si (int > 0) alors
+        pd = 0;
+        tant que (10 ^ pd <= int) fait
+            pd = pd + 1;
+        fin
+        renvoie pd - 1;
+    fin
+    si (int < 0) alors
+        int = int * (0-1);
+        pd = 0;
+        tant que (10 ^ pd <= int) fait
+            pd = pd + 1;
+        fin
+        renvoie pd - 1;
+    fin
+    si (int = 0) alors
+        renvoie 0;
+    fin
+fin
+
+fonction plus_grand (a, b) fait
+    si (a > b) fait
+        renvoie a;
+    fin
+    renvoie b;
+fin
+
+fonction plus_petit (a, b) fait
+    si (a < b) fait
+        renvoie a;
+    fin
+    renvoie b;
+fin
+
+fonction arrondis_puissance (a) fait
+    p = a;
+    t_p = !puissance_de_dix(a);
+    tant que (p * (10 ^ (t_p - !puissance_de_dix(p))) == a) fait
+        p = p / 10;
+    fin
+    return p;
+fin
+
+classe float contient
+    methode constructeur (int) fait
+        self.content = int;
+        self.ten_pow = 0;
+    fin
+
+    methode en_string () fait
+        p = self.content;
+        corps = "";
+
+        si (self.content < 0) fait
+            p = 0 - self.content;
+        fin
+        
+        i = 0;
+        si (self.ten_pow >= 0) alors
+            tant que (p > 0) fait
+                corps = !char(p % 10) + corps;
+                p = p / 10;
+                i = i + 1;
+                si (i == self.ten_pow) fait
+                    corps = "." + corps;
+                fin
+            fin
+            si (self.ten_pow != 0) alors
+                corps = corps + "e" + !char(self.ten_pow);
+            fin
+        fin
+
+        si (self.ten_pow < 0) alors
+            tant que (p > 0) fait
+                corps = !char(p % 10) + corps;
+                p = p / 10;
+                i = i + 1;
+            fin
+            tant que (i < (0-self.ten_pow)) fait
+                corps = "0" + corps;
+                i = i + 1;
+            fin
+            corps = "0." + corps;
+        fin
+
+        si (self.content < 0) fait
+            corps = "-" + corps;
+        fin
+        renvoie corps;
+    fin
+
+    methode times (num) fait
+        si (!type(num) == "float") alors
+            self.content = self.content * num.content;
+            self.ten_pow = self.ten_pow + num.ten_pow;
+        fin
+        si (!type(num) == "int") alors
+            f = float(num);
+            self = self * f;
+            libere f;
+        fin
+        renvoie self;
+    fin
+
+    methode div (num) fait
+        si (!type(num) == "float") alors
+            m = self.content * 100000;
+            
+            self.content = m / num.content;
+            self.ten_pow = self.ten_pow - 5 - num.ten_pow;
+            p_t = !puissance_de_dix(!arrondis_puissance(self.content));
+            p = !puissance_de_dix(self.content) - p_t;
+            self.content = self.content / (10 ^ p);
+            self.ten_pow = self.ten_pow + p;
+        fin
+
+        si (!type(num) == "int") alors
+            f = float(num);
+            self = self / f;
+            libere f;
+        fin
+        renvoie self;
+    fin
+
+    methode plus (num) fait
+        si (!type(num) == "float") alors
+            self.content = self.content + num.content;
+            self.ten_pow = !plus_grand(self.ten_pow, num.ten_pow);
+        fin
+        si (!type(num) == "int") alors
+            f = float(num);
+            self = self + f;
+            libere f;
+        fin
+        renvoie self;
+    fin
+
+    methode minus (num) fait
+        si (!type(num) == "float") alors
+            self.content = self.content - num.content;
+            self.ten_pow = !plus_petit(self.ten_pow, num.ten_pow);
+        fin
+        si (!type(num) == "int") alors
+            f = float(num);
+            self = self - f;
+            libere f;
+        fin
+        renvoie self;
+    fin
+
+    methode to_int (num) fait
+        renvoie self.content * (10^self.ten_pow);
+    fin
+fin
+
+f = float(1) / 100;
+!print(f, "\n")
