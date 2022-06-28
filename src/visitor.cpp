@@ -63,6 +63,8 @@ int make_max(int a, int b)
 std::string give_file_error(std::string filename, int line, int column, std::string full_ref)
 {
     std::string file_content = open_file(filename.c_str()) + "\n";
+    if (file_content == "file_not_found")
+        return "";
     std::vector<std::string> lines;
     std::string ret;
     int i = 0;
@@ -112,8 +114,16 @@ void error(std::string err, std::string ref)
     std::string err_s = TERMINAL_BOLDRED + ref + TERMINAL_BOLDBLACK + " erreur : " + TERMINAL_BOLDRED + err;
     std::vector<std::string> c_ref = cut_error_ref(ref);
     std::string filename = c_ref[0];
-    int line = stoi(c_ref[1]);
-    int col = stoi(c_ref[2]);
+    
+    int line;
+    int col;
+    try  // To avoid 'libc++abi: terminating with uncaught exception of type std::invalid_argument: stoi: no conversion'
+    { 
+        line = stoi(c_ref[1]);
+        col = stoi(c_ref[2]);
+    }
+    catch (std::invalid_argument err){}
+
     std::cout << err_s << std::endl;
     std::cout << give_file_error(filename, line, col, ref) << "\n\n";
 
@@ -121,11 +131,19 @@ void error(std::string err, std::string ref)
     {
         std::string s_ref = references.top();
         std::string s_fln = cut_error_ref(s_ref)[0];
-        int s_lne = stoi(cut_error_ref(s_ref)[1]);
-        int s_col = stoi(cut_error_ref(s_ref)[2]);
+        int s_lne;
+        int s_col;
+        try  // To avoid 'libc++abi: terminating with uncaught exception of type std::invalid_argument: stoi: no conversion'
+        { 
+            s_lne = stoi(cut_error_ref(s_ref)[1]);
+            s_col = stoi(cut_error_ref(s_ref)[2]);
+        }
+        catch (std::invalid_argument err){}
+        
         references.pop();
         std::cout << TERMINAL_BOLDCYAN + "\nréférencé depuis :\n"
                   << give_file_error(s_fln, s_lne, s_col, s_ref);
+
     }
     exit(1);
 }
@@ -394,7 +412,6 @@ w_variable *visitor_function_inbuild(std::string name, node *args, std::map<std:
 
 w_variable *visitor_funcall(std::string name, node *args, std::map<std::string, w_variable *> variables_t)
 {
-
     if (!function_exist(name, functions))
     {
         std::string err = "la fonction " + name + " n'existe pas";
@@ -559,29 +576,125 @@ w_variable *visitor_link_operator(w_variable *a, w_variable *b, std::string oper
     std::map<std::string, w_variable *> variables_t;
     w_function *func;
     if (opera == "+")
-        func = functions["!" + a->get_type() + ".plus"];
+    {
+        std::string f_name = "!" + a->get_type() + ".plus";
+        if (!function_exist(f_name, functions))
+        {
+            std::string err = "il n'existe pas de fonction "+f_name;
+            error(err, references.top());
+        }
+        func = functions[f_name];
+    }
     else if (opera == "-")
-        func = functions["!" + a->get_type() + ".minus"];
+    {
+        std::string f_name = "!" + a->get_type() + ".minus";
+        if (!function_exist(f_name, functions))
+        {
+            std::string err = "il n'existe pas de fonction "+f_name;
+            error(err, references.top());
+        }
+        func = functions[f_name];
+    }
     else if (opera == "==")
-        func = functions["!" + a->get_type() + ".equals"];
+    {
+        std::string f_name = "!" + a->get_type() + ".equals";
+        if (!function_exist(f_name, functions))
+        {
+            std::string err = "il n'existe pas de fonction "+f_name;
+            error(err, references.top());
+        }
+        func = functions[f_name];
+    }
     else if (opera == "<")
-        func = functions["!" + a->get_type() + ".lt"];
+    {
+        std::string f_name = "!" + a->get_type() + ".lt";
+        if (!function_exist(f_name, functions))
+        {
+            std::string err = "il n'existe pas de fonction "+f_name;
+            error(err, references.top());
+        }
+        func = functions[f_name];
+    }
     else if (opera == ">")
-        func = functions["!" + a->get_type() + ".gt"];
+    {
+        std::string f_name = "!" + a->get_type() + ".gt";
+        if (!function_exist(f_name, functions))
+        {
+            std::string err = "il n'existe pas de fonction "+f_name;
+            error(err, references.top());
+        }
+        func = functions[f_name];
+    }
     else if (opera == "<=")
-        func = functions["!" + a->get_type() + ".le"];
+    {
+        std::string f_name = "!" + a->get_type() + ".le";
+        if (!function_exist(f_name, functions))
+        {
+            std::string err = "il n'existe pas de fonction "+f_name;
+            error(err, references.top());
+        }
+        func = functions[f_name];
+    }
     else if (opera == ">=")
-        func = functions["!" + a->get_type() + ".ge"];
+    {
+        std::string f_name = "!" + a->get_type() + ".ge";
+        if (!function_exist(f_name, functions))
+        {
+            std::string err = "il n'existe pas de fonction "+f_name;
+            error(err, references.top());
+        }
+        func = functions[f_name];
+    }
     else if (opera == "%")
-        func = functions["!" + a->get_type() + ".mod"];
+    {
+        std::string f_name = "!" + a->get_type() + ".mod";
+        if (!function_exist(f_name, functions))
+        {
+            std::string err = "il n'existe pas de fonction "+f_name;
+            error(err, references.top());
+        }
+        func = functions[f_name];
+    }
     else if (opera == "/")
-        func = functions["!" + a->get_type() + ".div"];
+    {
+        std::string f_name = "!" + a->get_type() + ".div";
+        if (!function_exist(f_name, functions))
+        {
+            std::string err = "il n'existe pas de fonction "+f_name;
+            error(err, references.top());
+        }
+        func = functions[f_name];
+    }
     else if (opera == "^")
-        func = functions["!" + a->get_type() + ".power"];
+    {
+        std::string f_name = "!" + a->get_type() + ".power";
+        if (!function_exist(f_name, functions))
+        {
+            std::string err = "il n'existe pas de fonction "+f_name;
+            error(err, references.top());
+        }
+        func = functions[f_name];
+    }
     else if (opera == "!=")
-        func = functions["!" + a->get_type() + ".ne"];
+    {
+        std::string f_name = "!" + a->get_type() + ".ne";
+        if (!function_exist(f_name, functions))
+        {
+            std::string err = "il n'existe pas de fonction "+f_name;
+            error(err, references.top());
+        }
+        func = functions[f_name];
+    }
     else if (opera == "*")
-        func = functions["!" + a->get_type() + ".times"];
+    {
+        std::string f_name = "!" + a->get_type() + ".times";
+        if (!function_exist(f_name, functions))
+        {
+            std::string err = "il n'existe pas de fonction "+f_name;
+            error(err, references.top());
+        }
+        func = functions[f_name];
+    }
 
     if (func->inbuild)
     { // This is an inbuild function
@@ -602,14 +715,14 @@ w_variable *visitor_new_object(std::string name, node *args, std::map<std::strin
     w_class_template *temp = classes[name];
     w_object *r = new w_object();
     for (auto attr : temp->trunc->children[1]->children)
-    {
+    { // attibutes
         std::string name = attr->children[0]->value;
         node *comp = attr->children[1];
         w_variable *computed = visitor_compute(comp, variables_t);
         r->attribute_attribution(name, computed);
     }
     for (auto meth : temp->trunc->children[2]->children)
-    {
+    { // methods
         r->methods.push_back(meth->value);
     }
     r->name = temp->trunc->children[0]->value;
@@ -934,6 +1047,8 @@ void visitor_funcdef(node *trunc)
     references.pop();
 }
 
+
+
 void visitor_vardef(node *trunc, std::map<std::string, w_variable *> &variables_t)
 {
     references.push(trunc->reference);
@@ -1235,6 +1350,11 @@ std::tuple<std::string, w_variable *> visitor_visit_incode(node *trunc, std::map
         {
             return std::tuple<std::string, w_variable *>{"continue", nullptr};
         }
+        else if (instruction->value != ";")
+        {
+            std::string err = "instruction inconnue '"+instruction->value+"'. \nAttention, l'instruction est peut-être inconnue dans le contexte (boucle, appel de fonction ect...). \nSi ça fait partie d'un calcule, il faut utiliser des parenthèses.";
+            error(err, instruction->reference);
+        }
     }
     return to_return;
 }
@@ -1321,6 +1441,11 @@ w_variable *visitor_visit(node *trunc, std::map<std::string, w_variable *> varia
         else if (instruction->value == "inclue")
         { // The renvoie keyword
             visitor_keyword_include(instruction, variables_t);
+        }
+        else if (instruction->value != ";")
+        {
+            std::string err = "instruction inconnue '"+instruction->value+"'. \nAttention, l'instruction est peut-être inconnue dans le contexte (boucle, appel de fonction ect...). \nSi ça fait partie d'un calcule, il faut utiliser des parenthèses.";
+            error(err, instruction->reference);
         }
     }
     return to_return;

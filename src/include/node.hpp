@@ -18,6 +18,8 @@ struct node
     std::string to_string(int tabs);
     
     void push_child(node *);
+
+    ~node();
 };
 
 #endif

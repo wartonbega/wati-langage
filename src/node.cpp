@@ -38,3 +38,11 @@ node::node(std::string val)
 {
     this->value = val;
 }
+
+node::~node()
+{
+    for (auto n : this->children)
+    {
+        delete n;
+    }
+}

@@ -7,26 +7,27 @@ fonction abs(x) fait
 fin
 
 fonction et(cond1, cond2) fait
-    r = 3;
     si cond1 alors
-        r = r - 1;
+        si cond2 alors
+            renvoie 1;
+        fin
     fin
-
-    si cond2 alors
-        r = r - 1;
-    fin
-    renvoie r;
+    renvoie 0;
 fin
 
-
 fonction ou(cond1, cond2) fait
-    r = 0;
     si cond1 alors
-        r = 1;
+        renvoie 1;
     fin
 
     si cond2 alors
-        r = 1;
+        renvoie 1;
     fin
-    renvoie r;
+fin
+
+fonction pas (cond) fait
+    si cond alors
+        renvoie 0;
+    fin
+    renvoie 1;
 fin

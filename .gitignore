@@ -2,3 +2,4 @@
 *.py
 .vscode/*
 *.dSYM
+main_dbg
