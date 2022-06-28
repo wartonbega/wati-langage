@@ -16,7 +16,8 @@ bool lexer_is_operator(std::string expr)
         expr == "%" ||
         expr == "/" ||
         expr == "<" ||
-        expr == ">")
+        expr == ">"
+        )
     {
         return true;
     }
@@ -46,12 +47,20 @@ bool lexer_is_opening_char(std::string expr)
     {
         return true;
     }
+    if (expr == "[")
+    {
+        return true;
+    }
     return false;
 }
 
 bool lexer_is_closing_char(std::string expr)
 {
     if (expr == ")")
+    {
+        return true;
+    }
+    if (expr == "]")
     {
         return true;
     }

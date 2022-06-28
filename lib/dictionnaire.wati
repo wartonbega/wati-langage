@@ -15,9 +15,13 @@ classe dictionnaire contient
         valeur = 0;
         pour i allant de 0 a (self.keys.taille) fait
             si (!self.keys.en(i) == clef) alors
-                valeur = !self.value.en(i);
+                renvoie !self.value.en(i);
             fin
         fin
-        renvoie valeur;
+        !erreur("clef introuvable '"+clef+"'")
+    fin
+
+    methode index (clef) fait
+        renvoie !self.trouve(clef);
     fin
 fin

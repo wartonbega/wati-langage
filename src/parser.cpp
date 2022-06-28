@@ -357,6 +357,40 @@ node *parser(std::vector<std::string> lexemes, std::string first_value, std::vec
             node *parenthesis = parser(b, "()", r, c_reference);
             ast->push_child(parenthesis);
         }
+        else if (lexemes[i] == "[")
+        {
+            std::vector<std::string> b;
+            std::vector<std::string> r;
+            i++;
+            std::string c_reference = ref[i];
+            int between = 0;
+            while (true)
+            {
+                if (i >= lexemes.size())
+                { // we reached eof
+                    std::cout << "END OF FILE" << std::endl;
+                    exit(1);
+                    // [TODO]: Errors
+                }
+                if (lexemes[i] == "]" and between == 0)
+                {
+                    break;
+                }
+                else if (lexemes[i] == "]")
+                {
+                    between--;
+                }
+                else if (lexemes[i] == "[")
+                {
+                    between++;
+                }
+                b.push_back(lexemes[i]);
+                r.push_back(ref[i]);
+                i++;
+            }
+            node *parenthesis = parser(b, "[]", r, c_reference);
+            ast->push_child(parenthesis);
+        }
         else if (lexemes[i] == "=")
         {              // A variable assignement
             if (i > 1) // We need to know the variable name

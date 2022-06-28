@@ -926,6 +926,30 @@ w_variable *visitor_compute(node *c, std::map<std::string, w_variable *> variabl
             node *parenthis = c->children[i];
             last_value = visitor_compute(parenthis, variables_t);
         }
+        else if (expr == "[]")
+        {
+            node *brack = c->children[i];
+            w_variable *b_value = visitor_compute(brack, variables_t);
+            if (!last_value->is_object())
+            {
+                std::string err = "la variable doit être un objet";
+                error(err, c->children[i]->reference);
+            }
+            w_object *o = (w_object *)last_value->content;
+            std::string name = "!"+o->name+".index";
+            
+            if (!function_exist(name, functions))
+            {
+                std::string err = "la fonction '" + name +"' n'existe pas";
+                error(err, c->children[i]->reference);
+            }
+            w_function *f = functions[name];
+            
+            std::map<std::string, w_variable *> variables_t_bis = std::map<std::string, w_variable *>(variables_t);
+            variables_t_bis["self"] = last_value;
+            variables_t_bis[f->arguments->children[0]->children[0]->value] = b_value;
+            last_value = visitor_visit(f->trunc, variables_t_bis);
+        }
         else
         {
             std::string err = "expression ou variable inconnue '" + expr + "'";

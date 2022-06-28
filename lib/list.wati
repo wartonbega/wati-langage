@@ -67,6 +67,18 @@ classe list contient
         renvoie p;
     fin
 
+    methode index (x) fait
+        i = 0;
+        n = self.head.next;
+        tant que i != x fait
+            n = n.next;
+            i = i + 1;
+        fin
+        p = n.content;
+
+        renvoie p;
+    fin
+    
     methode pop (x) fait
         i = 0;
         n = self.head.next;

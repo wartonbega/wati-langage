@@ -59,6 +59,9 @@ classe float contient
         fin
         
         i = 0;
+        si (!et(self.ten_pow == 0, self.content == 0)) alors
+            renvoie "0";
+        fin
         si (self.ten_pow >= 0) alors
             tant que (p > 0) fait
                 corps = !char(p % 10) + corps;
@@ -191,6 +194,34 @@ classe float contient
         renvoie self;
     fin
 
+
+    methode mod (num) fait
+        si (!type(num) == "float") alors
+            si self.ten_pow == num.ten_pow alors 
+                self.content = self.content % num.content;
+            fin
+            si self.ten_pow < num.ten_pow alors
+                diff = num.ten_pow - self.ten_pow;
+                n = num.content * (10 ^ diff);
+                m = self.content;
+                self.content = m % n;
+            fin
+            si self.ten_pow > num.ten_pow alors
+                diff = self.ten_pow - num.ten_pow;
+                m = self.content * (10 ^ diff);
+                n = num.content;
+                self.content = m % n;
+            fin
+        fin
+
+        si (!type(num) == "int") alors
+            f = float(num);
+            self = self % f;
+            libere f;
+        fin
+        renvoie self;
+    fin
+
     methode power (num) fait
         si (!type(num) != "int") alors
             !erreur("type 'float' ne peut pas supporter l'opération '^' avec le type " + !type(num))
@@ -223,10 +254,79 @@ classe float contient
 
         si (!type(num) == "int") alors
             f = float(num);
-            renvoie self == f;
+            r = self == f;
             libere f;
+            return r;
         fin
         renvoie 0;
+    fin
+
+    methode lt (num) fait
+        si (!type(num) == "float") alors
+            si self.ten_pow == num.ten_pow alors 
+                renvoie self.content < num.content;
+            fin
+            si self.ten_pow < num.ten_pow alors
+                diff = num.ten_pow - self.ten_pow;
+                n = num.content * (10 ^ diff);
+                m = self.content;
+                renvoie n > m;
+            fin
+            si self.ten_pow > num.ten_pow alors
+                diff = self.ten_pow - num.ten_pow;
+                n = self.content * (10 ^ diff);
+                m = num.content;
+                renvoie n < m;
+            fin
+        fin
+
+        si (!type(num) == "int") alors
+            f = float(num);
+            r = self < f;
+            libere f;
+            renvoie r;
+        fin
+        renvoie 0;
+    fin
+
+    methode gt (num) fait
+        si (!type(num) == "float") alors
+            si self.ten_pow == num.ten_pow alors 
+                renvoie self.content > num.content;
+            fin
+            si self.ten_pow < num.ten_pow alors
+                diff = num.ten_pow - self.ten_pow;
+                n = num.content * (10 ^ diff);
+                m = self.content;
+                renvoie n < m;
+            fin
+            si self.ten_pow > num.ten_pow alors
+                diff = self.ten_pow - num.ten_pow;
+                n = self.content * (10 ^ diff);
+                m = num.content;
+                renvoie n > m;
+            fin
+        fin
+
+        si (!type(num) == "int") alors
+            f = float(num);
+            r = self > f;
+            libere f;
+            renvoie r;
+        fin
+        renvoie 0;
+    fin
+
+    methode le (num) fait
+        renvoie !ou(!self.lt(num), !self.equals(num));
+    fin
+
+    methode ge (num) fait
+        renvoie !ou(!self.gt(num), !self.equals(num));
+    fin
+
+    methode ne (num) fait
+        renvoie !pas(!self.equals(num));
     fin
 
     methode to_int (num) fait
@@ -244,5 +344,12 @@ classe float contient
     fin
 fin
 
-f = float(100) < 200;
+f = float(100) + (float(2)/100) % (float(1) / 10);
 !println(f)
+
+l = list();
+!l.plus("hello");
+!l.plus("world");
+!l.plus("and");
+!l.plus("everyone");
+!print( l[1] )
