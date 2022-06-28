@@ -348,8 +348,7 @@ f = float(100) + (float(2)/100) % (float(1) / 10);
 !println(f)
 
 l = list();
-!l.plus("hello");
-!l.plus("world");
-!l.plus("and");
-!l.plus("everyone");
-!print( l[1] )
+!l.plus("hello")
+!l.plus("hello")
+!l.plus("hello")
+!print(l)

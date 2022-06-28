@@ -45,14 +45,16 @@ classe list contient
         n.content = content;
     fin
 
-    methode print() fait
-        (!print("[ "))
+    methode en_string() fait
+        r = "[ ";
         n = self.head.next;
         tant que n.next.content != self.tail.content fait
-            (!print(n.content, ", "))
+            r = r + !char(n.content) + ", ";
             n = n.next;
         fin
-        (!print(n.content, " ]\n"))
+        r = r + !char(n.content);
+        r = r + " ]";
+        renvoie r;
     fin
 
     methode en (x) fait
