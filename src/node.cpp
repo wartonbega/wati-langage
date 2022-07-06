@@ -15,14 +15,14 @@ std::string node::to_string(int tabs)
     std::string t;
     for (int i = 0; i < tabs; i++)
     {
-        t += "  ";
+        t += "|  ";
     }
     if (this->children.size() != 0)
         t += this->value + " (" + std::to_string(this->children.size()) + ") \t" + this->reference + "\n";
     else
         t += this->value + " \t" + this->reference + "\n";
 
-             for (auto i : this->children)
+        for (auto i : this->children)
         {
             t += i->to_string(tabs + 1);
         }

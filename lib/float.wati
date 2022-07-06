@@ -1,4 +1,3 @@
-inclue "std.wati";
 
 fonction puissance_de_dix (int) fait
     si (int > 0) alors
@@ -344,11 +343,30 @@ classe float contient
     fin
 fin
 
-f = float(100) + (float(2)/100) % (float(1) / 10);
-!println(f)
+fonction arrondis (self) fait
+    si (!type(self) == "int") alors
+        renvoie self;
+    fin
+    si (!type(self) != "float") alors
+        !erreur("!arrondis ne supporte que des float et des int")
+    fin
 
-l = list();
-!l.plus("hello")
-!l.plus("hello")
-!l.plus("hello")
-!print(l)
+    m = self.content;
+    si (self.ten_pow < 0) alors 
+        i = 0;
+        tant que (- i > self.ten_pow) fait
+            d = m % 10;
+            si (d < 5) alors
+                m = m / 10;
+            fin
+            si (d >= 5) alors
+                m = m / 10 + 1;
+            fin
+            i = i + 1;
+        fin
+    fin
+    si (self.ten_pow > 0) alors
+        m = m * (10 ^ self.ten_pow);
+    fin 
+    renvoie m;
+fin

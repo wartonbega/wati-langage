@@ -48,6 +48,9 @@ classe string contient
     fin
 
     methode en (int) fait
+        si (!type(int) != "int") alors
+            !erreur("le type 'list' n'accepte d'indexation que avec le type 'int', pas '"+!type(int)+"'")
+        fin
         renvoie !self.content.en(int);
     fin
 
@@ -78,4 +81,12 @@ classe string contient
         self.content = bis.content;
         renvoie bis;
     fin
+
+    methode index (int) fait
+        renvoie !self.en(int);
+    fin
+fin
+
+fonction char.index(int) fait
+    renvoie !c_en(self, int);
 fin

@@ -1,0 +1,682 @@
+fonction arrondis_puissance (a ) fait
+	p = a ;	
+	t_p = !puissance_de_dix (a );	
+	tant que (p / 10 * (10 ^ (t_p - !puissance_de_dix (p )+ 1 ))== a ) fait
+ 		p = p / 10 ;		
+	fin
+	renvoie p ;	
+
+fin
+fonction et (cond1 , cond2 ) fait
+	si cond1  alors 	
+		si cond2  alors 		
+			renvoie 1 ;			
+
+		fin		
+
+	fin	
+	renvoie 0 ;	
+
+fin
+fonction ou (cond1 , cond2 ) fait
+	si cond1  alors 	
+		renvoie 1 ;		
+
+	fin	
+	si cond2  alors 	
+		renvoie 1 ;		
+
+	fin	
+
+fin
+fonction pas (cond ) fait
+	si cond  alors 	
+		renvoie 0 ;		
+
+	fin	
+	renvoie 1 ;	
+
+fin
+fonction plus_grand (a , b ) fait
+	si (a > b ) alors 	
+		renvoie a ;		
+
+	fin	
+	renvoie b ;	
+
+fin
+fonction puissance_de_dix (int ) fait
+	si (int > 0 ) alors 	
+		pd = 0 ;		
+		tant que (10 ^ pd <= int ) fait
+ 			pd = pd + 1 ;			
+		fin
+		renvoie pd - 1 ;		
+
+	fin	
+	si (int < 0 ) alors 	
+		int = int * (0 - 1 );		
+		pd = 0 ;		
+		tant que (10 ^ pd <= int ) fait
+ 			pd = pd + 1 ;			
+		fin
+		renvoie pd - 1 ;		
+
+	fin	
+	si (0 ) alors 	
+		renvoie 0 ;		
+
+	fin	
+
+fin
+classe node contient
+	methode constructeur (content ) fait	
+		self.content = content ;		
+	
+	fin	
+	methode en_string () fait	
+		renvoie self.content ;		
+	
+	fin	
+	methode equals (autre ) fait	
+		renvoie self.content == autre.content ;		
+	
+	fin	
+	methode ne (autre ) fait	
+		renvoie self.content != autre.content ;		
+	
+	fin	
+
+fin
+classe list contient
+	methode constructeur () fait	
+		self.head = node ("debut-de-liste" );		
+		self.tail = node ("fin-de-liste" );		
+		self.head.next = self.tail ;		
+		self.tail.prev = self.head ;		
+		self.taille = 0 ;		
+	
+	fin	
+	methode plus (content ) fait	
+		n = node (content );		
+		n.next = self.tail ;		
+		prev = self.tail.prev ;		
+		n.prev = prev ;		
+		prev.next = n ;		
+		self.tail.prev = n ;		
+		self.taille = self.taille + 1 ;		
+		renvoie self ;		
+	
+	fin	
+	methode debut (content ) fait	
+		n = node (content );		
+		r = self.head.next ;		
+		r.prev = n ;		
+		n.next = r ;		
+		self.head.next = n ;		
+		n.prev = self.head ;		
+		self.taille = self.taille + 1 ;		
+		renvoie self ;		
+	
+	fin	
+	methode modifie (index , content ) fait	
+		i = 0 ;		
+		n = self.head.next ;		
+		tant que (i != index ) fait
+ 			n = n.next ;			
+			i = i + 1 ;			
+		fin
+		n.content = content ;		
+	
+	fin	
+	methode en_string () fait	
+		r = "[ " ;		
+		n = self.head.next ;		
+		tant que n.next.content != self.tail.content  fait
+ 			r = r + !char (n.content )+ ", " ;			
+			n = n.next ;			
+		fin
+		r = r + !char (n.content );		
+		r = r + " ]" ;		
+		renvoie r ;		
+	
+	fin	
+	methode en (x ) fait	
+		si (!type (x )!= "int" ) alors 		
+			!erreur			("le type 'list' n'accepte d'indexation que avec le type 'int', pas '" + !type (x )+ "'" )
+
+		fin		
+		i = 0 ;		
+		n = self.head.next ;		
+		tant que i != x  fait
+ 			n = n.next ;			
+			i = i + 1 ;			
+		fin
+		p = n.content ;		
+		renvoie p ;		
+	
+	fin	
+	methode index (x ) fait	
+		renvoie !self.en (x );		
+	
+	fin	
+	methode pop (x ) fait	
+		i = 0 ;		
+		n = self.head.next ;		
+		tant que i != x  fait
+ 			n = n.next ;			
+			i = i + 1 ;			
+		fin
+		p = n.prev ;		
+		next = n.next ;		
+		p.next = next ;		
+		next.prev = p ;		
+		self.taille = self.taille - 1 ;		
+		libere n ;		
+	
+	fin	
+	methode envers () fait	
+		l = list ();		
+		pour i allant de 0  a self.taille  fait 		
+			!l.debut			(!self.en (i ))
+		
+		fin		
+		renvoie l ;		
+	
+	fin	
+	methode destructeur () fait	
+		to_d = self.head.next ;		
+		si (to_d.content == "fin-de-liste" ) alors 		
+			libere self.head ;			
+			libere self.tail ;			
+			renvoie ;			
+
+		fin		
+		tant que to_d.next.content != self.tail.content  fait
+ 			p = to_d ;			
+			to_d = to_d.next ;			
+			libere p ;			
+		fin
+		libere self.head ;		
+	
+	fin	
+
+fin
+classe dictionnaire contient
+	methode constructeur () fait	
+		self.keys = list ();		
+		self.value = list ();		
+	
+	fin	
+	methode associe (clef , valeur ) fait	
+		self.keys = self.keys + clef ;		
+		self.value = self.value + valeur ;		
+	
+	fin	
+	methode trouve (clef ) fait	
+		valeur = 0 ;		
+		pour i allant de 0  a (self.keys.taille ) fait 		
+			si (!self.keys.en (i )== clef ) alors 			
+				renvoie !self.value.en (i );				
+
+			fin			
+		
+		fin		
+		!erreur		("clef introuvable '" + clef + "'" )
+	
+	fin	
+	methode index (clef ) fait	
+		renvoie !self.trouve (clef );		
+	
+	fin	
+
+fin
+classe random contient
+	methode constructeur () fait	
+		self.a = 31415821 ;		
+		self.m = 10 ^ 8 ;		
+		self.seed = !temps ();		
+	
+	fin	
+	methode rand (max ) fait	
+		r = self.a * self.seed + 1 ;		
+		self.seed = r % self.m ;		
+		r = r % max ;		
+		renvoie r ;		
+	
+	fin	
+
+fin
+classe string contient
+	methode constructeur (char ) fait	
+		self.content = list ();		
+		self.taille = 0 ;		
+		si (!type (char )== "char" ) alors 		
+			pour i allant de 0  a (!c_len (char )) fait 			
+				self.content = self.content + !c_en (char , i );				
+				self.taille = self.taille + 1 ;				
+			
+			fin			
+
+		fin		
+		si (!type (char )== "string" ) alors 		
+			pour i allant de 0  a char.taille  fait 			
+				self.content = self.content + !char.en (i );				
+			
+			fin			
+			self.taille = char.taille ;			
+
+		fin		
+	
+	fin	
+	methode en_string () fait	
+		total = "" ;		
+		pour i allant de 0  a self.taille  fait 		
+			total = total + !self.content.en (i );			
+		
+		fin		
+		renvoie total ;		
+	
+	fin	
+	methode plus (char ) fait	
+		si (!type (char )== "char" ) alors 		
+			si (!c_len (char )!= 0 ) alors 			
+				pour i allant de 0  a (!c_len (char )) fait 				
+					self.content = self.content + !c_en (char , i );					
+					self.taille = self.taille + 1 ;					
+				
+				fin				
+
+			fin			
+			renvoie self ;			
+
+		fin		
+		si (!type (char )== "string" ) alors 		
+			pour i allant de 0  a char.taille  fait 			
+				self.content = self.content + !char.en (i );				
+				self.taille = self.taille + 1 ;				
+			
+			fin			
+			renvoie self ;			
+
+		fin		
+		!erreur		("type 'string' ne peut pas supporter l'opération '+' avec le type " + !type (char ))
+		renvoie self ;		
+	
+	fin	
+	methode en (int ) fait	
+		si (!type (int )!= "int" ) alors 		
+			!erreur			("le type 'list' n'accepte d'indexation que avec le type 'int', pas '" + !type (int )+ "'" )
+
+		fin		
+		renvoie !self.content.en (int );		
+	
+	fin	
+	methode pop (int ) fait	
+		c = !self.content.en (int );		
+		self.content = !self.content.pop (int );		
+		self.taille = self.taille - 1 ;		
+		renvoie c ;		
+	
+	fin	
+	methode times (int ) fait	
+		si (!type (int )!= "int" ) alors 		
+			!erreur			("type 'string' ne peut pas supporter l'opération '*' avec le type " + !type (int ))
+
+		fin		
+		si (int < 0 ) alors 		
+			!erreur			("la valeur de 'times' doit être positive" )
+
+		fin		
+		bis = string ("" );		
+		pour i allant de 0  a int  fait 		
+			bis = bis + self ;			
+		
+		fin		
+		libere self.content ;		
+		self.content = bis.content ;		
+		renvoie bis ;		
+	
+	fin	
+	methode index (int ) fait	
+		renvoie !self.en (int );		
+	
+	fin	
+
+fin
+classe float contient
+	methode constructeur (int ) fait	
+		self.content = int ;		
+		self.ten_pow = 0 ;		
+	
+	fin	
+	methode en_string () fait	
+		p = self.content ;		
+		corps = "" ;		
+		si (self.content < 0 ) alors 		
+			p = 0 - self.content ;			
+
+		fin		
+		i = 0 ;		
+		si (!et (self.ten_pow == 0 , self.content == 0 )) alors 		
+			renvoie "0" ;			
+
+		fin		
+		si (self.ten_pow >= 0 ) alors 		
+			tant que (p > 0 ) fait
+ 				corps = !char (p % 10 )+ corps ;				
+				p = p / 10 ;				
+				i = i + 1 ;				
+			fin
+			si (self.ten_pow != 0 ) alors 			
+				corps = corps + "e" + !char (self.ten_pow );				
+
+			fin			
+
+		fin		
+		si (self.ten_pow < 0 ) alors 		
+			tant que (p > 0 ) fait
+ 				corps = !char (p % 10 )+ corps ;				
+				p = p / 10 ;				
+				i = i + 1 ;				
+				si (i == (0 - self.ten_pow )) alors 				
+					corps = "." + corps ;					
+
+				fin				
+			fin
+			si (i < (0 - self.ten_pow )) alors 			
+				tant que (i < (0 - self.ten_pow )) fait
+ 					corps = "0" + corps ;					
+					i = i + 1 ;					
+				fin
+				corps = "0." + corps ;				
+
+			fin			
+
+		fin		
+		si (self.content < 0 ) alors 		
+			corps = "-" + corps ;			
+
+		fin		
+		renvoie corps ;		
+	
+	fin	
+	methode times (num ) fait	
+		si (!type (num )== "float" ) alors 		
+			self.content = self.content * num.content ;			
+			self.ten_pow = self.ten_pow + num.ten_pow ;			
+
+		fin		
+		si (!type (num )== "int" ) alors 		
+			f = float (num );			
+			self = self * f ;			
+			libere f ;			
+
+		fin		
+		renvoie self ;		
+	
+	fin	
+	methode div (num ) fait	
+		si (!type (num )== "float" ) alors 		
+			m = self.content * 100000 ;			
+			self.content = m / num.content ;			
+			self.ten_pow = self.ten_pow - 5 - num.ten_pow ;			
+			!self.arrondis_puissance			()
+			
+
+		fin		
+		si (!type (num )== "int" ) alors 		
+			f = float (num );			
+			self = self / f ;			
+			libere f ;			
+
+		fin		
+		renvoie self ;		
+	
+	fin	
+	methode plus (num ) fait	
+		si (!type (num )== "float" ) alors 		
+			si (!et (self.ten_pow >= 0 , num.ten_pow >= 0 )) alors 			
+				n = self.content * (10 ^ self.ten_pow );				
+				m = num.content * (10 ^ num.ten_pow );				
+				self.ten_pow = 0 ;				
+				self.content = n + m ;				
+				!self.arrondis_puissance				()
+				renvoie self ;				
+
+			fin			
+			p_g = !plus_grand (self.ten_pow , num.ten_pow );			
+			si (p_g == self.ten_pow ) alors 			
+				diff = self.ten_pow - num.ten_pow ;				
+				n = self.content * (10 ^ diff );				
+				m = num.content ;				
+				self.content = n + m ;				
+				self.ten_pow = num.ten_pow ;				
+
+			fin			
+			si (p_g == num.ten_pow ) alors 			
+				diff = num.ten_pow - self.ten_pow ;				
+				n = num.content * (10 ^ diff );				
+				m = self.content ;				
+				self.content = n + m ;				
+
+			fin			
+
+		fin		
+		si (!type (num )== "int" ) alors 		
+			f = float (num );			
+			self = self + f ;			
+			libere f ;			
+
+		fin		
+		renvoie self ;		
+	
+	fin	
+	methode minus (num ) fait	
+		si (!type (num )== "float" ) alors 		
+			si (!et (self.ten_pow >= 0 , num.ten_pow >= 0 )) alors 			
+				n = self.content * (10 ^ self.ten_pow );				
+				m = num.content * (10 ^ num.ten_pow );				
+				self.ten_pow = 0 ;				
+				self.content = n - m ;				
+				!self.arrondis_puissance				()
+				renvoie self ;				
+
+			fin			
+			p_g = !plus_grand (self.ten_pow , num.ten_pow );			
+			si (p_g == self.ten_pow ) alors 			
+				diff = self.ten_pow - num.ten_pow ;				
+				n = self.content * (10 ^ diff );				
+				m = num.content ;				
+				self.content = n - m ;				
+				self.ten_pow = num.ten_pow ;				
+
+			fin			
+			si (p_g == num.ten_pow ) alors 			
+				diff = num.ten_pow - self.ten_pow ;				
+				n = num.content * (10 ^ diff );				
+				m = self.content ;				
+				self.content = n - m ;				
+
+			fin			
+
+		fin		
+		si (!type (num )== "int" ) alors 		
+			f = float (num );			
+			self = self - f ;			
+			libere f ;			
+
+		fin		
+		renvoie self ;		
+	
+	fin	
+	methode mod (num ) fait	
+		si (!type (num )== "float" ) alors 		
+			si self.ten_pow == num.ten_pow  alors 			
+				self.content = self.content % num.content ;				
+
+			fin			
+			si self.ten_pow < num.ten_pow  alors 			
+				diff = num.ten_pow - self.ten_pow ;				
+				n = num.content * (10 ^ diff );				
+				m = self.content ;				
+				self.content = m % n ;				
+
+			fin			
+			si self.ten_pow > num.ten_pow  alors 			
+				diff = self.ten_pow - num.ten_pow ;				
+				m = self.content * (10 ^ diff );				
+				n = num.content ;				
+				self.content = m % n ;				
+
+			fin			
+
+		fin		
+		si (!type (num )== "int" ) alors 		
+			f = float (num );			
+			self = self % f ;			
+			libere f ;			
+
+		fin		
+		renvoie self ;		
+	
+	fin	
+	methode power (num ) fait	
+		si (!type (num )!= "int" ) alors 		
+			!erreur			("type 'float' ne peut pas supporter l'opération '^' avec le type " + !type (num ))
+
+		fin		
+		si (!type (num )== "int" ) alors 		
+			self.content = self.content ^ num ;			
+			self.ten_pow = self.ten_pow * num ;			
+
+		fin		
+		renvoie self ;		
+	
+	fin	
+	methode equals (num ) fait	
+		si (!type (num )== "float" ) alors 		
+			si self.ten_pow == num.ten_pow  alors 			
+				renvoie self.content == num.content ;				
+
+			fin			
+			si self.ten_pow < num.ten_pow  alors 			
+				diff = num.ten_pow - self.ten_pow ;				
+				n = num.content * (10 ^ diff );				
+				m = self.content ;				
+				renvoie n == m ;				
+
+			fin			
+			si self.ten_pow > num.ten_pow  alors 			
+				diff = self.ten_pow - num.ten_pow ;				
+				n = self.content * (10 ^ diff );				
+				m = num.content ;				
+				renvoie n == m ;				
+
+			fin			
+
+		fin		
+		si (!type (num )== "int" ) alors 		
+			f = float (num );			
+			r = self == f ;			
+			libere f ;			
+			
+			
+			
+
+		fin		
+		renvoie 0 ;		
+	
+	fin	
+	methode lt (num ) fait	
+		si (!type (num )== "float" ) alors 		
+			si self.ten_pow == num.ten_pow  alors 			
+				renvoie self.content < num.content ;				
+
+			fin			
+			si self.ten_pow < num.ten_pow  alors 			
+				diff = num.ten_pow - self.ten_pow ;				
+				n = num.content * (10 ^ diff );				
+				m = self.content ;				
+				renvoie n > m ;				
+
+			fin			
+			si self.ten_pow > num.ten_pow  alors 			
+				diff = self.ten_pow - num.ten_pow ;				
+				n = self.content * (10 ^ diff );				
+				m = num.content ;				
+				renvoie n < m ;				
+
+			fin			
+
+		fin		
+		si (!type (num )== "int" ) alors 		
+			f = float (num );			
+			r = self < f ;			
+			libere f ;			
+			renvoie r ;			
+
+		fin		
+		renvoie 0 ;		
+	
+	fin	
+	methode gt (num ) fait	
+		si (!type (num )== "float" ) alors 		
+			si self.ten_pow == num.ten_pow  alors 			
+				renvoie self.content > num.content ;				
+
+			fin			
+			si self.ten_pow < num.ten_pow  alors 			
+				diff = num.ten_pow - self.ten_pow ;				
+				n = num.content * (10 ^ diff );				
+				m = self.content ;				
+				renvoie n < m ;				
+
+			fin			
+			si self.ten_pow > num.ten_pow  alors 			
+				diff = self.ten_pow - num.ten_pow ;				
+				n = self.content * (10 ^ diff );				
+				m = num.content ;				
+				renvoie n > m ;				
+
+			fin			
+
+		fin		
+		si (!type (num )== "int" ) alors 		
+			f = float (num );			
+			r = self > f ;			
+			libere f ;			
+			renvoie r ;			
+
+		fin		
+		renvoie 0 ;		
+	
+	fin	
+	methode le (num ) fait	
+		renvoie !ou (!self.lt (num ), !self.equals (num ));		
+	
+	fin	
+	methode ge (num ) fait	
+		renvoie !ou (!self.gt (num ), !self.equals (num ));		
+	
+	fin	
+	methode ne (num ) fait	
+		renvoie !pas (!self.equals (num ));		
+	
+	fin	
+	methode to_int (num ) fait	
+		renvoie self.content * (10 ^ self.ten_pow );		
+	
+	fin	
+	methode arrondis_puissance () fait	
+		r = self.content ;		
+		p_t = !puissance_de_dix (!arrondis_puissance (r ));		
+		p = !puissance_de_dix (r )- p_t ;		
+		r = r / (10 ^ p );		
+		self.ten_pow = self.ten_pow + p ;		
+		self.content = r ;		
+		renvoie self ;		
+	
+	fin	
+
+fin

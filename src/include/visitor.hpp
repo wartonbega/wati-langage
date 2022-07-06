@@ -10,9 +10,13 @@
 
 extern std::stack<std::string> references;
 
+
+bool function_exist(std::string name, std::map<std::string, w_function *> funcs);
+bool class_exist(std::string name, std::map<std::string, w_class_template *> variables_t);
 std::vector<std::string> cut_error_ref(std::string ref);
 std::string give_file_error(std::string filename, int line, int column, std::string full_ref);
 void error(std::string err, std::string ref);
+void warning(std::string err, std::string ref);
 bool variable_exist(std::string name, std::map<std::string, w_variable*> variables_t);
 void visitor_init_inbuild_functions();
 node *visitor_separate_listed(node *parent);

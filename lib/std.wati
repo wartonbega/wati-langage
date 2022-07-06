@@ -4,3 +4,4 @@ inclue "inout.wati";
 inclue "maths.wati";
 inclue "random.wati";
 inclue "string.wati";
+inclue "float.wati";

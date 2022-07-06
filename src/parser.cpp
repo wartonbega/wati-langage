@@ -1,5 +1,6 @@
 #include <iostream>
 #include "include/parser.hpp"
+#include "include/visitor.hpp"
 
 std::vector<std::string> keywords; // the vector containing all the keywords
 
@@ -199,11 +200,26 @@ node *parser_eat_if(node *trunc)
     node *code = new node("{}");
     int i = 0;
 
+    
+    node *res = new node("ifdec"); // ifdec is the codename
+    res->reference = trunc->reference;
+    res->push_child(condition); // first condition
+    res->push_child(code);      // then code
+    code->reference = trunc->reference; // the reference for the code (we probably don't need it)
+
     // the result :
     // si
     //      condition
     //          *
-    //      code
+    //      {}
+    //          ...
+    //      elseif 
+    //          - 
+    //              condition
+    //                  *
+    //              {}
+    //                  ...
+    //      else
     //          ...
 
     while (trunc->children[i]->value != "alors" and trunc->children[i]->value != "fait")
@@ -212,20 +228,76 @@ node *parser_eat_if(node *trunc)
         condition->reference = trunc->children[i]->reference;
         i++;
     }
+    node *sinonsi_holder = new node("elseif");
+    node *sinonsi = NULL;
+    node *sinonsi_condition;
+    node *sinonsi_code;
 
+    res->push_child(sinonsi_holder);
+
+    node *sinon_holder = new node("else");
+    res->push_child(sinon_holder);
+
+    node *sinon = NULL;
+    node *sinon_code;
+    
+    
     for (int y = i + 1; y < trunc->children.size(); y++)
     { // The code
+        // We search ofr more complex declaration using 'sinonsi' 'sinon'
+        if (trunc->children[y]->value == "sinonsi") 
+        {
+            if (sinon != NULL)
+            {
+                std::string err = "sémantique : ne peux pas avoir de 'sinonsi' après un 'sinon'";
+                error(err, trunc->children[y]->reference);
+            }
+            if (sinonsi != NULL)
+            {
+                sinonsi_holder->push_child(sinonsi);
+            }
+            sinonsi = new node("-");
+            sinonsi_condition = new node("condition");
+            sinonsi_code = new node("{}");
+            sinonsi->push_child(sinonsi_condition);
+            sinonsi->push_child(sinonsi_code);
+            y++;
+            while (trunc->children[y]->value != "alors" and trunc->children[y]->value != "fait")
+            { // the condition before 'alors'
+                sinonsi_condition->push_child(trunc->children[y]);
+                sinonsi_condition->reference = trunc->children[y]->reference;
+                y++;
+            }
+            y ++;
+            code = sinonsi_code;
+        }
+        else if (trunc->children[y]->value == "sinon")
+        {
+            if (sinon != NULL) 
+            {
+                std::string err = "ne peut pas avoir plusieurs 'sinon' dans une seul déclaration 'si'";
+                error(err, trunc->children[y]->reference);
+            }
+            sinon = new node("else");
+            if (sinonsi != NULL) 
+            {
+                sinonsi_holder->push_child(sinonsi);
+            }
+            sinon_code = new node("{}");
+            sinon->push_child(sinon_code);
+            code = sinon_code;
+            y ++;
+        }
         code->push_child(trunc->children[y]);
     }
-    code->reference = trunc->reference;
-
-    // we don't need this
-    free(trunc);
-
-    node *res = new node("ifdec"); // ifdec is the codename
-    res->reference = trunc->reference;
-    res->push_child(condition); // first condition
-    res->push_child(code);      // then code
+    if (sinon != NULL)
+    {
+        sinon_holder->push_child(sinon);
+    }
+    else if (sinonsi != NULL)
+    {
+        sinonsi_holder->push_child(sinonsi);
+    }
     return res;
 }
 
@@ -396,10 +468,10 @@ node *parser(std::vector<std::string> lexemes, std::string first_value, std::vec
             if (i > 1) // We need to know the variable name
             {
                 // the disposition of the variable assignement node :
-                // (node) variable
-                // -> name
-                // -> *
-                //     -> ...
+                // vardef
+                //      name
+                //      *
+                //          ...
                 std::string c_reference = ref[i];
                 node *var_asign = new node("vardef");
                 var_asign->reference = ref[i];
@@ -422,6 +494,8 @@ node *parser(std::vector<std::string> lexemes, std::string first_value, std::vec
         }
         else if (parser_is_keyword(lexemes[i]))
         { // works the same way than a variable definition
+            // keyword
+            //      
             std::string c_reference = ref[i];
             node *keyword_call = new node(lexemes[i]);
             keyword_call->reference = ref[i];

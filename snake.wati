@@ -120,8 +120,7 @@ classe game contient
         si (self.queuex.taille < self.taille) alors
             !self.queuex.plus(self.x)
             !self.queuey.plus(self.y)
-        fin
-        si (self.queuex.taille >= self.taille) alors
+        sinon
             !self.queuex.pop(0)
             !self.queuey.pop(0)
             !self.queuex.plus(self.x)
@@ -138,21 +137,13 @@ classe game contient
 
             si dir == "p" alors
                 continue;
-            fin
-            
-            si dir == self.haut alors
+            sinonsi dir == self.haut alors
                 !self.haut()
-            fin
-            
-            si dir == self.bas alors
+            sinonsi dir == self.bas alors
                 !self.bas()
-            fin
-            
-            si dir == self.gauche alors
+            sinonsi dir == self.gauche alors
                 !self.gauche()
-            fin
-
-            si dir == self.droite alors
+            sinonsi dir == self.droite alors
                 !self.droite()
             fin
 

@@ -58,6 +58,9 @@ classe list contient
     fin
 
     methode en (x) fait
+        si (!type(x) != "int") alors
+            !erreur("le type 'list' n'accepte d'indexation que avec le type 'int', pas '"+!type(x)+"'")
+        fin
         i = 0;
         n = self.head.next;
         tant que i != x fait
@@ -70,15 +73,7 @@ classe list contient
     fin
 
     methode index (x) fait
-        i = 0;
-        n = self.head.next;
-        tant que i != x fait
-            n = n.next;
-            i = i + 1;
-        fin
-        p = n.content;
-
-        renvoie p;
+        renvoie !self.en(x);
     fin
     
     methode pop (x) fait
