@@ -9,6 +9,9 @@ classe random contient
         r = self.a * self.seed + 1;
         self.seed = r % self.m;
         r = r % max;
+        si r < 0 alors
+            r = r * (-1);
+        fin
         renvoie r;
     fin
 fin

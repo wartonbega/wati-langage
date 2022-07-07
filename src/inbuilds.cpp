@@ -339,7 +339,8 @@ w_variable *w_time()
     // return the time
     time_t t = time(NULL); // get the time
     struct tm *tm = localtime(&t); // we get the time
-    int *r = new int(tm->tm_hour * 3600 + tm->tm_min * 60 + tm->tm_sec); // we convert the time to seconds
+    time_t u = tm->tm_gmtoff;
+    int *r = new int(t); // we convert the time to seconds
     w_variable *result = new w_variable(); // we create a new variable
     result->type = 2; // int
     result->content = (void *)r; // we cast the value int to a void pointer

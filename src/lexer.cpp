@@ -133,13 +133,13 @@ std::vector<std::string> lexer(std::string content, std::vector<std::string> &re
             column ++;
             while (content[index] != '"')
             {
-                if (content[index] == '\\' and content[index + 1] == 'n')
+                if (content[index] == '\\')
                 {
                     if (content[index + 1] == 't')
                     {
                         index++;
                         column++;
-                        between += "\t";
+                        between += '\t';
                     }
                     else if (content[index + 1] == 'n')
                     {

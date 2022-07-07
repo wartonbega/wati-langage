@@ -726,6 +726,7 @@ w_variable *visitor_link_operator(w_variable *a, w_variable *b, std::string oper
     { // This is an inbuild function
         return visitor_use_inbuild(a, b, opera);
     }
+    
     variables_t["self"] = a;
     variables_t[func->arguments->children[0]->children[0]->value] = b;
     return visitor_visit(func->trunc, variables_t);

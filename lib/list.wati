@@ -63,6 +63,11 @@ classe list contient
         fin
         i = 0;
         n = self.head.next;
+        
+        si (x >= self.taille) fait
+            !erreur("l'index est plus grand que la taille de la liste")
+        fin
+
         tant que i != x fait
             n = n.next;
             i = i + 1;
@@ -88,7 +93,9 @@ classe list contient
         p.next = next;
         next.prev = p;
         self.taille = self.taille - 1;
+        u = n.content;
         libere n;
+        renvoie u;
     fin
 
 
@@ -113,5 +120,12 @@ classe list contient
             libere p;
         fin
         libere self.head;
+    fin
+
+    methode ne (x) fait
+        si !type(x) != "list" alors
+            renvoie 0;
+
+        fin
     fin
 fin
