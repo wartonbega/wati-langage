@@ -1,3 +1,4 @@
+inclue "fonctions.wati";
 inclue "list.wati";
 inclue "dictionnaire.wati";
 inclue "inout.wati";

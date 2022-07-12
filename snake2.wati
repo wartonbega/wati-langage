@@ -160,7 +160,6 @@ classe game contient
         fin
         !println("Perdu !")
     fin
-
 fin
 
 g = game();

@@ -1,25 +1,5 @@
 inclue "./lib/std.wati";
 
-
-classe date contient
-
-    methode constructeur () fait
-        self.date = !temps();    
-    fin
-
-    methode en_string () fait
-        renvoie !char(!self.heures()) + "h " + !char(!self.minutes()) + "m " + !char(!self.secondes()) + "s";
-    fin
-
-    methode secondes () fait
-        renvoie self.date % 60;
-    fin
-
-    methode minutes () fait
-        renvoie self.date / 60  % 60;
-    fin
-
-    methode heures () fait
-        renvoie self.date / 60 / 60  % 24 + 2;
-    fin
-fin
+l = (1, 2, (3, 4));
+a = l [2] [0];
+!println(a)

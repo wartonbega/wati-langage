@@ -187,6 +187,10 @@ std::string convert_to_string(w_variable *content, std::map<std::string, w_varia
     {
         return content->convert_to_char();
     }
+    else if (type == "fonction")
+    {
+        return "<fonction "+ *(std::string *)(content->content) +">";
+    }
     else if (type == "int")
     {
         return std::to_string(content->convert_to_int());
@@ -280,9 +284,16 @@ w_variable *w_char(w_variable *content, std::map<std::string, w_variable *> vari
     {
         return content;
     }
+    else if (type == "fonction")
+    {
+        std::string *s = new std::string("<fonction "+ *(std::string *)(content->content) +">");
+        w_variable *r = new w_variable();
+        r->type = 1;
+        r->content = (void *)s;
+        return r;
+    }
     else if (type == "int")
     {
-
         std::string *s = new std::string(std::to_string(content->convert_to_int()));
         w_variable *r = new w_variable();
         r->type = 1;

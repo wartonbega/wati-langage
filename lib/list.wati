@@ -48,12 +48,15 @@ classe list contient
     methode en_string() fait
         r = "[ ";
         n = self.head.next;
-        tant que n.next.content != self.tail.content fait
+
+        tant que (n.next.content != self.tail.content) fait
             r = r + !char(n.content) + ", ";
             n = n.next;
         fin
+        
         r = r + !char(n.content);
         r = r + " ]";
+        
         renvoie r;
     fin
 
@@ -73,7 +76,7 @@ classe list contient
             i = i + 1;
         fin
         p = n.content;
-
+        libere n;
         renvoie p;
     fin
 
@@ -124,8 +127,13 @@ classe list contient
 
     methode ne (x) fait
         si !type(x) != "list" alors
-            renvoie 0;
+            renvoie 1;
+        fin
+    fin
 
+    methode eq (x) fait
+        si !type(x) != "list" alors
+            renvoie 0;
         fin
     fin
 fin

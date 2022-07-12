@@ -16,6 +16,18 @@ std::stack<std::string> references;
 
 std::vector<std::string> included;
 
+bool parentethis_is_listed(node *trunc)
+{
+    for (auto i : trunc->children)
+    {
+        if (i->value == ",")
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 std::vector<std::string> cut_error_ref(std::string ref)
 { //"filename:line:column" => ["filename", "line", "column"]
     int i = 0;
@@ -436,14 +448,37 @@ w_variable *visitor_function_inbuild(std::string name, node *args, std::map<std:
     return nullptr;
 }
 
+std::string remove_function_call_prefix(std::string name)
+{
+    std::string r = "";
+    for (int i = 1; i < name.size(); i ++)
+    {
+        r += name[i];
+    }
+    return r;
+}
+
 w_variable *visitor_funcall(std::string name, node *args, std::map<std::string, w_variable *> variables_t)
 {
-    if (!function_exist(name, functions))
+    w_function *func;
+    std::string var_name = remove_function_call_prefix(name);
+    if (variable_exist(var_name, variables_t))
     {
-        std::string err = "la fonction " + name + " n'existe pas";
-        error(err, references.top());
+        w_variable *func_var = variables_t[var_name];
+        if (func_var->get_type() != "fonction")
+        {
+            std::string err = "le type '" + func_var->get_type() + "' ne peut pas être appelé";
+            error(err, references.top());
+        }
+
+        name = *(std::string *)(func_var->content);
+        if (!function_exist(name, functions))
+        {
+            std::string err = "la fonction " + name + " n'existe pas";
+            error(err, references.top());
+        }
     }
-    w_function *func = functions[name];
+    func = functions[name];
     args = visitor_separate_listed(args);
     if (visitor_is_inbuild(name))
     {
@@ -580,11 +615,22 @@ w_variable *visitor_use_inbuild(w_variable *a, w_variable *b, std::string opera)
     // We check if both value have the same type
     if (a->get_type() != b->get_type())
     {
-        w_variable *r = new w_variable();
-        int *p = new int(0);
-        r->type = 2; // int
-        r->content = (void *)p;
-        return r;
+        if (opera == "!=")
+        {
+            w_variable *r = new w_variable();
+            int *p = new int(1);
+            r->type = 2; // int
+            r->content = (void *)p;
+            return r;   
+        }
+        else
+        {
+            w_variable *r = new w_variable();
+            int *p = new int(0);
+            r->type = 2; // int
+            r->content = (void *)p;
+            return r;
+        }
     }
     if (a->get_type() == "int")
     {
@@ -765,6 +811,14 @@ w_variable *visitor_new_object(std::string name, node *args, std::map<std::strin
     return var;
 }
 
+w_variable *generate_function_variable(std::string name)
+{
+    w_variable *r = new w_variable();
+    r->type = 0; // this is a function
+    r->content = (void *)(new std::string(name)); // the content is just the name of the variable
+    return r;
+}
+
 w_variable *visitor_compute(node *c, std::map<std::string, w_variable *> variables_t)
 {
     w_variable *last_value = new w_variable();
@@ -844,11 +898,31 @@ w_variable *visitor_compute(node *c, std::map<std::string, w_variable *> variabl
                         patent += expr[y];
                 }
 
-                if (!patent.empty())
+                if (i + 1 >= c->children.size())
                 {
                     std::string name = last_var->get_type();
+                    std::string f_name = "!" + name + "." + patent;
+                    last_value = generate_function_variable(f_name);
+                    // we generate a function variable
+                }
+                else if (!patent.empty())
+                {
+
+                    std::string name = last_var->get_type();
+                    std::string f_name = "!" + name + "." + patent;
+                    if (!function_exist(f_name, functions))
+                    {
+                        if (last_o->attribute_exist(patent))
+                        {
+                            w_variable *f_var = last_o->get_attribute(patent);
+                            if (f_var->get_type() == "fonction")
+                            {
+                                f_name = *(std::string *)(f_var->content);
+                            }
+                        }
+                    }
                     std::map<std::string, w_variable *> variables_t_bis = std::map<std::string, w_variable *>(variables_t);
-                    last_value = visitor_funcall_methode("!" + name + "." + patent, c->children[i + 1], variables_t_bis, last_var);
+                    last_value = visitor_funcall_methode(f_name, c->children[i + 1], variables_t_bis, last_var);
                     i++; // we increment by one because they are parenthesis
                 }
             }
@@ -927,31 +1001,58 @@ w_variable *visitor_compute(node *c, std::map<std::string, w_variable *> variabl
         }
         else if (expr[0] == '!')
         { // call a function
-            if (c->children[i + 1]->value != "()")
+            if (i + 1 >= c->children.size() || c->children[i + 1]->value != "()") // does not call
             {
-                std::string err = "l'appel d'une fonction doit etre suivie de ses arguments";
-                error(err, c->children[i]->reference);
+                last_value = generate_function_variable(c->children[i]->value);
+                // std::string err = "l'appel d'une fonction doit etre suivie de ses arguments";
+                // error(err, c->children[i]->reference);
             }
-            last_value = visitor_funcall(expr, c->children[i + 1], variables_t);
-            i++; // we need to increment by one, because of the parenthesis
+            else
+            {
+                last_value = visitor_funcall(expr, c->children[i + 1], variables_t);
+                i++; // we need to increment by one, because of the parenthesis
+            }
         }
         else if (variable_exist(expr, variables_t)) // variable_exist(expr, variables_t))
         {
             // we just take the value inside the variables table
             last_value = variables_t[expr];
         }
-        else if (i + 1 < c->children.size()) // create a new object
+        else if (i + 1 < c->children.size() && c->children[i + 1]->value == "()") // create a new object
         {                                    // just avoid segfaults ...
-            if (c->children[i + 1]->value == "()")
-            { // call a new object
-                last_value = visitor_new_object(expr, c->children[i + 1], variables_t);
-                i++;
-            }
+            // call a new object
+            last_value = visitor_new_object(expr, c->children[i + 1], variables_t);
+            i++;
         }
         else if (expr == "()")
         {
-            node *parenthis = c->children[i];
-            last_value = visitor_compute(parenthis, variables_t);
+            if (parentethis_is_listed(c->children[i]))
+            { // then we try to create a new list classe
+                if (!class_exist("list", classes))
+                {
+                    std::string err = "la classe 'list' n'existe pas, on ne peux donc pas initialiser de nouvelles listes à partir de parenthèses.\nPeut être avez-vous oublié d'inclue la librairie standard (std.wati)";
+                    error(err, c->children[i]->reference);
+                }
+
+                w_variable *r = visitor_new_object("list", new node("()"), variables_t);
+                std::map<std::string, w_variable*> variables_t_bis = std::map<std::string, w_variable*>(variables_t);
+                variables_t_bis["self"] = r;
+                
+                std::string funcname = "!list.plus"; // the function to add elements to a list
+
+                node *elements = visitor_separate_listed(c->children[i]); // it will be used as arguments
+                
+                for (auto parts : elements->children)
+                {   
+                    visitor_funcall(funcname, parts, variables_t_bis); 
+                }
+                last_value = r; // we finally push the list
+            }
+            else
+            { // just compute what is in the parentethis
+                node *parenthis = c->children[i];
+                last_value = visitor_compute(parenthis, variables_t);
+            }
         }
         else if (expr == "[]")
         {

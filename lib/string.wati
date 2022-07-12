@@ -13,7 +13,7 @@ classe string contient
         si (!type(char) == "string") alors
             pour i allant de 0 a char.taille alors
                 self.content = self.content + !char.en(i);
-            fin 
+            fin
             self.taille = char.taille;
         fin
     fin

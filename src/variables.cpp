@@ -7,6 +7,8 @@ std::string w_variable::get_type()
 {
     switch (this->type)
     {
+    case 0:
+        return "fonction";
     case 1:
         return "char";
     case 2:
@@ -25,7 +27,7 @@ std::string w_variable::get_type()
 
 bool w_variable::is_object()
 {
-    if (this->get_type() != "char" and this->get_type() != "int" and this->get_type() != "none")
+    if (this->get_type() != "char" and this->get_type() != "int" and this->get_type() != "none" and this->get_type() != "fonction")
     {
         return true;
     }
