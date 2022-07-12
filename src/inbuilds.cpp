@@ -1,4 +1,4 @@
-#include <curses.h>
+
 #include <iostream>
 #include <stdio.h>
 #include "include/inbuilds.hpp"
