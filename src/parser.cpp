@@ -10,6 +10,7 @@ void paser_init_keywords()
     keywords.push_back("libere");
     keywords.push_back("casse");
     keywords.push_back("inclue");
+    keywords.push_back("tache"); // launch a thread
 }
 
 bool parser_is_keyword(std::string expr)
@@ -250,7 +251,7 @@ node *parser_eat_if(node *trunc)
             if (sinon != NULL)
             {
                 std::string err = "sémantique : ne peux pas avoir de 'sinonsi' après un 'sinon'";
-                error(err, trunc->children[y]->reference);
+                error(err, trunc->children[y]->reference, 0);
             }
             if (sinonsi != NULL)
             {
@@ -276,7 +277,7 @@ node *parser_eat_if(node *trunc)
             if (sinon != NULL) 
             {
                 std::string err = "ne peut pas avoir plusieurs 'sinon' dans une seul déclaration 'si'";
-                error(err, trunc->children[y]->reference);
+                error(err, trunc->children[y]->reference, 0);
             }
             sinon = new node("else");
             if (sinonsi != NULL) 

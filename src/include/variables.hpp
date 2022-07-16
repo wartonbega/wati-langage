@@ -42,7 +42,11 @@ struct w_object
     ~w_object()
     {
         this->methods.clear();
-        this->attributes.clear();
+        for (auto i : this->attributes)
+        {
+            this->attributes[std::get<0>(i)]->content = NULL;
+        }
+        //this->attributes.clear();
         this->name.clear();
     }
 

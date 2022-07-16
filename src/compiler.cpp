@@ -117,7 +117,7 @@ node *dead_code_remover_func(node *ast)
         else if (instruction->value == "casse")
         {
             std::string err = "ne peux pas supporter le mot-clé 'casse' en dehors d'une boucle";
-            error(err, instruction->reference);
+            error(err, instruction->reference, 0);
         }
     }
     return n_ast;
@@ -327,14 +327,14 @@ void includer(node *&ast)
             if (trunc->children.size() < 1)
             {
                 std::string err = "le mot-clé 'inclue' doit avoir au moins un argument";
-                error(err, trunc->reference);
+                error(err, trunc->reference, 0);
             }
             node *arg = trunc->children[0];
-            w_variable *result = visitor_compute(arg, std::map<std::string, w_variable *>());
+            w_variable *result = visitor_compute(arg, std::map<std::string, w_variable *>(), 0);
             if (result->get_type() != "char")
             {
                 std::string err = "le nom de fichier doit être de type 'char'";
-                error(err, trunc->reference);
+                error(err, trunc->reference, 0);
             }
 
             std::string filename = result->convert_to_char();

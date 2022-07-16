@@ -188,7 +188,7 @@ int main(int argc, char *argv[])
 	{
 		std::map<std::string, w_variable *> variables_t;
 		init_vars(variables_t);
-		visitor_visit(ast, variables_t);
+		visitor_visit(ast, variables_t, 0);
 	}
 	return 0;
 }

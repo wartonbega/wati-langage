@@ -1,9 +1,22 @@
 inclue "./lib/std.wati";
 
+
+fonction dors (value) fait
+    time0 = !temps();
+    dernier_temp = 0;
+    tant que (!temps() - time0 < value) fait
+        f = !temps() - time0;
+        si (f != dernier_temp) alors
+            dernier_temp = f;
+        fin
+    fin
+fin
+
 classe game contient
     methode constructeur () fait
         self.map = list();
 
+        self.direction = "d";
 
         pour y allant de 0 a 10 fait
             p = list();
@@ -33,8 +46,10 @@ classe game contient
         self.head = terminal_bold + terminal_red + "o" + terminal_reset;
         self.blank = ".";
         self.queue = "#";
-        self.pomme = "@";
+        self.pomme = terminal_bold + terminal_green + "@" + terminal_reset;
         !self.ecrit(0, 0, self.pomme)
+
+        self.run = "run";
     fin
 
     methode print () fait
@@ -59,7 +74,11 @@ classe game contient
         si self.taille == self.queueX.taille alors
             px = !self.queueX.pop(self.queueX.taille - 1);
             py = !self.queueY.pop(self.queueY.taille - 1);
-            !self.ecrit(px, py, self.blank)
+            si !et(px == self.pommeX, py == self.pommeY) fait
+                !self.ecrit(px, py, self.pomme)
+            sinon
+                !self.ecrit(px, py, self.blank)
+            fin
         fin
     fin
 
@@ -119,43 +138,51 @@ classe game contient
     fin
 
     methode intro () fait
+        !system("clear")
         !println("Commandes :")
         !println("z : haut")
         !println("s : bas")
         !println("d : droite")
         !println("q : gauche")
+        !println("[espace] : pause")
+        !println("\tn'importe que touche pour redémmarer")
         !input("")
         !system("clear")
     fin
 
+    methode lors_entree () fait
+        tant que self.run == "run" fait
+            a = !input_caché("", "");
+            self.direction = a;
+        fin
+    fin
+
     methode boucle () fait
         !system("stty -icanon")
-        run = "run";
-        tant que run == "run" fait
+        tant que self.run == "run" fait
             !self.print()
-            !print("Score : ", self.taille)
-            action = !input_caché("", "");
-            
+            !dors(1)
 
-            si action == "z" alors
+            si self.direction == "z" alors
                 !self.haut()
-            fin
-            si action == "s" alors
+            sinonsi self.direction == "s" alors
                 !self.bas()
-            fin
-            si action == "q" alors
+            sinonsi self.direction == "q" alors
                 !self.gauche()
-            fin
-            si action == "d" alors
+            sinonsi self.direction == " " alors
+                !println("EN PAUSE")
+                tant que self.direction == " " fait
+
+                fin
+            sinon 
                 !self.droite()
             fin
             
             r = !self.check_collision();
             
             si r == "collision" alors
-                run = "";
+                self.run = "";
             fin
-
             !system("clear")
         fin
         !println("Perdu !")
@@ -164,4 +191,6 @@ fin
 
 g = game();
 !g.intro()
+self = g;
+tache !g.lors_entree;
 !g.boucle()

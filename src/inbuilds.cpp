@@ -201,7 +201,7 @@ std::string convert_to_string(w_variable *content, std::map<std::string, w_varia
         std::string name = "!" + r->name + ".en_string";
         variables_t["self"] = content;
         node *args = new node("*");
-        return convert_to_string(visitor_funcall(name, args, variables_t), variables_t);
+        return convert_to_string(visitor_funcall(name, args, variables_t, 0), variables_t);
     }
 }
 
@@ -306,7 +306,7 @@ w_variable *w_char(w_variable *content, std::map<std::string, w_variable *> vari
         std::string name = "!" + r->name + ".en_string";
         variables_t["self"] = content;
         node *args = new node("*");
-        return w_char(visitor_funcall(name, args, variables_t), variables_t);
+        return w_char(visitor_funcall(name, args, variables_t, 0), variables_t);
     }
 }
 
@@ -322,7 +322,7 @@ w_variable *c_len(w_variable *content)
 void w_error(w_variable *content, std::map<std::string, w_variable *> variables_t)
 {
     std::string r = convert_to_string(content, variables_t);
-    error(r, references.top());
+    error(r, references->top(), 0);
 }
 
 void w_exit(w_variable *content) 

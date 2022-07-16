@@ -24,6 +24,17 @@ std::string w_variable::get_type()
     return "none";
 }
 
+w_variable::~w_variable()
+{
+    if (this->is_object())
+    {
+        delete (w_object *)this->content;
+    }
+    else if (this->get_type() == "char" || this->get_type() == "fonction")
+    {
+        delete (std::string *)this->content;
+    }
+}
 
 bool w_variable::is_object()
 {
@@ -72,12 +83,6 @@ bool w_object::methods_exist(std::string name)
 void w_object::attribute_attribution(std::string name, w_variable * value)
 {
     this->attributes[name] = value;    
-}
-
-w_variable::~w_variable()
-{
-    if (this->is_object())
-        delete ((w_object *)this->content);
 }
 
 

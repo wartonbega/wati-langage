@@ -18,6 +18,10 @@ classe string contient
         fin
     fin
 
+    methode destructeur () fait
+        libere self.content;
+    fin
+
     methode en_string () fait
         total = "";
         pour i allant de 0 a self.taille fait
