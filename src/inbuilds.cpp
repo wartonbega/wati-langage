@@ -180,7 +180,7 @@ w_variable *int_ne(int a, int b)
     return r;
 }
 
-std::string convert_to_string(w_variable *content, std::map<std::string, w_variable *> variables_t)
+std::string convert_to_string(w_variable *content, std::map<std::string, w_variable *> variables_t, int thread_id)
 {
     std::string type = content->get_type();
     if (type == "char")
@@ -201,14 +201,14 @@ std::string convert_to_string(w_variable *content, std::map<std::string, w_varia
         std::string name = "!" + r->name + ".en_string";
         variables_t["self"] = content;
         node *args = new node("*");
-        return convert_to_string(visitor_funcall(name, args, variables_t, 0), variables_t);
+        return convert_to_string(visitor_funcall(name, args, variables_t, thread_id), variables_t, thread_id);
     }
 }
 
 void print(w_variable *content, std::map<std::string, w_variable *> variables_t)
 { // !print (content)
     // ==> 0
-    std::string r = convert_to_string(content, variables_t);
+    std::string r = convert_to_string(content, variables_t, 0);
     int i = 0;
     while (i < r.size())
     {
@@ -277,7 +277,7 @@ w_variable *w_system(w_variable *content, std::map<std::string, w_variable *> va
     return result;
 }
 
-w_variable *w_char(w_variable *content, std::map<std::string, w_variable *> variables_t)
+w_variable *w_char(w_variable *content, std::map<std::string, w_variable *> variables_t, int thread_id)
 {
     std::string type = content->get_type();
     if (type == "char")
@@ -306,7 +306,7 @@ w_variable *w_char(w_variable *content, std::map<std::string, w_variable *> vari
         std::string name = "!" + r->name + ".en_string";
         variables_t["self"] = content;
         node *args = new node("*");
-        return w_char(visitor_funcall(name, args, variables_t, 0), variables_t);
+        return w_char(visitor_funcall(name, args, variables_t, thread_id), variables_t, thread_id);
     }
 }
 
@@ -319,10 +319,10 @@ w_variable *c_len(w_variable *content)
     return r;
 }
 
-void w_error(w_variable *content, std::map<std::string, w_variable *> variables_t)
+void w_error(w_variable *content, std::map<std::string, w_variable *> variables_t, int thread_id)
 {
-    std::string r = convert_to_string(content, variables_t);
-    error(r, references->top(), 0);
+    std::string r = convert_to_string(content, variables_t, thread_id);
+    error(r, references->top(), thread_id);
 }
 
 void w_exit(w_variable *content) 
@@ -333,7 +333,7 @@ void w_exit(w_variable *content)
 
 w_variable *w_en(std::vector<w_variable *>content, std::map<std::string, w_variable *> variables_t)
 {
-    std::string p = convert_to_string(content[0], variables_t);
+    std::string p = convert_to_string(content[0], variables_t, 0);
     int i = content[1]->convert_to_int();
 
     std::string u;

@@ -11,14 +11,16 @@ pour i allant de 0 a 100 fait
 fin
 
 fonction f(x) fait
-    renvoie x ^ 2 +  10;
+    renvoie x ^ 2 + 10;
 fin
 
 decal = 20;
 
 pour i allant de (0 - decal) a 70 fait
     y = !f(i);
-    si (y < lists.taille) alors
+
+    si (!et(0 < y, y < 99)) alors
+        !println(y)
         l = !lists.en(y);
         !l.modifie(i + decal, "#")
     fin

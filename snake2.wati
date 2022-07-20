@@ -18,18 +18,6 @@ classe game contient
 
         self.direction = "d";
 
-        pour y allant de 0 a 10 fait
-            p = list();
-            pour x allant de 0 a 10 fait 
-                si !et(y == 5, x == 6) alors
-                    !p.plus("#")
-                sinon
-                    !p.plus(".")
-                fin
-            fin
-            !self.map.plus(p)
-        fin 
-
         self.x = 6;
         self.y = 5;
 
@@ -44,22 +32,37 @@ classe game contient
         self.r = random();
 
         self.head = terminal_bold + terminal_red + "o" + terminal_reset;
-        self.blank = ".";
+        self.blank = " ";
         self.queue = "#";
         self.pomme = terminal_bold + terminal_green + "@" + terminal_reset;
-        !self.ecrit(0, 0, self.pomme)
 
         self.run = "run";
+        pour y allant de 0 a 10 fait
+            p = list();
+            pour x allant de 0 a 10 fait 
+                si !et(y == 5, x == 6) alors
+                    !p.plus(self.head)
+                sinon
+                    !p.plus(self.blank)
+                fin
+            fin
+            !self.map.plus(p)
+        fin
+
+        !self.ecrit(0, 0, self.pomme)
     fin
 
     methode print () fait
+        !println("========================")
         pour y allant de 0 a 10 fait
             p = self.map[y];
+            !print("||")
             pour x allant de 0 a 10 fait 
                 !print(p[x], " ")
             fin
-            !print("\n")
+            !print("||\n")
         fin
+        !println("========================")
     fin
 
     methode ecrit (x, y, char) fait
@@ -153,6 +156,15 @@ classe game contient
     methode lors_entree () fait
         tant que self.run == "run" fait
             a = !input_caché("", "");
+            si a == "A" alors
+                a = "z";
+            sinonsi a == "C" alors
+                a = "d";
+            sinonsi a == "D" alors
+                a = "q";
+            sinonsi a == "B" alors
+                a = "s";
+            fin
             self.direction = a;
         fin
     fin
@@ -160,6 +172,7 @@ classe game contient
     methode boucle () fait
         !system("stty -icanon")
         tant que self.run == "run" fait
+            !system("clear")
             !self.print()
             !dors(1)
 
@@ -174,7 +187,7 @@ classe game contient
                 tant que self.direction == " " fait
 
                 fin
-            sinon 
+            sinon
                 !self.droite()
             fin
             
@@ -183,7 +196,6 @@ classe game contient
             si r == "collision" alors
                 self.run = "";
             fin
-            !system("clear")
         fin
         !println("Perdu !")
     fin

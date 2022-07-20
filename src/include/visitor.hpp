@@ -16,6 +16,8 @@ extern std::stack<std::string> *references_thread_2;
 extern std::stack<std::string> *references_thread_3;
 extern std::stack<std::string> *references_thread_4;
 
+extern int thread_utilized;
+
 std::stack<std::string> *what_reference(int thread_id);
 bool function_exist(std::string name, std::map<std::string, w_function *> funcs);
 bool class_exist(std::string name, std::map<std::string, w_class_template *> variables_t);
@@ -39,7 +41,7 @@ w_variable *visitor_compute(node *c, std::map<std::string, w_variable *> variabl
 w_variable *visitor_keyword_return(node *trunc, std::map<std::string, w_variable *> variables_t, int thread_id);
 void visitor_keyword_free(node *trunc, std::map<std::string, w_variable *> &variables_t, int thread_id);
 void visitor_keyword_tache(node *trunc, std::map<std::string, w_variable *> variables_t, int thread_id);
-void visitor_keyword_include(node *trunc, std::map<std::string, w_variable *> variables_t, int thread_id);
+void visitor_keyword_include(node *trunc, std::map<std::string, w_variable *> &variables_t, int thread_id);
 void visitor_funcdef(node *trunc);
 void visitor_vardef(node *trunc, std::map<std::string, w_variable *> &variables_t, int thread_id);
 void visitor_classdef(node *trunc);

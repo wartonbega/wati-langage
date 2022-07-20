@@ -62,11 +62,11 @@ classe list contient
 
     methode en (x) fait
         si (!type(x) != "int") alors
-            !erreur("le type 'list' n'accepte d'indexation que avec le type 'int', pas '"+!type(x)+"'")
+            !erreur("list : le type 'list' n'accepte d'indexation que avec le type 'int', pas '"+!type(x)+"'")
         fin
         
         si (x >= self.taille) fait
-            !erreur("l'index est plus grand que la taille de la liste");
+            !erreur("list : l'index est plus grand que la taille de la liste");
         fin
 
         i = 0;
@@ -84,6 +84,14 @@ classe list contient
     
     methode pop (x) fait
         i = 0;
+        si (self.taille <= 0) alors
+            !erreur("list : ne peut pas pop depuis une liste vide")
+        fin
+
+        si (x >= self.taille) alors
+            !erreur("list : l'index est plus grand que la taille de la liste")
+        fin
+
         n = self.head.next;
         tant que i != x fait
             n = n.next;

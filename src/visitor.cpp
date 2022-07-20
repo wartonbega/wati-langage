@@ -10,7 +10,11 @@
 
 std::map<std::string, w_function *> functions;
 std::map<std::string, w_class_template *> classes;
+
 bool is_initialized_inbuild = false;
+
+int thread_utilized = 1;
+
 std::stack<std::string> *references = new std::stack<std::string>();
 std::stack<std::string> *references_thread_1 = new std::stack<std::string>();
 std::stack<std::string> *references_thread_2 = new std::stack<std::string>();
@@ -192,7 +196,7 @@ void error(std::string err, std::string ref, int thread_id)
         std::string s_fln = cut_error_ref(s_ref)[0];
         int s_lne;
         int s_col;
-        try // To avoid 'libc++abi: terminating with uncaught exception of type std::invalid_argument: stoi: no conversion'
+        try // To avoid error : 'libc++abi: terminating with uncaught exception of type std::invalid_argument: stoi: no conversion'
         {
             s_lne = stoi(cut_error_ref(s_ref)[1]);
             s_col = stoi(cut_error_ref(s_ref)[2]);
@@ -412,7 +416,7 @@ w_variable *visitor_function_inbuild(std::string name, node *args, std::map<std:
             error(err, (what_reference(thread_id))->top(), thread_id);
         }
         w_variable *arg = visitor_compute(args->children[0], variables_t, thread_id);
-        return w_char(arg, variables_t);
+        return w_char(arg, variables_t, thread_id);
     }
     if (name == "!c_en")
     {
@@ -462,7 +466,7 @@ w_variable *visitor_function_inbuild(std::string name, node *args, std::map<std:
             error(err, (what_reference(thread_id))->top(), thread_id);
         }
         w_variable *arg = visitor_compute(args->children[0], variables_t, thread_id);
-        w_error(arg, variables_t);
+        w_error(arg, variables_t, thread_id);
     }
     if (name == "!sortie")
     {
@@ -900,17 +904,25 @@ w_variable *visitor_compute(node *c, std::map<std::string, w_variable *> variabl
                     first_var_n += expr[index];
                     index++;
                 }
+                w_variable *first_var;
 
-                if (!variable_exist(first_var_n, variables_t))
+                if (first_var_n == "")
                 {
-                    std::string err = "la variable '" + first_var_n + "' n'existe pas";
-                    error(err, c->children[i]->reference, thread_id);
+                    first_var = last_value;
                 }
-                w_variable *first_var = variables_t[first_var_n];
+                else
+                {
+                    if (!variable_exist(first_var_n, variables_t))
+                    {
+                        std::string err = "la variable '" + first_var_n + "' n'existe pas";
+                        error(err, c->children[i]->reference, thread_id);
+                    }
+                    first_var = variables_t[first_var_n];
+                }
 
                 if (!first_var->is_object())
                 {
-                    std::string err = "la variable '" + first_var_n + "' doit être un objet";
+                    std::string err = "la variable '" + first_var_n + "' (" + *(std::string *)(w_char(first_var, variables_t, thread_id)->content) + ") doit être un objet";
                     error(err, c->children[i]->reference, thread_id);
                 }
 
@@ -996,18 +1008,26 @@ w_variable *visitor_compute(node *c, std::map<std::string, w_variable *> variabl
                     first_var_n += expr[index];
                     index++;
                 }
-                if (!variable_exist(first_var_n, variables_t))
+                w_variable *first_var;
+                if (first_var_n == "")
                 {
-                    std::string err = "la variable '" + first_var_n + "' n'existe pas";
-                    error(err, c->children[i]->reference, thread_id);
+                    first_var = last_value;
                 }
-                w_variable *first_var = variables_t[first_var_n];
+                else
+                {
+                    if (!variable_exist(first_var_n, variables_t))
+                    {
+                        std::string err = "la variable '" + first_var_n + "' n'existe pas";
+                        error(err, c->children[i]->reference, thread_id);
+                    }
+                    first_var = variables_t[first_var_n];
+                }   
                 if (!first_var->is_object())
                 {
-                    std::string err = "la variable '" + first_var_n + "' doit être un objet";
+                    std::string err = "la variable '" + first_var_n + "' (" + *(std::string *)(w_char(first_var, variables_t, thread_id)->content) + ") doit être un objet";
                     error(err, c->children[i]->reference, thread_id);
                 }
-                
+
                 w_object *last_o;
                 if (first_var->content != NULL)
                     last_o = (w_object *)first_var->content;
@@ -1037,7 +1057,7 @@ w_variable *visitor_compute(node *c, std::map<std::string, w_variable *> variabl
                             }
                             if (last_var->content != NULL)
                                 last_o = (w_object *)last_var->content;
-                            else 
+                            else
                             {
                                 std::string err = "tentative d'accès à une partie de la mémoire interdite";
                                 error(err, c->children[i]->reference, thread_id);
@@ -1198,7 +1218,7 @@ void visitor_keyword_free(node *trunc, std::map<std::string, w_variable *> &vari
         w_object *t;
         if (result->content != NULL)
             t = (w_object *)result->content;
-        else 
+        else
         {
             std::string err = "tentative d'accès à une partie de la mémoire interdite";
             error(err, trunc->reference, thread_id);
@@ -1210,7 +1230,7 @@ void visitor_keyword_free(node *trunc, std::map<std::string, w_variable *> &vari
     }
 
     std::map<std::string, w_variable *>::iterator it;
-    for (it=variables_t.begin(); it!=variables_t.end(); ++it)
+    for (it = variables_t.begin(); it != variables_t.end(); ++it)
     {
         if (it->second == result)
         {
@@ -1252,7 +1272,7 @@ void visitor_keyword_tache(node *trunc, std::map<std::string, w_variable *> vari
         node *arg = new node("*");
         arg->push_child(new node("0"));
         w_variable *potential_function = visitor_funcall_methode("!list.en", arg, variables_t, result, thread_id);
-        
+
         w_object *o;
         if (result->content != NULL)
             o = (w_object *)(result->content);
@@ -1261,7 +1281,7 @@ void visitor_keyword_tache(node *trunc, std::map<std::string, w_variable *> vari
             std::string err = "tentative d'accès à une partie de la mémoire interdite";
             error(err, trunc->reference, thread_id);
         }
-        
+
         w_variable *len_var = o->get_attribute("taille");
         std::vector<w_variable *> arguments;
         int len = *(int *)len_var->content;
@@ -1306,7 +1326,7 @@ bool visitor_is_included(std::string libname)
     return false;
 }
 
-void visitor_keyword_include(node *trunc, std::map<std::string, w_variable *> variables_t, int thread_id)
+void visitor_keyword_include(node *trunc, std::map<std::string, w_variable *> &variables_t, int thread_id)
 {
     (what_reference(thread_id))->push(trunc->reference);
     if (trunc->children.size() < 1)
@@ -1341,7 +1361,7 @@ void visitor_keyword_include(node *trunc, std::map<std::string, w_variable *> va
         std::vector<std::string> lexemes = lexer(r, ref, filename2);
 
         node *ast = parser(lexemes, filename2, ref, filename2 + "1:1");
-        visitor_visit(ast, variables_t, thread_id);
+        visitor_visit_incode(ast, variables_t, thread_id);
     }
     base_dir = dir;
 
@@ -1439,13 +1459,7 @@ void visitor_vardef(node *trunc, std::map<std::string, w_variable *> &variables_
                 std::string err = "la variable " + patent + " doit être un objet";
                 error(err, trunc->children[0]->reference, thread_id);
             }
-            if (last_var->content != NULL)
-                last_o = (w_object *)last_var->content;
-            else
-            {
-                std::string err = "tentative d'accès à une partie de la mémoire interdite";
-                error(err, trunc->children[0]->reference, thread_id);
-            }
+            last_o = (w_object *)last_var->content;
             last_o->attribute_attribution(patent, result);
         }
     }
@@ -1742,6 +1756,10 @@ std::tuple<std::string, w_variable *> visitor_visit_incode(node *trunc, std::map
         {
             return std::tuple<std::string, w_variable *>{"continue", nullptr};
         }
+        else if (instruction->value == "inclue")
+        { // The renvoie keyword
+            visitor_keyword_include(instruction, variables_t, thread_id);
+        }
         else if (instruction->value != ";")
         {
             std::string err = "instruction inconnue '" + instruction->value + "'. \nAttention, l'instruction est peut-être inconnue dans le contexte (boucle, appel de fonction ect...). \nSi ça fait partie d'un calcule, il faut utiliser des parenthèses.";
@@ -1753,8 +1771,8 @@ std::tuple<std::string, w_variable *> visitor_visit_incode(node *trunc, std::map
 
 w_variable *visitor_visit(node *trunc, std::map<std::string, w_variable *> variables_t, int thread_id)
 {
-    std::thread thread_in_scope[4];
     int thread_number = 0;
+    std::thread thread_in_scope[4];
     if (!is_initialized_inbuild)
     {
         visitor_init_inbuild_functions();
@@ -1783,6 +1801,11 @@ w_variable *visitor_visit(node *trunc, std::map<std::string, w_variable *> varia
             std::tuple<std::string, w_variable *> ret = visitor_if_declaration(instruction, variables_t, thread_id);
             if (std::get<0>(ret) == "return")
             {
+                for (int p = 0; p < 4; p++)
+                {
+                    if (thread_in_scope[p].joinable())
+                        thread_in_scope[p].join();
+                }
                 return std::get<1>(ret);
                 if (!(what_reference(thread_id))->empty())
                     (what_reference(thread_id))->pop();
@@ -1793,6 +1816,11 @@ w_variable *visitor_visit(node *trunc, std::map<std::string, w_variable *> varia
             std::tuple<std::string, w_variable *> ret = visitor_forloop(instruction, variables_t, thread_id);
             if (std::get<0>(ret) == "return")
             {
+                for (int p = 0; p < 4; p++)
+                {
+                    if (thread_in_scope[p].joinable())
+                        thread_in_scope[p].join();
+                }
                 return std::get<1>(ret);
                 if (!(what_reference(thread_id))->empty())
                     (what_reference(thread_id))->pop();
@@ -1803,6 +1831,12 @@ w_variable *visitor_visit(node *trunc, std::map<std::string, w_variable *> varia
             std::tuple<std::string, w_variable *> ret = visitor_whileloop(instruction, variables_t, thread_id);
             if (std::get<0>(ret) == "return")
             {
+
+                for (int p = 0; p < 4; p++)
+                {
+                    if (thread_in_scope[p].joinable())
+                        thread_in_scope[p].join();
+                }
                 return std::get<1>(ret);
                 if (!(what_reference(thread_id))->empty())
                     (what_reference(thread_id))->pop();
@@ -1829,6 +1863,11 @@ w_variable *visitor_visit(node *trunc, std::map<std::string, w_variable *> varia
         else if (instruction->value == "renvoie")
         { // The libere keyword
             w_variable *res = visitor_keyword_return(instruction, variables_t, thread_id);
+            for (int p = 0; p < 4; p++)
+            {
+                if (thread_in_scope[p].joinable())
+                    thread_in_scope[p].join();
+            }
             return res;
         }
         else if (instruction->value == "libere")
@@ -1842,8 +1881,15 @@ w_variable *visitor_visit(node *trunc, std::map<std::string, w_variable *> varia
         else if (instruction->value == "tache")
         { // The tache keyword
             std::map<std::string, w_variable *> variables_t_bis = copy_var_table(variables_t);
-            thread_number++;
-            thread_in_scope[thread_number] = std::thread(visitor_keyword_tache, instruction, variables_t, thread_number);
+
+            thread_utilized += 1;
+
+            if (thread_utilized > 4)
+            {
+                std::string err = "ne peut pas créer plus de 4 threads";
+                error(err, instruction->reference, thread_id);
+            }
+            thread_in_scope[thread_number++] = std::thread(visitor_keyword_tache, instruction, variables_t, thread_utilized);
         }
         else if (instruction->value != ";")
         {
@@ -1854,7 +1900,10 @@ w_variable *visitor_visit(node *trunc, std::map<std::string, w_variable *> varia
     for (int p = 0; p < 4; p++)
     {
         if (thread_in_scope[p].joinable())
+        {
             thread_in_scope[p].join();
+            thread_number--;
+        }
     }
     return to_return;
 }

@@ -70,6 +70,6 @@ fin
 
 fonction input_caché (x, cache) faits
     total = !input(x);
-    !print("\b", cache)
+    !print("\b \b", cache)
     renvoie total; 
 fin

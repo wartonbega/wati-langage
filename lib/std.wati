@@ -6,3 +6,5 @@ inclue "maths.wati";
 inclue "random.wati";
 inclue "string.wati";
 inclue "float.wati";
+inclue "thread.wati";
+inclue "temps.wati";

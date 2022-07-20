@@ -1,0 +1,10 @@
+fonction dors (value) fait
+    time0 = !temps();
+    dernier_temp = 0;
+    tant que (!temps() - time0 < value) fait
+        f = !temps() - time0;
+        si (f != dernier_temp) alors
+            dernier_temp = f;
+        fin
+    fin
+fin

@@ -27,13 +27,13 @@ w_variable *int_mod(int a, int b);
 w_variable *int_power(int a, int b);
 w_variable *int_ne(int a, int b);
 
-std::string convert_to_string(w_variable *, std::map<std::string, w_variable *> variables_t);
+std::string convert_to_string(w_variable *content, std::map<std::string, w_variable *> variables_t, int thread_id);
 void print(w_variable *content, std::map<std::string, w_variable *> variables_t);
 w_variable *type(w_variable *content);
 w_variable *input(w_variable *content, std::map<std::string, w_variable *> variables_t);
 w_variable *w_system(w_variable *content, std::map<std::string, w_variable *> variables_t);
-w_variable *w_char(w_variable *content, std::map<std::string, w_variable *> variables_t);
-void w_error(w_variable *content, std::map<std::string, w_variable *> variables_t);
+w_variable *w_char(w_variable *content, std::map<std::string, w_variable *> variables_t, int thread_id);
+void w_error(w_variable *content, std::map<std::string, w_variable *> variables_t, int thread_id);
 void w_exit(w_variable *content);
 w_variable *c_len(w_variable *content);
 w_variable *w_en(std::vector<w_variable *>content, std::map<std::string, w_variable *> variables_t);

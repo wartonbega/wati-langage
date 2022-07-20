@@ -1,13 +1,33 @@
 inclue "./lib/std.wati";
 
-fonction dors (value) fait
-    time0 = !temps();
-    dernier_temp = 0;
-    tant que (!temps() - time0 < value) fait
-        f = !temps() - time0;
-        si (f != dernier_temp) alors
-            dernier_temp = f;
-        fin
+fonction test () fait
+    pour i allant de 0 a 3 fait
+        !dors(1)
+        !println(i)
+
     fin
+    renvoie "salut ";
 fin
 
+future1 = future();
+tache (!thread, future1, !test);
+
+!future1.join()
+
+!print(!future1.rec_resultat())
+
+!println("tout le monde")
+
+fonction fib (n) fait
+    a = 0;
+    b = 1;
+    tant que a < n fait
+        !print(a, " ")
+        c = b;
+        b = a + b;
+        a = c;
+    fin
+    !println("")
+fin
+
+!fib(1000)
