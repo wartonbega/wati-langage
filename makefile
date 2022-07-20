@@ -1,6 +1,6 @@
 
 build:
-	g++ -O3 -std=c++17 ./src/*.cpp -o ./bin/wati 
+	g++ -O3 -std=c++17 -pthread ./src/*.cpp -o ./bin/wati 
 
 run:
 	g++ -O3 -std=c++17 ./src/*.cpp -o ./bin/wati 
