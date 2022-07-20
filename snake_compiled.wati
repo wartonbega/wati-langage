@@ -7,6 +7,18 @@ fonction arrondis_puissance (a ) fait
 	renvoie p ;	
 
 fin
+fonction dors (value ) fait
+	time0 = !temps ();	
+	dernier_temp = 0 ;	
+	tant que (!temps ()- time0 < value ) fait
+ 		f = !temps ()- time0 ;		
+		si (f != dernier_temp ) alors 		
+			dernier_temp = f ;			
+
+		fin		
+	fin
+
+fin
 fonction et (cond1 , cond2 ) fait
 	si cond1  alors 	
 		si cond2  alors 		
@@ -20,7 +32,7 @@ fonction et (cond1 , cond2 ) fait
 fin
 fonction input_caché (x , cache ) fait
 	total = !input (x );	
-	!print	("" , cache )
+	!print	(" " , cache )
 	renvoie total ;	
 
 fin
@@ -143,7 +155,7 @@ classe list contient
 	methode en_string () fait	
 		r = "[ " ;		
 		n = self.head.next ;		
-		tant que n.next.content != self.tail.content  fait
+		tant que (n.next.content != self.tail.content ) fait
  			r = r + !char (n.content )+ ", " ;			
 			n = n.next ;			
 		fin
@@ -154,21 +166,21 @@ classe list contient
 	fin	
 	methode en (x ) fait	
 		si (!type (x )!= "int" ) alors 		
-			!erreur			("le type 'list' n'accepte d'indexation que avec le type 'int', pas '" + !type (x )+ "'" )
+			!erreur			("list : le type 'list' n'accepte d'indexation que avec le type 'int', pas '" + !type (x )+ "'" )
+
+		fin		
+		si (x >= self.taille ) alors 		
+			!erreur			("list : l'index est plus grand que la taille de la liste" )
+			
 
 		fin		
 		i = 0 ;		
 		n = self.head.next ;		
-		si (x >= self.taille ) alors 		
-			!erreur			("l'index est plus grand que la taille de la liste" )
-
-		fin		
 		tant que i != x  fait
  			n = n.next ;			
 			i = i + 1 ;			
 		fin
-		p = n.content ;		
-		renvoie p ;		
+		renvoie n.content ;		
 	
 	fin	
 	methode index (x ) fait	
@@ -177,6 +189,14 @@ classe list contient
 	fin	
 	methode pop (x ) fait	
 		i = 0 ;		
+		si (self.taille <= 0 ) alors 		
+			!erreur			("list : ne peut pas pop depuis une liste vide" )
+
+		fin		
+		si (x >= self.taille ) alors 		
+			!erreur			("list : l'index est plus grand que la taille de la liste" )
+
+		fin		
 		n = self.head.next ;		
 		tant que i != x  fait
  			n = n.next ;			
@@ -218,6 +238,13 @@ classe list contient
 	
 	fin	
 	methode ne (x ) fait	
+		si !type (x )!= "list"  alors 		
+			renvoie 1 ;			
+
+		fin		
+	
+	fin	
+	methode eq (x ) fait	
 		si !type (x )!= "list"  alors 		
 			renvoie 0 ;			
 
@@ -295,6 +322,10 @@ classe string contient
 			self.taille = char.taille ;			
 
 		fin		
+	
+	fin	
+	methode destructeur () fait	
+		libere self.content ;		
 	
 	fin	
 	methode en_string () fait	
@@ -708,17 +739,94 @@ classe float contient
 	fin	
 
 fin
+PISCINE_THREAD = list ();
+classe future contient
+	methode constructeur () fait	
+		self.est_finis = 0 ;		
+		self.resultat = 0 ;		
+		!PISCINE_THREAD.plus		(self )
+		self.id = PISCINE_THREAD.taille ;		
+	
+	fin	
+	methode destructeur () fait	
+		pour i allant de self.id  a PISCINE_THREAD.taille  fait 		
+			t = PISCINE_THREAD [i ];			
+			t.id = t.id - 1 ;			
+		
+		fin		
+		!PISCINE_THREAD.pop		(self.id - 1 )
+	
+	fin	
+	methode en_string () fait	
+		r = "<thread id=" + !char (self.id )+ ">" ;		
+		renvoie r ;		
+	
+	fin	
+	methode join () fait	
+		tant que !pas (self.est_finis ) fait
+ 		fin
+		renvoie self ;		
+	
+	fin	
+	methode rec_resultat () fait	
+		si self.est_finis == 0  alors 		
+			!erreur			("future : la fonction n'as pas finis d'executer, et le thread n'as pas été joint" )
+
+		fin		
+		renvoie self.resultat ;		
+	
+	fin	
+	methode eq (x ) fait	
+		si !type (x )!= !type (self ) alors 		
+			renvoie 0 ;			
+
+		fin		
+		si self.id == eq.id  alors 		
+			renvoie 1 ;			
+
+		fin		
+		renvoie 0 ;		
+	
+	fin	
+	methode ne (x ) fait	
+		si !type (x )!= !type (self ) alors 		
+			renvoie 1 ;			
+
+		fin		
+		si self.id == eq.id  alors 		
+			renvoie 0 ;			
+
+		fin		
+		renvoie 1 ;		
+	
+	fin	
+
+fin
 classe game contient
 	methode constructeur () fait	
 		self.map = list ();		
+		self.direction = "d" ;		
+		self.x = 6 ;		
+		self.y = 5 ;		
+		self.queueX = list ();		
+		self.queueY = list ();		
+		self.pommeX = 0 ;		
+		self.pommeY = 0 ;		
+		self.taille = 1 ;		
+		self.r = random ();		
+		self.head = terminal_bold + terminal_red + "o" + terminal_reset ;		
+		self.blank = " " ;		
+		self.queue = "#" ;		
+		self.pomme = terminal_bold + terminal_green + "@" + terminal_reset ;		
+		self.run = "run" ;		
 		pour y allant de 0  a 10  fait 		
 			p = list ();			
 			pour x allant de 0  a 10  fait 			
 				si !et (y == 5 , x == 6 ) alors 				
-					!p.plus					("#" )
+					!p.plus					(self.head )
 								
 sinon				
- 					!p.plus					("." )
+ 					!p.plus					(self.blank )
 
 				fin				
 			
@@ -726,32 +834,23 @@ sinon
 			!self.map.plus			(p )
 		
 		fin		
-		self.x = 6 ;		
-		self.y = 5 ;		
-		self.queueX = list ();		
-		self.queueY = list ();		
-		self.pommeX = 0 ;		
-		self.pommeY = 0 ;		
-		self.taille = 10 ;		
-		self.r = random ();		
-		self.head = "o" ;		
-		self.blank = "." ;		
-		self.queue = "#" ;		
-		self.pomme = "@" ;		
 		!self.ecrit		(0 , 0 , self.pomme )
 	
 	fin	
 	methode print () fait	
+		!println		("========================" )
 		pour y allant de 0  a 10  fait 		
 			p = self.map [y ];			
+			!print			("||" )
 			pour x allant de 0  a 10  fait 			
 				!print				(p [x ], " " )
 			
 			fin			
-			!print			("
+			!print			("||
 " )
 		
 		fin		
+		!println		("========================" )
 	
 	fin	
 	methode ecrit (x , y , char ) fait	
@@ -766,7 +865,13 @@ sinon
 		si self.taille == self.queueX.taille  alors 		
 			px = !self.queueX.pop (self.queueX.taille - 1 );			
 			py = !self.queueY.pop (self.queueY.taille - 1 );			
-			!self.ecrit			(px , py , self.blank )
+			si !et (px == self.pommeX , py == self.pommeY ) alors 			
+				!self.ecrit				(px , py , self.pomme )
+						
+sinon			
+ 				!self.ecrit				(px , py , self.blank )
+
+			fin			
 
 		fin		
 	
@@ -828,35 +933,68 @@ sinon
 		self.pommeY = y ;		
 	
 	fin	
+	methode intro () fait	
+		!system		("clear" )
+		!println		("Commandes :" )
+		!println		("z : haut" )
+		!println		("s : bas" )
+		!println		("d : droite" )
+		!println		("q : gauche" )
+		!println		("[espace] : pause" )
+		!println		("	n'importe que touche pour redémmarer" )
+		!input		("" )
+		!system		("clear" )
+	
+	fin	
+	methode lors_entree () fait	
+		tant que self.run == "run"  fait
+ 			a = !input_caché ("" , "" );			
+			si a == "A"  alors 			
+				a = "z" ;				
+						
+sinonsi a == "C"  alors			
+ 				a = "d" ;				
+						
+sinonsi a == "D"  alors			
+ 				a = "q" ;				
+						
+sinonsi a == "B"  alors			
+ 				a = "s" ;				
+
+			fin			
+			self.direction = a ;			
+		fin
+	
+	fin	
 	methode boucle () fait	
 		!system		("stty -icanon" )
-		run = "run" ;		
-		tant que run == "run"  fait
- 			!self.print			()
-			!print			("Score : " , self.taille )
-			action = !input_caché ("" , "" );			
-			si action == "z"  alors 			
+		tant que self.run == "run"  fait
+ 			!system			("clear" )
+			!self.print			()
+			!dors			(1 )
+			si self.direction == "z"  alors 			
 				!self.haut				()
-
-			fin			
-			si action == "s"  alors 			
-				!self.bas				()
-
-			fin			
-			si action == "q"  alors 			
-				!self.gauche				()
-
-			fin			
-			si action == "d"  alors 			
-				!self.droite				()
+						
+sinonsi self.direction == "s"  alors			
+ 				!self.bas				()
+						
+sinonsi self.direction == "q"  alors			
+ 				!self.gauche				()
+						
+sinonsi self.direction == " "  alors			
+ 				!println				("EN PAUSE" )
+				tant que self.direction == " "  fait
+ 				fin
+						
+sinon			
+ 				!self.droite				()
 
 			fin			
 			r = !self.check_collision ();			
 			si r == "collision"  alors 			
-				run = "" ;				
+				self.run = "" ;				
 
 			fin			
-			!system			("clear" )
 		fin
 		!println		("Perdu !" )
 	
@@ -864,4 +1002,7 @@ sinon
 
 fin
 g = game ();
+!g.intro()
+self = g ;
+tache !g.lors_entree ;
 !g.boucle()

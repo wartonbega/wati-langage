@@ -539,8 +539,8 @@ node *parser(std::vector<std::string> lexemes, std::string first_value, std::vec
                 else if (parser_is_opening_keyword(lexemes[i]))
                 {
                     between++;
-                }
-                b.push_back(lexemes[i]);
+		}
+		b.push_back(lexemes[i]);
                 r.push_back(ref[i]);
                 i++;
             }
@@ -561,12 +561,18 @@ node *parser(std::vector<std::string> lexemes, std::string first_value, std::vec
         }
         else
         {
-            if (lexemes[i + 1] != "=")
+            if (i + 1 < lexemes.size() and lexemes[i + 1] != "=")
             {
                 node *expr = new node(lexemes[i]);
                 expr->reference = ref[i];
                 ast->push_child(expr);
             }
+	    else if (i + 1 >= lexemes.size())
+	    {
+		node *expr = new node(lexemes[i]);
+		expr->reference = ref[i];
+		ast->push_child(expr);
+	    }
         }
     }
     return ast;
