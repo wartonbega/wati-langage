@@ -37,6 +37,7 @@ void node::push_child(node *n)
 node::node(std::string val)
 {
     this->value = val;
+    this->pre_value = nullptr;
 }
 
 node::~node()

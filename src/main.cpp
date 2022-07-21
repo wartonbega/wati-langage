@@ -141,6 +141,7 @@ int main(int argc, char *argv[])
 	if (argc < 2)
 	{
 		std::cout << "On as besoin de au moins 1 argument a l'appel du programme (le nom du fichier)" << std::endl;
+		exit(1);
 	}
 	std::string filename;
 	if (argc < 2)
@@ -190,5 +191,6 @@ int main(int argc, char *argv[])
 		init_vars(variables_t);
 		visitor_visit(ast, variables_t, 0);
 	}
+	delete ast;
 	return 0;
 }

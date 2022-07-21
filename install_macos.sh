@@ -1,6 +1,12 @@
-echo "compilation ..."
-make build
+if ! command -v make &> /dev/null
+then
+    echo "<make> n'as pas été installé. Installez make pour pouvoir installer le programme"
+    exit
+else
+    echo "compilation ..."
+    make build
+fi
 
 user=$(whoami)
-echo "copie dans /Users/$user/Library/wati"
-sudo cp ./bin/wati /Users/$user/Library/wati
+echo "copie dans /usr/local/bin"
+sudo cp ./bin/wati /usr/local/bin

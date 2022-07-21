@@ -6,17 +6,7 @@
 #ifndef VARIABLES_H
 #define VARIABLES_H
 
-struct w_variable
-{
-    int type;
-    void *content;
-
-    ~w_variable();
-    std::string get_type();
-    bool is_object();
-    std::string convert_to_char();
-    int convert_to_int();
-};
+// the structure w_variable is now in node.hpp
 
 struct w_function
 {

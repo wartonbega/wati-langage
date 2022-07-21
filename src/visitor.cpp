@@ -876,7 +876,11 @@ w_variable *visitor_compute(node *c, std::map<std::string, w_variable *> variabl
     {
         (what_reference(thread_id))->push(c->children[i]->reference);
         std::string expr = c->children[i]->value;
-        if (is_explicit(expr))
+        if (c->children[i]->pre_value != nullptr)
+        {
+            last_value = c->children[i]->pre_value;
+        }
+        else if (is_explicit(expr))
         {
             if (is_char(expr))
             {

@@ -1,6 +1,7 @@
 #include <iostream>
 #include "include/parser.hpp"
 #include "include/visitor.hpp"
+#include "include/types.hpp"
 
 std::vector<std::string> keywords; // the vector containing all the keywords
 
@@ -566,13 +567,51 @@ node *parser(std::vector<std::string> lexemes, std::string first_value, std::vec
                 node *expr = new node(lexemes[i]);
                 expr->reference = ref[i];
                 ast->push_child(expr);
+                if (is_explicit(lexemes[i]))
+                {
+                    w_variable * last_value;
+                    if (is_char(lexemes[i]))
+                    {
+                        last_value = new w_variable();
+                        last_value->type = 1; // char
+                        std::string *r = new std::string(del_string(lexemes[i]));
+                        last_value->content = (void *)r;
+                    }
+                    else if (is_digit(lexemes[i]))
+                    {
+                        last_value = new w_variable();
+                        last_value->type = 2;                 // int
+                        int *r = new int(atoi(lexemes[i].c_str())); // we create an int pointer from the string
+                        last_value->content = (void *)r;      // we cast the int pointer as a void pointer
+                    }
+                    expr->pre_value = last_value;
+                }
             }
-	    else if (i + 1 >= lexemes.size())
-	    {
-		node *expr = new node(lexemes[i]);
-		expr->reference = ref[i];
-		ast->push_child(expr);
-	    }
+            else if (i + 1 >= lexemes.size())
+            {
+                node *expr = new node(lexemes[i]);
+                expr->reference = ref[i];
+                ast->push_child(expr);
+                if (is_explicit(lexemes[i]))
+                {
+                    w_variable * last_value;
+                    if (is_char(lexemes[i]))
+                    {
+                        last_value = new w_variable();
+                        last_value->type = 1; // char
+                        std::string *r = new std::string(del_string(lexemes[i]));
+                        last_value->content = (void *)r;
+                    }
+                    else if (is_digit(lexemes[i]))
+                    {
+                        last_value = new w_variable();
+                        last_value->type = 2;                 // int
+                        int *r = new int(atoi(lexemes[i].c_str())); // we create an int pointer from the string
+                        last_value->content = (void *)r;      // we cast the int pointer as a void pointer
+                    }
+                    expr->pre_value = last_value;
+                }
+            }
         }
     }
     return ast;
