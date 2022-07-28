@@ -16,7 +16,13 @@ extern std::stack<std::string> *references_thread_2;
 extern std::stack<std::string> *references_thread_3;
 extern std::stack<std::string> *references_thread_4;
 
+extern std::vector<std::string> inbuild_funcs;
+extern void *cpp_lib_handler;
+
 extern int thread_utilized;
+
+extern std::map<std::string, w_function *> functions;
+extern std::map<std::string, w_class_template *> classes;
 
 std::stack<std::string> *what_reference(int thread_id);
 bool function_exist(std::string name, std::map<std::string, w_function *> funcs);
@@ -25,6 +31,7 @@ std::vector<std::string> cut_error_ref(std::string ref);
 std::string give_file_error(std::string filename, int line, int column, std::string full_ref);
 void error(std::string err, std::string ref, int thread_id);
 void warning(std::string err, std::string ref);
+std::string remove_function_call_prefix(std::string name);
 bool variable_exist(std::string name, std::map<std::string, w_variable*> variables_t);
 void visitor_init_inbuild_functions();
 node *visitor_separate_listed(node *parent);

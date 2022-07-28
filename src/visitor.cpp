@@ -1,5 +1,7 @@
 #include <iostream>
 #include <stack>
+#include <dlfcn.h>
+
 #include "include/visitor.hpp"
 #include "include/variables.hpp"
 #include "include/types.hpp"
@@ -10,6 +12,10 @@
 
 std::map<std::string, w_function *> functions;
 std::map<std::string, w_class_template *> classes;
+
+std::vector<std::string> inbuild_funcs;
+
+void *cpp_lib_handler = dlopen("cpp_lib/libs.so", RTLD_LAZY);
 
 bool is_initialized_inbuild = false;
 
@@ -329,6 +335,36 @@ void visitor_init_inbuild_functions()
     w_function *int_ne = new w_function();
     int_ne->inbuild = true;
     functions["!int.ne"] = int_ne; // !=
+
+    inbuild_funcs.push_back("!print");
+    inbuild_funcs.push_back("!type");
+    inbuild_funcs.push_back("!system");
+    inbuild_funcs.push_back("!input");
+    inbuild_funcs.push_back("!char");
+    inbuild_funcs.push_back("!c_len");
+    inbuild_funcs.push_back("!erreur");
+    inbuild_funcs.push_back("!sortie");
+    inbuild_funcs.push_back("!c_en");
+    inbuild_funcs.push_back("!temps");
+
+    std::string fs = open_file("./cpp_lib/functions");
+    std::string patent;
+    for (auto i : fs)
+    {
+        if (i == '\n')
+        {
+            inbuild_funcs.push_back(patent);
+            patent = "";
+        }
+        else if (std::string(1, i) != " ")
+        {
+            patent += i;
+        }
+    }
+    if (! patent.empty())
+    {
+        inbuild_funcs.push_back(patent);
+    }
 }
 
 node *visitor_separate_listed(node *parent)
@@ -356,9 +392,12 @@ node *visitor_separate_listed(node *parent)
 
 bool visitor_is_inbuild(std::string name)
 {
-    if (name == "!print" || name == "!type" || name == "!system" || name == "!input" || name == "!char" || name == "!c_len" || name == "!erreur" || name == "!sortie" || name == "!c_en" || name == "!temps")
+    for (auto i : inbuild_funcs)
     {
-        return true;
+        if (i == name)
+        {
+            return true;
+        }
     }
     return false;
 }
@@ -493,7 +532,26 @@ w_variable *visitor_function_inbuild(std::string name, node *args, std::map<std:
         }
         return w_time();
     }
-    return nullptr;
+    
+    // that means we are looking for a shared header
+    std::string real_name = remove_function_call_prefix(name);
+    w_variable * (*fonction)(std::vector<w_variable *>, std::map<std::string, w_variable *>, std::string, int);
+    fonction = (w_variable* (*) (std::vector<w_variable *>, std::map<std::string, w_variable *>, std::string, int))dlsym(cpp_lib_handler, real_name.c_str());
+    std::vector<w_variable *> args_c;
+
+    for (auto arg_t : args->children)
+    {
+        w_variable *arg = visitor_compute(arg_t, variables_t, thread_id);
+        args_c.push_back(arg);
+    }
+
+    if (fonction == NULL)
+    {
+        std::string err = "ne peux pas charger la fonction '" + name + "', elle n'existe pas dans les fichiers compilés";
+        error(err, what_reference(thread_id)->top(), thread_id);
+    }
+
+    return fonction(args_c, variables_t, what_reference(thread_id)->top(), thread_id);
 }
 
 std::string remove_function_call_prefix(std::string name)

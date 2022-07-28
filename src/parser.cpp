@@ -408,7 +408,7 @@ node *parser(std::vector<std::string> lexemes, std::string first_value, std::vec
             {
                 if (i >= lexemes.size())
                 { // we reached eof
-                    std::cout << "END OF FILE" << std::endl;
+                    std::cout << "n'as pas put trouver de completion pour `\"`" << std::endl;
                     exit(1);
                     // [TODO]: Errors
                 }
@@ -442,7 +442,8 @@ node *parser(std::vector<std::string> lexemes, std::string first_value, std::vec
             {
                 if (i >= lexemes.size())
                 { // we reached eof
-                    std::cout << "END OF FILE" << std::endl;
+                    std::cout << "n'as pas put trouver de completion pour `[`" << std::endl;
+
                     exit(1);
                     // [TODO]: Errors
                 }
@@ -526,7 +527,8 @@ node *parser(std::vector<std::string> lexemes, std::string first_value, std::vec
             {
                 if (i >= lexemes.size())
                 {
-                    std::cout << "END OF FILE (full declaration)" << std::endl;
+                    std::cout << "n'as pas put trouver de completion" << std::endl;
+
                     exit(1);
                 }
                 if (parser_is_closing_keyword(lexemes[i]))
@@ -540,8 +542,8 @@ node *parser(std::vector<std::string> lexemes, std::string first_value, std::vec
                 else if (parser_is_opening_keyword(lexemes[i]))
                 {
                     between++;
-		}
-		b.push_back(lexemes[i]);
+                }
+                b.push_back(lexemes[i]);
                 r.push_back(ref[i]);
                 i++;
             }
