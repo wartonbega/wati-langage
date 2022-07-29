@@ -184,7 +184,6 @@ classe game contient
             !self.head_t.render(self.x, self.y, self.size, self.size)
 
             !self.pomme_t.render(self.pommeX, self.pommeY, self.size, self.size)
-            
             !render()
         fin
 

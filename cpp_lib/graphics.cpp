@@ -4,6 +4,7 @@
 #include <string>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <SDL2/SDL_ttf.h>
 
 #include "../src/include/node.hpp"
 #include "../src/include/variables.hpp"
@@ -93,7 +94,7 @@ extern "C" w_variable *fill_rect(std::vector<w_variable *> args, std::map<std::s
     // x, y, width, height
     if (args.size() != 4)
     {
-        error("!init_window necessite 2 arguments, `x`, `y`, `largeur` et `longueure`", reference);
+        error("!fill_rect necessite 2 arguments, `x`, `y`, `largeur` et `longueure`", reference);
     }
 
     w_variable *x_ = args[0];
@@ -102,7 +103,7 @@ extern "C" w_variable *fill_rect(std::vector<w_variable *> args, std::map<std::s
     w_variable *h = args[3];
     if (w->get_type() != "int" || h->get_type() != "int" || x_->get_type() != "int" || y_->get_type() != "int")
     {
-        error("!init_window necessite 2 arguments, `x`, `y`, `largeur` et `longueure`, de type 'int'", reference);
+        error("!fill_rect necessite 2 arguments, `x`, `y`, `largeur` et `longueure`, de type 'int'", reference);
     }
 
     int x = *(int *)x_->content;
@@ -120,8 +121,63 @@ extern "C" w_variable *fill_rect(std::vector<w_variable *> args, std::map<std::s
     return basic_return();
 }
 
+extern "C" w_variable *draw_text(std::vector<w_variable *> args, std::map<std::string, w_variable *> variables_t, std::string reference, int thread_id)
+{
+
+    // x, y, text, font
+    if (args.size() != 7)
+    {
+        error("!draw_text necessite 7 arguments, 'x', 'y', 'h', 'w', 'text', 'police' et 'taille'", reference);
+    }
+
+    w_variable *arg0 = args[0]; // x -> int
+    w_variable *arg1 = args[1]; // y -> int
+    w_variable *arg2 = args[2]; // h -> int
+    w_variable *arg3 = args[3]; // w -> int
+    w_variable *arg4 = args[4]; // text -> char
+    w_variable *arg5 = args[5]; // font -> char
+    w_variable *arg6 = args[6]; // font_size -> int
+
+    int x = *(int *)arg0->content;
+    int y = *(int *)arg1->content;
+    int h = *(int *)arg2->content;
+    int w = *(int *)arg3->content;
+
+    std::string text_content = *(std::string *)arg4->content;
+    std::string font_name = *(std::string *)arg5->content;
+    int font_size = *(int *)arg6->content;
+
+    //this opens a font style and sets a size
+    TTF_Font* Sans = TTF_OpenFont(font_name.c_str(), font_size);
+    if (Sans == NULL)
+    {
+        error("!draw_text : police de caractère inconnue : '" + font_name + "'. Erreur SDL : " + SDL_GetError(), reference);
+    }
+
+    SDL_Color White = {0, 0, 0};
+
+    SDL_Surface* surfaceMessage = TTF_RenderText_Solid(Sans, text_content.c_str(), White); 
+
+    SDL_Texture* Message = SDL_CreateTextureFromSurface(ren, surfaceMessage);
+
+    SDL_Rect Message_rect;
+    Message_rect.x = x;
+    Message_rect.y = y;
+    Message_rect.w = w;
+    Message_rect.h = h;
+
+    SDL_RenderCopy(ren, Message, NULL, &Message_rect);
+
+    SDL_FreeSurface(surfaceMessage);
+    SDL_DestroyTexture(Message);
+
+    return basic_return();
+}
+
+
 extern "C" w_variable *init_window(std::vector<w_variable *> args, std::map<std::string, w_variable *> variables_t, std::string reference, int thread_id)
 {
+    TTF_Init();
     // width, height
     if (args.size() != 2)
     {

@@ -16,3 +16,4 @@
 !draw_texture
 !rotate_texture
 !draw_rotated_texture
+!draw_text
