@@ -24,6 +24,22 @@ std::string w_variable::get_type()
     return "none";
 }
 
+w_variable::w_variable(){}
+w_variable::w_variable(int content)
+{
+    int *r = new int(content);
+    this->content = (void *)r;
+    this->type = 2; // int
+}
+
+w_variable::w_variable(std::string content)
+{
+    std::string *r = new std::string(content);
+    this->content = (void *)r;
+    this->type = 1; // char
+}
+
+
 w_variable::~w_variable()
 {
     if (this->is_object())

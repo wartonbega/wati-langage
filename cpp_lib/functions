@@ -17,3 +17,7 @@
 !rotate_texture
 !draw_rotated_texture
 !draw_text
+!quitte
+!wsin
+!wcos
+!load_font_as

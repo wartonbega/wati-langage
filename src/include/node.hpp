@@ -11,6 +11,10 @@ struct w_variable
     void *content;
 
     ~w_variable();
+    w_variable();
+    w_variable(int);
+    w_variable(std::string);
+
     std::string get_type();
     bool is_object();
     std::string convert_to_char();

@@ -4,7 +4,7 @@ classe random contient
         self.m = 10^8;
         self.seed = !temps();
     fin
-
+    
     methode rand (max) fait
         r = self.a * self.seed + 1;
         self.seed = r % self.m;

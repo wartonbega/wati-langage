@@ -138,6 +138,7 @@ void init_vars(std::map<std::string, w_variable *> &variables_t)
 int main(int argc, char *argv[])
 {
 	system("stty -icanon");
+	system("export PATH=/usr/local/lib/wati/:$PATH");
 	if (argc < 2)
 	{
 		std::cout << "On as besoin de au moins 1 argument a l'appel du programme (le nom du fichier)" << std::endl;

@@ -15,7 +15,7 @@ std::map<std::string, w_class_template *> classes;
 
 std::vector<std::string> inbuild_funcs;
 
-void *cpp_lib_handler = dlopen("cpp_lib/libs.so", RTLD_LAZY);
+void *cpp_lib_handler = dlopen("/usr/local/lib/wati/cpp_lib/libs.so", RTLD_LAZY);
 
 bool is_initialized_inbuild = false;
 
@@ -347,7 +347,12 @@ void visitor_init_inbuild_functions()
     inbuild_funcs.push_back("!c_en");
     inbuild_funcs.push_back("!temps");
 
-    std::string fs = open_file("./cpp_lib/functions");
+    std::string fs = open_file("/usr/local/lib/wati/cpp_lib/functions");
+    if (fs == "file_not_found")
+    { // very, very bad
+        std::string err = "interne : ne trouve pas '/usr/local/lib/wati/cpp_lib/functions' pour les fonctions près-fabriquée";
+        error(err, what_reference(0)->top(), 0);
+    }
     std::string patent;
     for (auto i : fs)
     {
@@ -583,6 +588,11 @@ w_variable *visitor_funcall(std::string name, node *args, std::map<std::string, 
             std::string err = "la fonction " + name + " n'existe pas";
             error(err, (what_reference(thread_id))->top(), thread_id);
         }
+    }
+    if (!function_exist(name, functions))
+    {
+        std::string err = "la fonction '" + name + "' n'existe pas";
+        error(err, what_reference(thread_id)->top(), thread_id);
     }
     func = functions[name];
     args = visitor_separate_listed(args);
@@ -909,10 +919,8 @@ w_variable *visitor_new_object(std::string name, node *args, std::map<std::strin
     var->type = 3; // an object
     var->content = (void *)r;
 
-    variables_t["self"] = var; // we define by default a varibale named self
-    w_function *constructor = functions["!" + name + ".constructeur"];
 
-    visitor_funcall("!" + name + ".constructeur", args, variables_t, thread_id);
+    visitor_funcall_methode("!" + name + ".constructeur", args, variables_t, var, thread_id);
 
     return var;
 }
@@ -1390,7 +1398,6 @@ bool visitor_is_included(std::string libname)
 
 void visitor_keyword_include(node *trunc, std::map<std::string, w_variable *> &variables_t, int thread_id)
 {
-    (what_reference(thread_id))->push(trunc->reference);
     if (trunc->children.size() < 1)
     {
         std::string err = "le mot-clé 'inclue' doit avoir au moins un argument";
@@ -1412,13 +1419,23 @@ void visitor_keyword_include(node *trunc, std::map<std::string, w_variable *> &v
 
     if (!visitor_is_included(filename2))
     {
-        included.push_back(filename2);
         std::string r = open_file(filename2.c_str());
+        if (r == "file_not_found") 
+        { // if we don't find the file, then it is maybe in the lib dir
+            filename2 = "/usr/local/lib/wati/lib/" + filename2;
+            if (visitor_is_included(filename2))
+            { // meaning we already included it
+                return;
+            }
+            r = open_file(filename2.c_str());
+        }
         if (r == "file_not_found")
-        {
+        { // it clearly doesn't exists
             std::string err = "fichier introuvable '" + filename2 + "'";
             error(err, trunc->children[0]->reference, thread_id);
         }
+
+        included.push_back(filename2);
         std::vector<std::string> ref;
         std::vector<std::string> lexemes = lexer(r, ref, filename2);
 
@@ -1426,9 +1443,6 @@ void visitor_keyword_include(node *trunc, std::map<std::string, w_variable *> &v
         visitor_visit_incode(ast, variables_t, thread_id);
     }
     base_dir = dir;
-
-    if (!(what_reference(thread_id))->empty())
-        (what_reference(thread_id))->pop();
 }
 
 void visitor_funcdef(node *trunc)
@@ -1445,7 +1459,6 @@ void visitor_funcdef(node *trunc)
 
 void visitor_vardef(node *trunc, std::map<std::string, w_variable *> &variables_t, int thread_id)
 {
-    (what_reference(thread_id))->push(trunc->reference);
     // We pass the variables table by reference, so we can modify it
 
     std::string expr = trunc->children[0]->value;
@@ -1529,8 +1542,6 @@ void visitor_vardef(node *trunc, std::map<std::string, w_variable *> &variables_
     {
         variables_t[expr] = result;
     }
-    if (!(what_reference(thread_id))->empty())
-        (what_reference(thread_id))->pop();
 }
 
 void visitor_classdef(node *trunc)
@@ -1551,7 +1562,6 @@ void visitor_classdef(node *trunc)
 
 std::tuple<std::string, w_variable *> visitor_if_declaration(node *trunc, std::map<std::string, w_variable *> &variables_t, int thread_id)
 {
-    (what_reference(thread_id))->push(trunc->reference);
     // We need to pass the variables table by reference, as we can modifie it later on
     // the if declaration :
     // si
@@ -1567,14 +1577,14 @@ std::tuple<std::string, w_variable *> visitor_if_declaration(node *trunc, std::m
         std::tuple<std::string, w_variable *> ret = visitor_visit_incode(trunc->children[1], variables_t, thread_id);
         if (std::get<0>(ret) == "return")
         {
-            if (!(what_reference(thread_id))->empty())
-                (what_reference(thread_id))->pop();
             return ret;
         }
         if (std::get<0>(ret) == "continue")
         {
-            if (!(what_reference(thread_id))->empty())
-                (what_reference(thread_id))->pop();
+            return ret;
+        }
+        if (std::get<0>(ret) == "break")
+        {
             return ret;
         }
     }
@@ -1592,14 +1602,14 @@ std::tuple<std::string, w_variable *> visitor_if_declaration(node *trunc, std::m
                 std::tuple<std::string, w_variable *> ret = visitor_visit_incode(elif->children[1], variables_t, thread_id);
                 if (std::get<0>(ret) == "return")
                 {
-                    if (!(what_reference(thread_id))->empty())
-                        (what_reference(thread_id))->pop();
                     return ret;
                 }
                 if (std::get<0>(ret) == "continue")
                 {
-                    if (!(what_reference(thread_id))->empty())
-                        (what_reference(thread_id))->pop();
+                    return ret;
+                }
+                if (std::get<0>(ret) == "break")
+                {
                     return ret;
                 }
                 break;
@@ -1614,27 +1624,24 @@ std::tuple<std::string, w_variable *> visitor_if_declaration(node *trunc, std::m
                 std::tuple<std::string, w_variable *> ret = visitor_visit_incode(else_->children[0], variables_t, thread_id);
                 if (std::get<0>(ret) == "return")
                 {
-                    if (!(what_reference(thread_id))->empty())
-                        (what_reference(thread_id))->pop();
                     return ret;
                 }
                 if (std::get<0>(ret) == "continue")
                 {
-                    if (!(what_reference(thread_id))->empty())
-                        (what_reference(thread_id))->pop();
+                    return ret;
+                }
+                if (std::get<0>(ret) == "break")
+                {
                     return ret;
                 }
             }
         }
     }
-    if (!(what_reference(thread_id))->empty())
-        (what_reference(thread_id))->pop();
     return std::tuple<std::string, w_variable *>{"", nullptr};
 }
 
 std::tuple<std::string, w_variable *> visitor_forloop(node *trunc, std::map<std::string, w_variable *> &variables_t, int thread_id)
 {
-    (what_reference(thread_id))->push(trunc->reference);
     // the for loop
     // pour
     //      i
@@ -1666,27 +1673,21 @@ std::tuple<std::string, w_variable *> visitor_forloop(node *trunc, std::map<std:
     }
     int borne2 = second_b->convert_to_int();
 
-    w_variable *var = new w_variable();
-    var->type = 2; // int
+    w_variable *var;
 
     int *var_cont = new int();
     for (int index = borne1; index < borne2; index++)
     {
         // free(var_cont); // avoid memory leaks
-        var_cont = new int(index);
-        var->content = (void *)var_cont;
+        var = new w_variable(index);
         variables_t[var_name] = var;
         std::tuple<std::string, w_variable *> ret = visitor_visit_incode(code, variables_t, thread_id);
         if (std::get<0>(ret) == "break")
         {
-            if (!(what_reference(thread_id))->empty())
-                (what_reference(thread_id))->pop();
             return std::tuple<std::string, w_variable *>{"", nullptr};
         };
         if (std::get<0>(ret) == "return")
         {
-            if (!(what_reference(thread_id))->empty())
-                (what_reference(thread_id))->pop();
             return ret;
         }
         if (std::get<0>(ret) == "continue")
@@ -1694,14 +1695,11 @@ std::tuple<std::string, w_variable *> visitor_forloop(node *trunc, std::map<std:
             continue;
         }
     }
-    if (!(what_reference(thread_id))->empty())
-        (what_reference(thread_id))->pop();
     return std::tuple<std::string, w_variable *>{"", nullptr};
 }
 
 std::tuple<std::string, w_variable *> visitor_whileloop(node *trunc, std::map<std::string, w_variable *> &variables_t, int thread_id)
 {
-    (what_reference(thread_id))->push(trunc->reference);
     // the while loop
     // tant
     //      condition
@@ -1717,22 +1715,16 @@ std::tuple<std::string, w_variable *> visitor_whileloop(node *trunc, std::map<st
         std::tuple<std::string, w_variable *> ret = visitor_visit_incode(code, variables_t, thread_id);
         if (std::get<0>(ret) == "break")
         {
-            if (!(what_reference(thread_id))->empty())
-                (what_reference(thread_id))->pop();
             return std::tuple<std::string, w_variable *>{"", nullptr};
         }
         if (std::get<0>(ret) == "return")
         {
-            if (!(what_reference(thread_id))->empty())
-                (what_reference(thread_id))->pop();
             return ret;
         }
         if (std::get<0>(ret) == "continue")
             continue;
         cond = visitor_compute(condition, variables_t, thread_id);
     }
-    if (!(what_reference(thread_id))->empty())
-        (what_reference(thread_id))->pop();
     return std::tuple<std::string, w_variable *>{"", nullptr};
 }
 
@@ -1764,6 +1756,10 @@ std::tuple<std::string, w_variable *> visitor_visit_incode(node *trunc, std::map
                 return ret;
             }
             if (std::get<0>(ret) == "continue")
+            {
+                return ret;
+            }
+            if (std::get<0>(ret) == "break")
             {
                 return ret;
             }
@@ -1869,8 +1865,6 @@ w_variable *visitor_visit(node *trunc, std::map<std::string, w_variable *> varia
                         thread_in_scope[p].join();
                 }
                 return std::get<1>(ret);
-                if (!(what_reference(thread_id))->empty())
-                    (what_reference(thread_id))->pop();
             }
         }
         else if (instruction->value == "forloop")
@@ -1884,8 +1878,6 @@ w_variable *visitor_visit(node *trunc, std::map<std::string, w_variable *> varia
                         thread_in_scope[p].join();
                 }
                 return std::get<1>(ret);
-                if (!(what_reference(thread_id))->empty())
-                    (what_reference(thread_id))->pop();
             }
         }
         else if (instruction->value == "whileloop")
@@ -1900,8 +1892,6 @@ w_variable *visitor_visit(node *trunc, std::map<std::string, w_variable *> varia
                         thread_in_scope[p].join();
                 }
                 return std::get<1>(ret);
-                if (!(what_reference(thread_id))->empty())
-                    (what_reference(thread_id))->pop();
             }
         }
         else if (instruction->value == "()")

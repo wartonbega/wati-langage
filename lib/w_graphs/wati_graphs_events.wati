@@ -1,0 +1,38 @@
+
+
+
+classe Event contient
+    methode constructeur (type, val) fait
+        self.type = type;
+        self.val = val;
+    fin
+fin
+
+fonction Event.equals (x) fait
+    si !type(x) == "char" alors 
+        si self.val == x alors
+            renvoie 1;
+        sinonsi self.type == x alors
+            renvoie 1;
+        fin
+        renvoie 0;
+    sinonsi !type(x) == "Event" alors
+        si self.val == x.val alors
+            renvoie 1;
+        sinonsi self.type == x.type alors
+            renvoie 1;
+        fin
+    fin
+    renvoie 0;
+fin
+
+fonction Event.ne (x) fait
+    renvoie !pas(!self.equals(x));
+fin
+
+fonction Event.en_string () fait
+    si self.val != "" alors
+        renvoie "<Event type=" + self.type + " val=" + self.val + ">";
+    fin
+    renvoie "<Event type=" + self.type + ">";
+fin

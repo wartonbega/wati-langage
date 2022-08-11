@@ -8,6 +8,7 @@
 
 // the structure w_variable is now in node.hpp
 
+
 struct w_function
 {
     int arg_num;     // the number of arguments

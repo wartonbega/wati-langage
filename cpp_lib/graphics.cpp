@@ -14,8 +14,10 @@ SDL_Window *win = NULL;
 SDL_Renderer *ren = NULL;
 
 int delay = 10;
+bool quit = false;
 
 std::map<std::string, SDL_Texture *> tex;
+std::map<std::string, TTF_Font *> fonts;
 
 void error(std::string err, std::string ref)
 {
@@ -123,11 +125,10 @@ extern "C" w_variable *fill_rect(std::vector<w_variable *> args, std::map<std::s
 
 extern "C" w_variable *draw_text(std::vector<w_variable *> args, std::map<std::string, w_variable *> variables_t, std::string reference, int thread_id)
 {
-
     // x, y, text, font
-    if (args.size() != 7)
+    if (args.size() != 6)
     {
-        error("!draw_text necessite 7 arguments, 'x', 'y', 'h', 'w', 'text', 'police' et 'taille'", reference);
+        error("!draw_text necessite 6 arguments, 'x', 'y', 'h', 'w', 'text', 'police'", reference);
     }
 
     w_variable *arg0 = args[0]; // x -> int
@@ -136,7 +137,6 @@ extern "C" w_variable *draw_text(std::vector<w_variable *> args, std::map<std::s
     w_variable *arg3 = args[3]; // w -> int
     w_variable *arg4 = args[4]; // text -> char
     w_variable *arg5 = args[5]; // font -> char
-    w_variable *arg6 = args[6]; // font_size -> int
 
     int x = *(int *)arg0->content;
     int y = *(int *)arg1->content;
@@ -145,18 +145,15 @@ extern "C" w_variable *draw_text(std::vector<w_variable *> args, std::map<std::s
 
     std::string text_content = *(std::string *)arg4->content;
     std::string font_name = *(std::string *)arg5->content;
-    int font_size = *(int *)arg6->content;
 
     //this opens a font style and sets a size
-    TTF_Font* Sans = TTF_OpenFont(font_name.c_str(), font_size);
-    if (Sans == NULL)
-    {
-        error("!draw_text : police de caractère inconnue : '" + font_name + "'. Erreur SDL : " + SDL_GetError(), reference);
-    }
-
-    SDL_Color White = {0, 0, 0};
-
-    SDL_Surface* surfaceMessage = TTF_RenderText_Solid(Sans, text_content.c_str(), White); 
+    TTF_Font* Sans = fonts[font_name];
+    Uint8 r;
+    Uint8 v;
+    Uint8 b;
+    SDL_GetRenderDrawColor(ren, &r, &v, &b, nullptr);
+    SDL_Color c = {r, v, b};
+    SDL_Surface* surfaceMessage = TTF_RenderText_Solid(Sans, text_content.c_str(), c); 
 
     SDL_Texture* Message = SDL_CreateTextureFromSurface(ren, surfaceMessage);
 
@@ -170,10 +167,8 @@ extern "C" w_variable *draw_text(std::vector<w_variable *> args, std::map<std::s
 
     SDL_FreeSurface(surfaceMessage);
     SDL_DestroyTexture(Message);
-
     return basic_return();
 }
-
 
 extern "C" w_variable *init_window(std::vector<w_variable *> args, std::map<std::string, w_variable *> variables_t, std::string reference, int thread_id)
 {
@@ -209,7 +204,7 @@ extern "C" w_variable *quit_window(std::vector<w_variable *> args, std::map<std:
     SDL_DestroyRenderer(ren);
     SDL_DestroyWindow(win);
     SDL_Quit();
-
+    quit = true;
     return basic_return();
 }
 
@@ -356,11 +351,20 @@ extern "C" w_variable *draw_rotated_texture(std::vector<w_variable *> args, std:
         error("la texture '" + name + "' n'existe pas", reference);
     }
 
-    SDL_Texture *t= tex[name];
+    SDL_Texture *texture= tex[name];
 
-    SDL_RenderCopyEx(ren, t, NULL, NULL, angle, NULL, SDL_FLIP_NONE );
-    SDL_RenderCopy(ren, t, NULL, &texture_rect);
+    int w, h;
+    SDL_QueryTexture(texture, NULL, NULL, &w, &h);
 
+    SDL_Texture *target = SDL_CreateTexture(ren, SDL_PIXELFORMAT_RGBA4444, SDL_TEXTUREACCESS_TARGET, w, h);
+    SDL_SetRenderTarget(ren, target);
+    SDL_RenderCopyEx(ren, texture, NULL, NULL, angle, NULL, SDL_FLIP_NONE);
+    SDL_SetRenderTarget(ren, NULL);
+    
+    SDL_RenderCopyEx(ren, target, NULL, NULL, angle, NULL, SDL_FLIP_NONE );
+    SDL_RenderCopy(ren, target, NULL, &texture_rect);
+
+    SDL_DestroyTexture(target);
     return basic_return();
 }
 
@@ -424,6 +428,37 @@ extern "C" w_variable *load_texture_as(std::vector<w_variable *> args, std::map<
     return basic_return();
 }
 
+extern "C" w_variable *load_font_as(std::vector<w_variable *> args, std::map<std::string, w_variable *> variables_t, std::string reference, int thread_id)
+{
+    if (args.size() != 3)
+    {
+        error("la fonction !load_font_as necessite 3 arguments : 'chemin', 'nom' et 'taille'", reference);
+    }
+
+    w_variable *arg = args[0]; // filename
+    w_variable *arg2 = args[1]; // name of the texture
+    w_variable *arg3 = args[2]; // name of the texture
+    if (arg->get_type() != "char" || arg2->get_type() != "char")
+    {
+        error("la fonction !load_font_as necessite 3 arguments de type ('char', 'char', 'int')", reference);
+    }
+
+    std::string filename = *(std::string *)arg->content;
+    std::string name = *(std::string *)arg2->content;
+    int size = *(int *)arg3->content;
+
+    TTF_Font* Sans = TTF_OpenFont(filename.c_str(), size);
+
+    if (Sans == NULL)
+    {
+        // as we are opening a file, we need to know the sdl error.
+        error("!draw_text : police de caractère inconnue : '" + filename + "'. Erreur SDL : " + SDL_GetError(), reference);
+    }
+    fonts[name] = Sans;
+
+    return basic_return();
+}
+
 extern "C" w_variable *mainloop(std::vector<w_variable *> args, std::map<std::string, w_variable *> variables_t, std::string reference, int thread_id)
 {
     if (args.size() != 1)
@@ -443,20 +478,15 @@ extern "C" w_variable *mainloop(std::vector<w_variable *> args, std::map<std::st
         error("la fonction '" + func_name + "' n'existe pas", reference);
     }
 
-    bool quit = false;
-
-    // Event handler
-
-    // While application is running
     while (!quit)
     {
 
         w_variable *list = visitor_new_object("list", new node("*"), variables_t, thread_id); // events
-        // Handle events on queue
         SDL_Event e;
         while (SDL_PollEvent(&e) != 0) // poll for event
         {
             std::string res;
+            std::string cont = "";
             Uint32 t = e.type;
             if (t == SDL_QUIT)
             {
@@ -465,7 +495,15 @@ extern "C" w_variable *mainloop(std::vector<w_variable *> args, std::map<std::st
                 return basic_return();
             }
             else if (t == SDL_KEYDOWN)
-                res = SDL_GetKeyName(e.key.keysym.sym);
+            {
+                res = "KeyDown";
+                cont = SDL_GetKeyName(e.key.keysym.sym);
+            }
+            else if (t == SDL_KEYUP)
+            {
+                res = "KeyUp";
+                cont = SDL_GetKeyName(e.key.keysym.sym);
+            }
             else if (t == SDL_MOUSEBUTTONDOWN)
                 res = "MouseButtonDown";
             else if (t == SDL_MOUSEBUTTONUP)
@@ -477,9 +515,18 @@ extern "C" w_variable *mainloop(std::vector<w_variable *> args, std::map<std::st
 
             if (!res.empty())
             {
+
+                w_variable *type_ = new w_variable(res);
+                w_variable *val_ = new w_variable(cont);
+
+                w_object *o = new w_object();
+                o->name = "Event";
+                o->attribute_attribution("type", type_);
+                o->attribute_attribution("val", val_);
+
                 w_variable *arg = new w_variable();
-                arg->type = 1; // char
-                arg->content = (void *)(new std::string(res));
+                arg->type = 3; // object
+                arg->content = (void *)o;
 
                 std::map<std::string, w_variable *> variables_t_bis = std::map<std::string, w_variable *>(variables_t);
                 variables_t_bis["self"] = list;

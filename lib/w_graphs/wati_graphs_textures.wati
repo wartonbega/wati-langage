@@ -1,0 +1,21 @@
+classe texture contient
+    methode constructeur (source, nom, x, y, w, h) fait
+        self.nom = nom;
+        self.rotation = 0;
+        !load_texture_as(source, self.nom)
+        self.x = x;
+        self.y = y;
+        self.h = h;
+        self.w = w;
+        self.count = 0;
+    fin
+
+    methode render () fait
+        self.count = self.count + 1;
+        !draw_texture(self.nom, self.x, self.y, self.h, self.w)
+    fin
+
+    methode translation (n_x, n_y, frames) fait
+        
+    fin
+fin
