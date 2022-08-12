@@ -1,23 +1,12 @@
-
-if [ ! command -v python3.10 &> /dev/null ]; then
-    echo "<python3.10> n'as pas été installé. Installez python3.10 pour pouvoir compiler les programmes"
-    exit 1
-fi
-
-python3.10 depedences.py
-if [ $? -eq 1 ]
-    exit 1
-fi
-
 if [ ! command -v make &> /dev/null ]; then
-    echo "<make> n'as pas été installé. Installez make pour pouvoir compiler les programmes"
+    echo "<make> n'as pas été installé. Installez make pour pouvoir compiler le programme"
     exit 1
 else
     echo "compilation ..."
     make build
 
     echo "compilation des librairies ..."
-    make cpp_lib_macos
+    make cpp_lib_linux
 fi
 
 user=$(whoami)
@@ -46,6 +35,7 @@ fi
 sudo cp -R $LIBS /usr/local/lib/wati/lib
 sudo cp -R $CPP_LIBS /usr/local/lib/wati/cpp_lib
 
+
 echo "wati-langage installé !"
 echo "pour exécuter un programme : "
-echo "  wati nom_du_programme.wati"
+echo "\twati nom_du_programme.wati"
