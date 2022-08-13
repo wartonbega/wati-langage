@@ -25,6 +25,7 @@ std::string w_variable::get_type()
 }
 
 w_variable::w_variable(){}
+
 w_variable::w_variable(int content)
 {
     int *r = new int(content);

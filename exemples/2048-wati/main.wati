@@ -16,8 +16,6 @@ classe game contient
             !self.map_save.plus(l_)
             !self.map.plus(l)
         fin
-        (self.map[0]!.modifie(0, 1024))
-        (self.map[0]!.modifie(1, 1024))
 
         self.random = random();
 
@@ -87,50 +85,77 @@ classe game contient
         !draw_text(x * self.size + 5, y * self.size + 5, self.window_w/4 - 10, self.window_h/4 - 10, !char(num), "font.ttf")
     fin
 
+    methode draw_map () fait
+        pour x allant de 0 a self.map.taille fait
+            pour y allant de 0 a self.map.taille fait
+                n = self.map[x][y];
+                si n != 0 alors
+                    !self.draw_square(x, y, n)
+                fin
+                si n >= 2048 alors
+                    self.state = "win";
+                fin
+            fin    
+        fin
+    fin
+
     methode loop (events) fait
         si self.state == "game" alors
-            !set_color(255, 255, 255, 255)
-            !clear()
+            
             pour i allant de 0 a events.taille fait
                 event = events[i];
                 si !et(event == "KeyDown", self.anti_repett) alors
                     self.anti_repett = 0;
                     si event == "Left" alors
+                        !set_color(255, 255, 255, 255)
+                        !clear()
+
                         !self.copy_save()
                         !self.left()
                         !self.chose_case()
+
+                        !self.draw_map()
+                        !render()
                     sinonsi event == "Right" alors
+                        !set_color(255, 255, 255, 255)
+                        !clear()
+
                         !self.copy_save()
                         !self.right()
                         !self.chose_case()
+
+                        !self.draw_map()
+                        !render()
                     sinonsi event == "Up" alors
+                        !set_color(255, 255, 255, 255)
+                        !clear()
+
                         !self.copy_save()
                         !self.up()
                         !self.chose_case()
+
+                        !self.draw_map()
+                        !render()
                     sinonsi event == "Down" alors
+                        !set_color(255, 255, 255, 255)
+                        !clear()
+
                         !self.copy_save()
                         !self.down()
                         !self.chose_case()
+
+                        !self.draw_map()
+                        !render()
                     sinonsi event == "R" alors
                         !self.load_copy()
+                    sinonsi event == "Escape" alors
+                        renvoie 0;
                     fin
-                    
                 sinonsi event == "KeyUp" alors
                     self.anti_repett = 1;
                 fin
             fin
-
-            pour x allant de 0 a self.map.taille fait
-                pour y allant de 0 a self.map.taille fait
-                    n = self.map[x][y];
-                    si n != 0 alors
-                        !self.draw_square(x, y, n)
-                    fin
-                    si n >= 2048 alors
-                        self.state = "win";
-                    fin
-                fin    
-            fin
+            
         sinonsi self.state == "win" alors
             !set_color(255, 255, 255, 255)
             !clear()
@@ -143,8 +168,9 @@ classe game contient
                 fin    
             fin
             !draw_text(10, 10, self.window_h - 10, self.window_w - 10, "Gagne !", "font.ttf")
+            !render()
+
         fin
-        !render()
         renvoie 1;
     fin
 
@@ -267,7 +293,12 @@ classe game contient
         index = !self.random.rand(xs.taille);
         x = xs[index];
         y = ys[index];
-        (self.map[x]!.modifie(y, 2))
+        r = !self.random.rand(100);
+        val = 2;
+        si r > 90 alors
+            val = 4;
+        fin 
+        (self.map[x]!.modifie(y, val))
         self.last_x = x;
         self.last_y = y;
     fin

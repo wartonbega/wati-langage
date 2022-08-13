@@ -5,7 +5,7 @@ if [ ! command -v python3.10 &> /dev/null ]; then
 fi
 
 python3.10 depedences.py
-if [ $? -eq 1 ]
+if [ $? -eq 1 ]; then
     exit 1
 fi
 
@@ -16,8 +16,16 @@ else
     echo "compilation ..."
     make build
 
+    if [ $? -eq 1 ]; then
+        exit 1
+    fi
+
     echo "compilation des librairies ..."
     make cpp_lib_macos
+
+    if [ $? -eq 1 ]; then
+        exit 1
+    fi
 fi
 
 user=$(whoami)
@@ -46,6 +54,7 @@ fi
 sudo cp -R $LIBS /usr/local/lib/wati/lib
 sudo cp -R $CPP_LIBS /usr/local/lib/wati/cpp_lib
 
+echo ""
 echo "wati-langage installé !"
 echo "pour exécuter un programme : "
 echo "  wati nom_du_programme.wati"

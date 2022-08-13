@@ -1,10 +1,8 @@
 
 build:
-	echo "Build pour Macos..."
 	g++ -O3 -std=c++17 -pthread ./src/*.cpp -o ./bin/wati -ldl
 
 build_linux:
-	echo "Build pour Linux..."
 	g++ -O3 -std=c++17 -pthread ./src/*.cpp -o ./bin/wati -ldl
 
 run:

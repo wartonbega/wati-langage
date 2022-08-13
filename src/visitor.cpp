@@ -14,6 +14,7 @@ std::map<std::string, w_function *> functions;
 std::map<std::string, w_class_template *> classes;
 
 std::vector<std::string> inbuild_funcs;
+std::vector<std::string> inbuild_funcs_documentation;
 
 void *cpp_lib_handler = dlopen("/usr/local/lib/wati/cpp_lib/libs.so", RTLD_LAZY);
 
@@ -68,6 +69,16 @@ std::map<std::string, w_variable *> copy_var_table(std::map<std::string, w_varia
         r[std::get<0>(i)] = new w_variable(*std::get<1>(i));
     }
     return r;
+}
+
+bool accept_var_name(std::string name)
+{
+    return true;
+}
+
+void variable_asignement(std::string name, w_variable *v, std::map<std::string, w_variable *> &variables_t)
+{
+    variables_t[name] = v;
 }
 
 bool parentethis_is_listed(node *trunc)
@@ -336,16 +347,28 @@ void visitor_init_inbuild_functions()
     int_ne->inbuild = true;
     functions["!int.ne"] = int_ne; // !=
 
+
+    // we defines all the inbuild functions and include theirs documentation
     inbuild_funcs.push_back("!print");
+    inbuild_funcs_documentation.push_back("Imprime sur la sortie standard les arguments. !print(var1, var2, ...) -> 0");
     inbuild_funcs.push_back("!type");
+    inbuild_funcs_documentation.push_back("Renvoie le type de la variable en 'char'. !type( var ) -> 'char'");
     inbuild_funcs.push_back("!system");
+    inbuild_funcs_documentation.push_back("Execute la commande. !system( var(char) ) -> 0");
     inbuild_funcs.push_back("!input");
+    inbuild_funcs_documentation.push_back("Attend une entrée de l'utilisateur de taille 1. !input( var(char) ) -> char");
     inbuild_funcs.push_back("!char");
+    inbuild_funcs_documentation.push_back("Convertis la variable en type 'char'. !char( var ) -> char");
     inbuild_funcs.push_back("!c_len");
+    inbuild_funcs_documentation.push_back("Renvoie la longueure d'une variable 'char'. !c_len( var(char) ) -> int");
     inbuild_funcs.push_back("!erreur");
+    inbuild_funcs_documentation.push_back("Lance l'erreur. !erreur( var(char) ) -> int");
     inbuild_funcs.push_back("!sortie");
+    inbuild_funcs_documentation.push_back("Finis le programme avec le code indiqué. !sortie( var(int) ) -> int");
     inbuild_funcs.push_back("!c_en");
+    inbuild_funcs_documentation.push_back("Accède au caractère X d'une variable 'char'. !c_en( var(char) ) -> char");
     inbuild_funcs.push_back("!temps");
+    inbuild_funcs_documentation.push_back("Renvoie le temps écoulé depuis l'epoch (en secondes). !temps( ) -> int");
 
     std::string fs = open_file("/usr/local/lib/wati/cpp_lib/functions");
     if (fs == "file_not_found")
@@ -354,21 +377,35 @@ void visitor_init_inbuild_functions()
         error(err, what_reference(0)->top(), 0);
     }
     std::string patent;
+    bool fill = true;
+    std::string documentation;
     for (auto i : fs)
     {
         if (i == '\n')
         {
             inbuild_funcs.push_back(patent);
+            inbuild_funcs_documentation.push_back(documentation);
             patent = "";
+            documentation = "";
+            fill = 1;
         }
-        else if (std::string(1, i) != " ")
+        else if (std::string(1, i) == " " && fill)
+        {
+            fill = false;
+        }
+        else if (fill)
         {
             patent += i;
+        }
+        else if (!fill)
+        {
+            documentation += i;
         }
     }
     if (! patent.empty())
     {
         inbuild_funcs.push_back(patent);
+        inbuild_funcs_documentation.push_back(documentation);
     }
 }
 
@@ -611,7 +648,8 @@ w_variable *visitor_funcall(std::string name, node *args, std::map<std::string, 
         {
             std::string arg_n = func->arguments->children[i]->children[0]->value;
             w_variable *arg_v = visitor_compute(args->children[i], variables_t, thread_id);
-            variables_t[arg_n] = arg_v;
+            // variables_t[arg_n] = arg_v; we use the variable asignement
+            variable_asignement(arg_n, arg_v, variables_t);
         }
         w_variable *res = visitor_visit(func->trunc, variables_t, thread_id);
         return res;
@@ -638,9 +676,11 @@ w_variable *visitor_funcall_methode(std::string name, node *args, std::map<std::
         {
             std::string arg_n = func->arguments->children[i]->children[0]->value;
             w_variable *arg_v = visitor_compute(args->children[i], variables_t, thread_id);
-            variables_t[arg_n] = arg_v;
+            variable_asignement(arg_n, arg_v, variables_t);
+            // variables_t[arg_n] = arg_v;
         }
-        variables_t["self"] = self;
+        variable_asignement ("self", self, variables_t);
+        // variables_t["self"] = self;
         w_variable *res = visitor_visit(func->trunc, variables_t, thread_id);
         return res;
     }
@@ -889,8 +929,10 @@ w_variable *visitor_link_operator(w_variable *a, w_variable *b, std::string oper
         return visitor_use_inbuild(a, b, opera, thread_id);
     }
 
-    variables_t["self"] = a;
-    variables_t[func->arguments->children[0]->children[0]->value] = b;
+    // variables_t["self"] = a;
+    variable_asignement("self", a, variables_t);
+    // variables_t[func->arguments->children[0]->children[0]->value] = b;
+    variable_asignement(func->arguments->children[0]->children[0]->value, b, variables_t);
     return visitor_visit(func->trunc, variables_t, thread_id);
 }
 
@@ -925,8 +967,13 @@ w_variable *visitor_new_object(std::string name, node *args, std::map<std::strin
     return var;
 }
 
-w_variable *generate_function_variable(std::string name)
+w_variable *generate_function_variable(std::string name, int thread_id)
 {
+    if (!function_exist(name, functions))
+    {
+        std::string err = "la fonction " + name + " n'existe pas";
+        error(err, what_reference(thread_id)->top(), thread_id);
+    }
     w_variable *r = new w_variable();
     r->type = 0;                                  // this is a function
     r->content = (void *)(new std::string(name)); // the content is just the name of the variable
@@ -1045,7 +1092,7 @@ w_variable *visitor_compute(node *c, std::map<std::string, w_variable *> variabl
                 {
                     std::string name = last_var->get_type();
                     std::string f_name = "!" + name + "." + patent;
-                    last_value = generate_function_variable(f_name);
+                    last_value = generate_function_variable(f_name, thread_id);
                     // we generate a function variable
                 }
                 else if (!patent.empty())
@@ -1168,7 +1215,7 @@ w_variable *visitor_compute(node *c, std::map<std::string, w_variable *> variabl
         {                                                                         // call a function
             if (i + 1 >= c->children.size() || c->children[i + 1]->value != "()") // does not call
             {
-                last_value = generate_function_variable(c->children[i]->value);
+                last_value = generate_function_variable(c->children[i]->value, thread_id);
                 // std::string err = "l'appel d'une fonction doit etre suivie de ses arguments";
                 // error(err, c->children[i]->reference);
             }
@@ -1422,7 +1469,7 @@ void visitor_keyword_include(node *trunc, std::map<std::string, w_variable *> &v
         std::string r = open_file(filename2.c_str());
         if (r == "file_not_found") 
         { // if we don't find the file, then it is maybe in the lib dir
-            filename2 = "/usr/local/lib/wati/lib/" + filename2;
+            filename2 = "/usr/local/lib/wati/lib/" + filename;
             if (visitor_is_included(filename2))
             { // meaning we already included it
                 return;
@@ -1540,7 +1587,8 @@ void visitor_vardef(node *trunc, std::map<std::string, w_variable *> &variables_
     }
     else
     {
-        variables_t[expr] = result;
+        variable_asignement(expr, result, variables_t);
+        // variables_t[expr] = result;
     }
 }
 
@@ -1680,7 +1728,8 @@ std::tuple<std::string, w_variable *> visitor_forloop(node *trunc, std::map<std:
     {
         // free(var_cont); // avoid memory leaks
         var = new w_variable(index);
-        variables_t[var_name] = var;
+        variable_asignement(var_name, var, variables_t);
+        // variables_t[var_name] = var;
         std::tuple<std::string, w_variable *> ret = visitor_visit_incode(code, variables_t, thread_id);
         if (std::get<0>(ret) == "break")
         {
@@ -1786,7 +1835,8 @@ std::tuple<std::string, w_variable *> visitor_visit_incode(node *trunc, std::map
         }
         else if (instruction->value[0] == '!')
         { // we call the function
-            if (trunc->children[i + 1]->value != "()")
+
+            if (i + 1 < trunc->children.size() && trunc->children[i + 1]->value != "()")
             {
                 std::string err = "l'appel d'une fonction doit etre suivie de ses arguments";
                 error(err, instruction->reference, thread_id);
@@ -1900,7 +1950,7 @@ w_variable *visitor_visit(node *trunc, std::map<std::string, w_variable *> varia
         }
         else if (instruction->value[0] == '!')
         { // we call the function
-            if (trunc->children[i + 1]->value != "()")
+            if (i + 1 < trunc->children.size() && trunc->children[i + 1]->value != "()")
             {
                 std::string err = "l'appel d'une fonction doit etre suivie de ses arguments";
                 error(err, instruction->reference, thread_id);

@@ -7,7 +7,14 @@
 
 struct w_variable
 {
+    // the type of the variable : 
+    // 0 -> function
+    // 1 -> char
+    // 2 -> int
     int type;
+    
+    // the pointer to the real value
+    // we can cast it according to the type of the variable
     void *content;
 
     ~w_variable();

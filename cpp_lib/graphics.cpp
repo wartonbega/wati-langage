@@ -9,6 +9,7 @@
 #include "../src/include/node.hpp"
 #include "../src/include/variables.hpp"
 #include "../src/include/visitor.hpp"
+#include "../src/include/main.hpp"
 
 SDL_Window *win = NULL;
 SDL_Renderer *ren = NULL;
@@ -19,11 +20,7 @@ bool quit = false;
 std::map<std::string, SDL_Texture *> tex;
 std::map<std::string, TTF_Font *> fonts;
 
-void error(std::string err, std::string ref)
-{
-    std::cout << "erreur " + ref + " : " + err << std::endl;
-    exit(1);
-}
+
 
 bool texture_exist(std::string name)
 {
@@ -71,7 +68,7 @@ extern "C" w_variable *set_color(std::vector<w_variable *> args, std::map<std::s
     // r, v, b, a
     if (args.size() != 4)
     {
-        error("!init_window necessite 2 arguments, `rouge`, `vert`, `bleue` et `alpha`", reference);
+        error("!init_window necessite 2 arguments, `rouge`, `vert`, `bleue` et `alpha`", reference, thread_id);
     }
 
     w_variable *r = args[0];
@@ -80,7 +77,7 @@ extern "C" w_variable *set_color(std::vector<w_variable *> args, std::map<std::s
     w_variable *a = args[3];
     if (r->get_type() != "int" || v->get_type() != "int" || b->get_type() != "int" || a->get_type() != "int")
     {
-        error("!init_window necessite 2 arguments, `rouge`, `vert`, `bleue` et `alpha`, de type 'int'", reference);
+        error("!init_window necessite 2 arguments, `rouge`, `vert`, `bleue` et `alpha`, de type 'int'", reference, thread_id);
     }
     int rouge = *(int *)r->content;
     int vert = *(int *)v->content;
@@ -96,7 +93,7 @@ extern "C" w_variable *fill_rect(std::vector<w_variable *> args, std::map<std::s
     // x, y, width, height
     if (args.size() != 4)
     {
-        error("!fill_rect necessite 2 arguments, `x`, `y`, `largeur` et `longueure`", reference);
+        error("!fill_rect necessite 2 arguments, `x`, `y`, `largeur` et `longueure`", reference, thread_id);
     }
 
     w_variable *x_ = args[0];
@@ -105,7 +102,7 @@ extern "C" w_variable *fill_rect(std::vector<w_variable *> args, std::map<std::s
     w_variable *h = args[3];
     if (w->get_type() != "int" || h->get_type() != "int" || x_->get_type() != "int" || y_->get_type() != "int")
     {
-        error("!fill_rect necessite 2 arguments, `x`, `y`, `largeur` et `longueure`, de type 'int'", reference);
+        error("!fill_rect necessite 2 arguments, `x`, `y`, `largeur` et `longueure`, de type 'int'", reference, thread_id);
     }
 
     int x = *(int *)x_->content;
@@ -128,7 +125,7 @@ extern "C" w_variable *draw_text(std::vector<w_variable *> args, std::map<std::s
     // x, y, text, font
     if (args.size() != 6)
     {
-        error("!draw_text necessite 6 arguments, 'x', 'y', 'h', 'w', 'text', 'police'", reference);
+        error("!draw_text necessite 6 arguments, 'x', 'y', 'h', 'w', 'text', 'police'", reference, thread_id);
     }
 
     w_variable *arg0 = args[0]; // x -> int
@@ -176,14 +173,14 @@ extern "C" w_variable *init_window(std::vector<w_variable *> args, std::map<std:
     // width, height
     if (args.size() != 2)
     {
-        error("!init_window necessite 2 arguments, `largeur` et `longueure`", reference);
+        error("!init_window necessite 2 arguments, `largeur` et `longueure`", reference, thread_id);
     }
 
     w_variable *w = args[0];
     w_variable *h = args[1];
     if (w->get_type() != "int" || h->get_type() != "int")
     {
-        error("!init_window necessite 2 arguments, `largeur` et `longueure` de type 'int'", reference);
+        error("!init_window necessite 2 arguments, `largeur` et `longueure` de type 'int'", reference, thread_id);
     }
 
     int width = *(int *)w->content;
@@ -212,13 +209,13 @@ extern "C" w_variable *set_delay(std::vector<w_variable *> args, std::map<std::s
 {
     if (args.size() != 1)
     {
-        error("!set_delay necessite 1 arguments : `longueure`", reference);
+        error("!set_delay necessite 1 arguments : `longueure`", reference, thread_id);
     }
 
     w_variable *d = args[0];
     if (d->get_type() != "int")
     {
-        error("!set_delay necessite 1 arguments : `longueure`, de type 'int'", reference);
+        error("!set_delay necessite 1 arguments : `longueure`, de type 'int'", reference, thread_id);
     }
     int de = *(int *)d->content;
     delay = de;
@@ -269,13 +266,13 @@ extern "C" w_variable *set_window_title(std::vector<w_variable *> args, std::map
 {
     if (args.size() != 1)
     {
-        error("la fonction !set_window_title necessite un argument", reference);
+        error("la fonction !set_window_title necessite un argument", reference, thread_id);
     }
 
     w_variable *arg = args[0];
     if (arg->get_type() != "char")
     {
-        error("la fonction !set_window_title necessite un argument de type 'char', pas '" + arg->get_type() + "'", reference);
+        error("la fonction !set_window_title necessite un argument de type 'char', pas '" + arg->get_type() + "'", reference, thread_id);
     }
     std::string title = *(std::string *)arg->content;
     SDL_SetWindowTitle(win, title.c_str());
@@ -286,7 +283,7 @@ extern "C" w_variable *draw_texture(std::vector<w_variable *> args, std::map<std
 {
     if (args.size() != 5)
     {
-        error("la fonction !draw_texture necessite 5 arguments : nom, x, y, largeur, hauteur", reference);
+        error("la fonction !draw_texture necessite 5 arguments : nom, x, y, largeur, hauteur", reference, thread_id);
     }
 
     w_variable *arg = args[0];
@@ -309,7 +306,7 @@ extern "C" w_variable *draw_texture(std::vector<w_variable *> args, std::map<std
 
     if (!texture_exist(name))
     {
-        error("la texture '" + name + "' n'existe pas", reference);
+        error("la texture '" + name + "' n'existe pas", reference, thread_id);
     }
 
     SDL_Texture *t= tex[name];
@@ -323,7 +320,7 @@ extern "C" w_variable *draw_rotated_texture(std::vector<w_variable *> args, std:
 {
     if (args.size() != 6)
     {
-        error("la fonction !draw_texture necessite 6 arguments : nom, x, y, largeur, hauteur et angle", reference);
+        error("la fonction !draw_texture necessite 6 arguments : nom, x, y, largeur, hauteur et angle", reference, thread_id);
     }
 
     w_variable *arg = args[0];
@@ -348,7 +345,7 @@ extern "C" w_variable *draw_rotated_texture(std::vector<w_variable *> args, std:
 
     if (!texture_exist(name))
     {
-        error("la texture '" + name + "' n'existe pas", reference);
+        error("la texture '" + name + "' n'existe pas", reference, thread_id);
     }
 
     SDL_Texture *texture= tex[name];
@@ -372,7 +369,7 @@ extern "C" w_variable *rotate_texture(std::vector<w_variable *> args, std::map<s
 {
     if (args.size() != 2)
     {
-        error("la fonction !rotate_texture necessite 2 arguments : nom, angle", reference);
+        error("la fonction !rotate_texture necessite 2 arguments : nom, angle", reference, thread_id);
     }
     w_variable *arg = args[0];
     w_variable *arg1 = args[1];
@@ -383,7 +380,7 @@ extern "C" w_variable *rotate_texture(std::vector<w_variable *> args, std::map<s
 
     if (!texture_exist(name))
     {
-        error("la texture '" + name + "' n'existe pas", reference);
+        error("la texture '" + name + "' n'existe pas", reference, thread_id);
     }
 
     SDL_Texture *texture = tex[name];
@@ -405,23 +402,24 @@ extern "C" w_variable *load_texture_as(std::vector<w_variable *> args, std::map<
 {
     if (args.size() != 2)
     {
-        error("la fonction !load_texture_as necessite deux arguments", reference);
+        error("la fonction !load_texture_as necessite deux arguments", reference, thread_id);
     }
 
     w_variable *arg = args[0]; // filename
     w_variable *arg2 = args[1]; // name of the texture
     if (arg->get_type() != "char" || arg2->get_type() != "char")
     {
-        error("la fonction !load_texture_as necessite deux arguments de type 'char'", reference);
+        error("la fonction !load_texture_as necessite deux arguments de type 'char'", reference, thread_id);
     }
 
     std::string filename = *(std::string *)arg->content;
+    filename = base_dir + "/" + filename;
     std::string name = *(std::string *)arg2->content;
     SDL_Texture *t = IMG_LoadTexture(ren, filename.c_str());
     if (t == NULL)
     {
         // as we are opening a file, we need to know the sdl error.
-        error("la texture '" + filename + "' (" + name + ") n'as pas put être chargée. Peut être que le fichier n'existe pas. Erreur SDL : " + SDL_GetError(), reference);
+        error("la texture '" + filename + "' (" + name + ") n'as pas put être chargée. Peut être que le fichier n'existe pas. Erreur SDL : " + SDL_GetError(), reference, thread_id);
     }
     tex[name] = t;
 
@@ -432,7 +430,7 @@ extern "C" w_variable *load_font_as(std::vector<w_variable *> args, std::map<std
 {
     if (args.size() != 3)
     {
-        error("la fonction !load_font_as necessite 3 arguments : 'chemin', 'nom' et 'taille'", reference);
+        error("la fonction !load_font_as necessite 3 arguments : 'chemin', 'nom' et 'taille'", reference, thread_id);
     }
 
     w_variable *arg = args[0]; // filename
@@ -440,10 +438,11 @@ extern "C" w_variable *load_font_as(std::vector<w_variable *> args, std::map<std
     w_variable *arg3 = args[2]; // name of the texture
     if (arg->get_type() != "char" || arg2->get_type() != "char")
     {
-        error("la fonction !load_font_as necessite 3 arguments de type ('char', 'char', 'int')", reference);
+        error("la fonction !load_font_as necessite 3 arguments de type ('char', 'char', 'int')", reference, thread_id);
     }
 
     std::string filename = *(std::string *)arg->content;
+    filename = base_dir + "/" + filename;
     std::string name = *(std::string *)arg2->content;
     int size = *(int *)arg3->content;
 
@@ -452,7 +451,7 @@ extern "C" w_variable *load_font_as(std::vector<w_variable *> args, std::map<std
     if (Sans == NULL)
     {
         // as we are opening a file, we need to know the sdl error.
-        error("!draw_text : police de caractère inconnue : '" + filename + "'. Erreur SDL : " + SDL_GetError(), reference);
+        error("!draw_text : police de caractère inconnue : '" + filename + "'. Erreur SDL : " + SDL_GetError(), reference, thread_id);
     }
     fonts[name] = Sans;
 
@@ -461,21 +460,26 @@ extern "C" w_variable *load_font_as(std::vector<w_variable *> args, std::map<std
 
 extern "C" w_variable *mainloop(std::vector<w_variable *> args, std::map<std::string, w_variable *> variables_t, std::string reference, int thread_id)
 {
+    if (thread_id != 0)
+    {
+        std::string err = "la fonction !mainloop doit être lancée depuis le thread principale";
+        error(err, reference, thread_id);
+    }
     if (args.size() != 1)
     {
-        error("la fonction !main_loop necessite un argument", reference);
+        error("la fonction !main_loop necessite un argument", reference, thread_id);
     }
 
     w_variable *fonction_presume = args[0];
     if (fonction_presume->get_type() != "fonction")
     {
-        error("la fonction !main_loop necessite un argument de type 'fonction', pas '" + fonction_presume->get_type() + "'", reference);
+        error("la fonction !main_loop necessite un argument de type 'fonction', pas '" + fonction_presume->get_type() + "'", reference, thread_id);
     }
 
     std::string func_name = *(std::string *)fonction_presume->content;
     if (!function_exist(func_name, functions))
     {
-        error("la fonction '" + func_name + "' n'existe pas", reference);
+        error("la fonction '" + func_name + "' n'existe pas", reference, thread_id);
     }
 
     while (!quit)

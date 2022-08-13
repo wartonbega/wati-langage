@@ -54,12 +54,19 @@ classe list contient
         n = self.head.next;
 
         tant que (n.next.content != self.tail.content) fait
-            r = r + !char(n.content) + ", ";
+            si !type(n.content) == "char" alors
+                r = r + "'" + n.content + "'" + ", ";
+            sinon
+                r = r + !char(n.content) + ", ";
+            fin
             n = n.next;
         fin
         
-        r = r + !char(n.content);
-        r = r + " ]";
+        si !type(n.content) == "char" alors
+            r = r + "'" + n.content + "' ]";
+        sinon
+            r = r + !char(n.content) + " ]";
+        fin
         
         renvoie r;
     fin

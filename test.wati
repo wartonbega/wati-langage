@@ -1,2 +1,6 @@
 inclue "std.wati";
 
+l = list();
+
+a = !attributs(l);
+!println(a)

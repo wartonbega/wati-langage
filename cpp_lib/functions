@@ -17,9 +17,11 @@
 !rotate_texture
 !draw_rotated_texture
 !draw_text
-!quitte
-!wsin
-!wcos
 !load_font_as
-!ecrit
-!ouvre
+!wsin
+!wcos 
+!ecrit Écrit le contenue dans un fichier indiqué. !ecrit( nom_de_fichier(char), contenu(char) ) -> 0
+!ouvre Ouvre le fichier indiqué et renvoie son contenu. !ouvre( nom_de_fichier(char) ) -> char
+!attributs Renvoie les attributs d'un objet. !attributs( objet ) -> list
+!methodes Renvoie les methodes d'un objet. !methodes( objet ) -> list
+!doc Renvoie la documentation d'une fonction. !doc( var(fonction) ) -> char

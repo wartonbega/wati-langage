@@ -17,6 +17,7 @@ extern std::stack<std::string> *references_thread_3;
 extern std::stack<std::string> *references_thread_4;
 
 extern std::vector<std::string> inbuild_funcs;
+extern std::vector<std::string> inbuild_funcs_documentation;
 extern void *cpp_lib_handler;
 
 extern int thread_utilized;
@@ -24,6 +25,8 @@ extern int thread_utilized;
 extern std::map<std::string, w_function *> functions;
 extern std::map<std::string, w_class_template *> classes;
 
+void variable_asignement(std::string name, w_variable *v, std::map<std::string, w_variable *> &variables_t);
+bool accept_var_name(std::string name);
 std::stack<std::string> *what_reference(int thread_id);
 bool function_exist(std::string name, std::map<std::string, w_function *> funcs);
 bool class_exist(std::string name, std::map<std::string, w_class_template *> variables_t);
@@ -37,6 +40,7 @@ void visitor_init_inbuild_functions();
 node *visitor_separate_listed(node *parent);
 w_variable *visitor_function_inbuild(std::string name, node *args, std::map<std::string, w_variable *> variables_t, int thread_id);
 bool visitor_is_inbuild(std::string name);
+w_variable *generate_function_variable(std::string name, int thread_id);
 w_variable *visitor_funcall(std::string name, node *args, std::map<std::string, w_variable *> variables_t, int thread_id);
 w_variable *visitor_funcall_methode(std::string name, node *args, std::map<std::string, w_variable *> variables_t, w_variable *self, int thread_id);
 w_variable *visitor_use_inbuild_int(int a, int b, std::string opera, int thread_id);
