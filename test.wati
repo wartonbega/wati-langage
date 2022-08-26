@@ -1,14 +1,12 @@
 inclue "std.wati";
 
-somme = 0;
-a = &somme;
-n = 0;
-m = 101;
-
-pour i allant de n a m fait 
-    somme = somme + i;
+fonction toto (t) fait 
+    *t = 7;
 fin
 
-fonction traqueur.en_string () fait 
-    renvoie "(" + !type(*self) + ")" + !char(*self);
-fin
+a = (1, 2, 3);
+t = &a;
+
+!toto(t)
+
+!println(a)

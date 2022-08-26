@@ -1,6 +1,7 @@
 inclue "./lib/std.wati";
 
 lists = list();
+!println(lists)
 
 pour i allant de 0 a 100 fait
     n = list();
@@ -9,6 +10,7 @@ pour i allant de 0 a 100 fait
     fin
     lists = lists + n;
 fin
+
 
 fonction f(x) fait
     renvoie x ^ 2 + 10;

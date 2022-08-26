@@ -104,3 +104,16 @@ w_variable *tracker::value(int thread_id)
     // finally we can return the right value
     return this->variable_t->get(this->name_to_track);
 }
+
+void tracker::set_value(w_variable *v, int thread_id)
+{
+    // we check if the variable still exists
+    if (!this->variable_t->exist(this->name_to_track))
+    {
+        std::string err = "le traqueur visant '" + this->name_to_track + "' n'as plus rien à traquer. La variable '" + this->name_to_track + "' n'est plus accessible";
+        error(err, what_reference(thread_id)->top(), thread_id);
+    }
+
+    // we assign to the right value
+    this->variable_t->assign(this->name_to_track, v);
+}

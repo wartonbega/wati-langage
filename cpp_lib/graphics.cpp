@@ -20,8 +20,6 @@ bool quit = false;
 std::map<std::string, SDL_Texture *> tex;
 std::map<std::string, TTF_Font *> fonts;
 
-
-
 bool texture_exist(std::string name)
 {
     if (tex.find(name) != tex.end())
@@ -143,16 +141,16 @@ extern "C" w_variable *draw_text(std::vector<w_variable *> args, variable_table 
     std::string text_content = *(std::string *)arg4->content;
     std::string font_name = *(std::string *)arg5->content;
 
-    //this opens a font style and sets a size
-    TTF_Font* Sans = fonts[font_name];
+    // this opens a font style and sets a size
+    TTF_Font *Sans = fonts[font_name];
     Uint8 r;
     Uint8 v;
     Uint8 b;
     SDL_GetRenderDrawColor(ren, &r, &v, &b, nullptr);
     SDL_Color c = {r, v, b};
-    SDL_Surface* surfaceMessage = TTF_RenderText_Solid(Sans, text_content.c_str(), c); 
+    SDL_Surface *surfaceMessage = TTF_RenderText_Solid(Sans, text_content.c_str(), c);
 
-    SDL_Texture* Message = SDL_CreateTextureFromSurface(ren, surfaceMessage);
+    SDL_Texture *Message = SDL_CreateTextureFromSurface(ren, surfaceMessage);
 
     SDL_Rect Message_rect;
     Message_rect.x = x;
@@ -299,8 +297,8 @@ extern "C" w_variable *draw_texture(std::vector<w_variable *> args, variable_tab
     int height = *(int *)arg4->content;
 
     SDL_Rect texture_rect;
-    texture_rect.x = x;  
-    texture_rect.y = y; 
+    texture_rect.x = x;
+    texture_rect.y = y;
     texture_rect.w = width;
     texture_rect.h = height;
 
@@ -309,7 +307,7 @@ extern "C" w_variable *draw_texture(std::vector<w_variable *> args, variable_tab
         error("la texture '" + name + "' n'existe pas", reference, thread_id);
     }
 
-    SDL_Texture *t= tex[name];
+    SDL_Texture *t = tex[name];
 
     SDL_RenderCopy(ren, t, NULL, &texture_rect);
 
@@ -338,8 +336,8 @@ extern "C" w_variable *draw_rotated_texture(std::vector<w_variable *> args, vari
     int angle = *(int *)arg5->content;
 
     SDL_Rect texture_rect;
-    texture_rect.x = x;  
-    texture_rect.y = y; 
+    texture_rect.x = x;
+    texture_rect.y = y;
     texture_rect.w = width;
     texture_rect.h = height;
 
@@ -348,7 +346,7 @@ extern "C" w_variable *draw_rotated_texture(std::vector<w_variable *> args, vari
         error("la texture '" + name + "' n'existe pas", reference, thread_id);
     }
 
-    SDL_Texture *texture= tex[name];
+    SDL_Texture *texture = tex[name];
 
     int w, h;
     SDL_QueryTexture(texture, NULL, NULL, &w, &h);
@@ -357,8 +355,8 @@ extern "C" w_variable *draw_rotated_texture(std::vector<w_variable *> args, vari
     SDL_SetRenderTarget(ren, target);
     SDL_RenderCopyEx(ren, texture, NULL, NULL, angle, NULL, SDL_FLIP_NONE);
     SDL_SetRenderTarget(ren, NULL);
-    
-    SDL_RenderCopyEx(ren, target, NULL, NULL, angle, NULL, SDL_FLIP_NONE );
+
+    SDL_RenderCopyEx(ren, target, NULL, NULL, angle, NULL, SDL_FLIP_NONE);
     SDL_RenderCopy(ren, target, NULL, &texture_rect);
 
     SDL_DestroyTexture(target);
@@ -376,7 +374,6 @@ extern "C" w_variable *rotate_texture(std::vector<w_variable *> args, variable_t
 
     std::string name = *(std::string *)arg->content;
     int angle = *(int *)arg1->content;
-
 
     if (!texture_exist(name))
     {
@@ -405,7 +402,7 @@ extern "C" w_variable *load_texture_as(std::vector<w_variable *> args, variable_
         error("la fonction !load_texture_as necessite deux arguments", reference, thread_id);
     }
 
-    w_variable *arg = args[0]; // filename
+    w_variable *arg = args[0];  // filename
     w_variable *arg2 = args[1]; // name of the texture
     if (arg->get_type() != "char" || arg2->get_type() != "char")
     {
@@ -413,7 +410,9 @@ extern "C" w_variable *load_texture_as(std::vector<w_variable *> args, variable_
     }
 
     std::string filename = *(std::string *)arg->content;
-    filename = base_dir + "/" + filename;
+    if (base_dir != "")
+        filename = base_dir + "/" + filename;
+
     std::string name = *(std::string *)arg2->content;
     SDL_Texture *t = IMG_LoadTexture(ren, filename.c_str());
     if (t == NULL)
@@ -433,7 +432,7 @@ extern "C" w_variable *load_font_as(std::vector<w_variable *> args, variable_tab
         error("la fonction !load_font_as necessite 3 arguments : 'chemin', 'nom' et 'taille'", reference, thread_id);
     }
 
-    w_variable *arg = args[0]; // filename
+    w_variable *arg = args[0];  // filename
     w_variable *arg2 = args[1]; // name of the texture
     w_variable *arg3 = args[2]; // name of the texture
     if (arg->get_type() != "char" || arg2->get_type() != "char")
@@ -444,11 +443,11 @@ extern "C" w_variable *load_font_as(std::vector<w_variable *> args, variable_tab
     std::string filename = *(std::string *)arg->content;
     if (base_dir != "")
         filename = base_dir + "/" + filename;
-    
+
     std::string name = *(std::string *)arg2->content;
     int size = *(int *)arg3->content;
 
-    TTF_Font* Sans = TTF_OpenFont(filename.c_str(), size);
+    TTF_Font *Sans = TTF_OpenFont(filename.c_str(), size);
 
     if (Sans == NULL)
     {
@@ -486,7 +485,6 @@ extern "C" w_variable *mainloop(std::vector<w_variable *> args, variable_table v
 
     while (!quit)
     {
-
         w_variable *list = visitor_new_object("list", new node("*"), variables_t, thread_id); // events
         SDL_Event e;
         while (SDL_PollEvent(&e) != 0) // poll for event

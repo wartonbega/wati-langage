@@ -479,6 +479,16 @@ node *parser(std::vector<std::string> lexemes, std::string first_value, std::vec
                 node *var_asign = new node("vardef");
                 var_asign->reference = ref[i];
 
+                if (i > 2)
+                {
+                    if (lexemes[i - 2] == "*")
+                    {
+                        node *b = new node(lexemes[i - 2]);
+                        b->reference = ref[i - 2];
+                        var_asign->push_child(b);
+                        ast->children.pop_back();
+                    }
+                }
                 
                 node *name = new node(lexemes[i - 1]);
                 name->reference = ref[i - 1];
@@ -569,7 +579,7 @@ node *parser(std::vector<std::string> lexemes, std::string first_value, std::vec
         }
         else
         {
-            if ((i + 1 < lexemes.size() and lexemes[i + 1] != "=" and !is_operator(lexemes[i])))
+            if ((i + 1 < lexemes.size() and lexemes[i + 1] != "="))
             {
                 node *expr = new node(lexemes[i]);
                 expr->reference = ref[i];

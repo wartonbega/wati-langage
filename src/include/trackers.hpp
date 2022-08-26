@@ -17,6 +17,7 @@ struct tracker
 
     tracker(std::string, variable_table *);
     w_variable *value(int);
+    void set_value(w_variable *, int);
 };
 
 

@@ -1544,6 +1544,18 @@ void visitor_vardef(node *trunc, variable_table *variables_t, int thread_id)
 
     std::string expr = trunc->children[0]->value;
     node *compute = trunc->children[1];
+    bool tracker_assignation = false;
+    if (expr == "*")
+    {
+        if (trunc->children.size() != 3)
+        {
+            std::string err = "'*' ne peux pas être appliqué seul";
+            error(err, trunc->children[0]->value, thread_id);
+        }
+        expr = trunc->children[1]->value;
+        compute = trunc->children[2];
+        tracker_assignation = true;
+    }
 
     w_variable *result = visitor_compute(compute, variables_t, thread_id);
     if (is_attributed(expr)) // contains "."
@@ -1616,12 +1628,52 @@ void visitor_vardef(node *trunc, variable_table *variables_t, int thread_id)
                 error(err, trunc->children[0]->reference, thread_id);
             }
             last_o = (w_object *)last_var->content;
-            last_o->attribute_attribution(patent, result);
+            if (tracker_assignation)
+            {
+                if (!last_o->attribute_exist(patent))
+                {
+                    std::string err = "la variable '" + patent + "' n'existe pas";
+                    error(err, trunc->children[1]->reference, thread_id);
+                }
+
+                w_variable *tra = last_o->get_attribute(patent);
+                if (tra->get_type() != "traqueur")
+                {
+                    std::string err = "doit être du type 'traqueur', pas '" + tra->get_type() + "'";
+                    error(err, trunc->children[1]->reference, thread_id);
+                }
+                tracker *t = (tracker *)tra->content;
+                t->set_value(result, thread_id);
+            }
+            else
+                last_o->attribute_attribution(patent, result);
+        }
+        else 
+        {
+            std::string err = "pas de suite donnée au '.'";
+            error(err, trunc->reference, thread_id);
         }
     }
     else
     {
-        variables_t->assign(expr, result);
+        if (tracker_assignation)
+        {
+            if (!variables_t->exist(expr))
+            {
+                std::string err = "la variable '" + expr + "' n'existe pas";
+                error(err, trunc->children[1]->reference, thread_id);
+            }
+            w_variable *tra = variables_t->get(expr);
+            if (tra->get_type() != "traqueur")
+            {
+                std::string err = "doit être du type 'traqueur', pas '" + tra->get_type() + "'";
+                error(err, trunc->children[1]->reference, thread_id);
+            }
+            tracker *t = (tracker *)tra->content;
+            t->set_value(result, thread_id);
+        }
+        else
+            variables_t->assign(expr, result);
     }
 }
 
