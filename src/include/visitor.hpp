@@ -23,9 +23,10 @@ extern void *cpp_lib_handler;
 extern int thread_utilized;
 
 extern std::map<std::string, w_function *> functions;
+extern std::map<std::string, std::string> functions_documentation;
 extern std::map<std::string, w_class_template *> classes;
 
-void variable_asignement(std::string name, w_variable *v, std::map<std::string, w_variable *> &variables_t);
+//void variable_asignement(std::string name, w_variable *v, variable_table  *variables_t);
 bool accept_var_name(std::string name);
 std::stack<std::string> *what_reference(int thread_id);
 bool function_exist(std::string name, std::map<std::string, w_function *> funcs);
@@ -38,29 +39,29 @@ std::string remove_function_call_prefix(std::string name);
 bool variable_exist(std::string name, std::map<std::string, w_variable*> variables_t);
 void visitor_init_inbuild_functions();
 node *visitor_separate_listed(node *parent);
-w_variable *visitor_function_inbuild(std::string name, node *args, std::map<std::string, w_variable *> variables_t, int thread_id);
+w_variable *visitor_function_inbuild(std::string name, node *args, variable_table  variables_t, int thread_id);
 bool visitor_is_inbuild(std::string name);
 w_variable *generate_function_variable(std::string name, int thread_id);
-w_variable *visitor_funcall(std::string name, node *args, std::map<std::string, w_variable *> variables_t, int thread_id);
-w_variable *visitor_funcall_methode(std::string name, node *args, std::map<std::string, w_variable *> variables_t, w_variable *self, int thread_id);
+w_variable *visitor_funcall(std::string name, node *args, variable_table variables_t, int thread_id);
+w_variable *visitor_funcall_methode(std::string name, node *args, variable_table  variables_t, w_variable *self, int thread_id);
 w_variable *visitor_use_inbuild_int(int a, int b, std::string opera, int thread_id);
 w_variable *visitor_use_inbuild_char(std::string a, std::string b, std::string opera, int thread_id);
 w_variable *visitor_use_inbuild(w_variable *a, w_variable *b, std::string opera, int thread_id);
 w_variable *visitor_link_operator(w_variable *a, w_variable *b, std::string opera, int thread_id);
-w_variable *visitor_new_object(std::string name, node *args, std::map<std::string, w_variable *> variables_t, int thread_id);
-w_variable *visitor_compute(node *c, std::map<std::string, w_variable *> variables_t, int thread_id);
-w_variable *visitor_keyword_return(node *trunc, std::map<std::string, w_variable *> variables_t, int thread_id);
-void visitor_keyword_free(node *trunc, std::map<std::string, w_variable *> &variables_t, int thread_id);
-void visitor_keyword_tache(node *trunc, std::map<std::string, w_variable *> variables_t, int thread_id);
-void visitor_keyword_include(node *trunc, std::map<std::string, w_variable *> &variables_t, int thread_id);
+w_variable *visitor_new_object(std::string name, node *args, variable_table variables_t, int thread_id);
+w_variable *visitor_compute(node *c, variable_table *variables_t, int thread_id);
+w_variable *visitor_keyword_return(node *trunc, variable_table  variables_t, int thread_id);
+void visitor_keyword_free(node *trunc, variable_table *variables_t, int thread_id);
+void visitor_keyword_tache(node *trunc, variable_table variables_t, int thread_id);
+void visitor_keyword_include(node *trunc, variable_table *variables_t, int thread_id);
 void visitor_funcdef(node *trunc);
-void visitor_vardef(node *trunc, std::map<std::string, w_variable *> &variables_t, int thread_id);
+void visitor_vardef(node *trunc, variable_table  *variables_t, int thread_id);
 void visitor_classdef(node *trunc);
-std::tuple<std::string, w_variable *> visitor_if_declaration(node *trunc, std::map<std::string, w_variable *> &variables_t, int thread_id);
-std::tuple<std::string, w_variable *> visitor_forloop(node *trunc, std::map<std::string, w_variable *> &variables_t, int thread_id);
-std::tuple<std::string, w_variable *> visitor_whileloop(node *trunc, std::map<std::string, w_variable *> &variables_t, int thread_id);
-std::tuple<std::string, w_variable *> visitor_visit_incode(node *trunc, std::map<std::string, w_variable *> &variables_t, int thread_id);
-w_variable *visitor_visit(node *trunc, std::map<std::string, w_variable *> variables_t, int thread_id);
+std::tuple<std::string, w_variable *> visitor_if_declaration(node *trunc, variable_table  *variables_t, int thread_id);
+std::tuple<std::string, w_variable *> visitor_forloop(node *trunc, variable_table *variables_t, int thread_id);
+std::tuple<std::string, w_variable *> visitor_whileloop(node *trunc, variable_table *variables_t, int thread_id);
+std::tuple<std::string, w_variable *> visitor_visit_incode(node *trunc, variable_table *variables_t, int thread_id);
+w_variable *visitor_visit(node *trunc, variable_table variables_t, int thread_id);
 
 #define TERMINAL_RESET   std::string("\033[0m")
 #define TERMINAL_BLACK   std::string("\033[30m")      

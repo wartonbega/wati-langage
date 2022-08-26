@@ -39,7 +39,7 @@ w_variable *basic_return()
     return t;
 }
 
-extern "C" w_variable *get_key(std::vector<w_variable *> args, std::map<std::string, w_variable *> variables_t, std::string reference, int thread_id)
+extern "C" w_variable *get_key(std::vector<w_variable *> args, variable_table variables_t, std::string reference, int thread_id)
 {
     if (args.size() != 1 || args[0]->get_type() != "int")
     {
@@ -63,7 +63,7 @@ extern "C" w_variable *get_key(std::vector<w_variable *> args, std::map<std::str
     return r;
 }
 
-extern "C" w_variable *set_color(std::vector<w_variable *> args, std::map<std::string, w_variable *> variables_t, std::string reference, int thread_id)
+extern "C" w_variable *set_color(std::vector<w_variable *> args, variable_table variables_t, std::string reference, int thread_id)
 {
     // r, v, b, a
     if (args.size() != 4)
@@ -88,7 +88,7 @@ extern "C" w_variable *set_color(std::vector<w_variable *> args, std::map<std::s
     return basic_return();
 }
 
-extern "C" w_variable *fill_rect(std::vector<w_variable *> args, std::map<std::string, w_variable *> variables_t, std::string reference, int thread_id)
+extern "C" w_variable *fill_rect(std::vector<w_variable *> args, variable_table variables_t, std::string reference, int thread_id)
 {
     // x, y, width, height
     if (args.size() != 4)
@@ -120,7 +120,7 @@ extern "C" w_variable *fill_rect(std::vector<w_variable *> args, std::map<std::s
     return basic_return();
 }
 
-extern "C" w_variable *draw_text(std::vector<w_variable *> args, std::map<std::string, w_variable *> variables_t, std::string reference, int thread_id)
+extern "C" w_variable *draw_text(std::vector<w_variable *> args, variable_table variables_t, std::string reference, int thread_id)
 {
     // x, y, text, font
     if (args.size() != 6)
@@ -167,7 +167,7 @@ extern "C" w_variable *draw_text(std::vector<w_variable *> args, std::map<std::s
     return basic_return();
 }
 
-extern "C" w_variable *init_window(std::vector<w_variable *> args, std::map<std::string, w_variable *> variables_t, std::string reference, int thread_id)
+extern "C" w_variable *init_window(std::vector<w_variable *> args, variable_table variables_t, std::string reference, int thread_id)
 {
     TTF_Init();
     // width, height
@@ -196,7 +196,7 @@ extern "C" w_variable *init_window(std::vector<w_variable *> args, std::map<std:
     return basic_return();
 }
 
-extern "C" w_variable *quit_window(std::vector<w_variable *> args, std::map<std::string, w_variable *> variables_t, std::string reference, int thread_id)
+extern "C" w_variable *quit_window(std::vector<w_variable *> args, variable_table variables_t, std::string reference, int thread_id)
 {
     SDL_DestroyRenderer(ren);
     SDL_DestroyWindow(win);
@@ -205,7 +205,7 @@ extern "C" w_variable *quit_window(std::vector<w_variable *> args, std::map<std:
     return basic_return();
 }
 
-extern "C" w_variable *set_delay(std::vector<w_variable *> args, std::map<std::string, w_variable *> variables_t, std::string reference, int thread_id)
+extern "C" w_variable *set_delay(std::vector<w_variable *> args, variable_table variables_t, std::string reference, int thread_id)
 {
     if (args.size() != 1)
     {
@@ -222,20 +222,20 @@ extern "C" w_variable *set_delay(std::vector<w_variable *> args, std::map<std::s
     return basic_return();
 }
 
-extern "C" w_variable *clear(std::vector<w_variable *> args, std::map<std::string, w_variable *> variables_t, std::string reference, int thread_id)
+extern "C" w_variable *clear(std::vector<w_variable *> args, variable_table variables_t, std::string reference, int thread_id)
 {
     SDL_RenderClear(ren);
     return basic_return();
 }
 
-extern "C" w_variable *render(std::vector<w_variable *> args, std::map<std::string, w_variable *> variables_t, std::string reference, int thread_id)
+extern "C" w_variable *render(std::vector<w_variable *> args, variable_table variables_t, std::string reference, int thread_id)
 {
     SDL_RenderPresent(ren);
 
     return basic_return();
 }
 
-extern "C" w_variable *get_mouse_pos(std::vector<w_variable *> args, std::map<std::string, w_variable *> variables_t, std::string reference, int thread_id)
+extern "C" w_variable *get_mouse_pos(std::vector<w_variable *> args, variable_table variables_t, std::string reference, int thread_id)
 {
     int x;
     int y;
@@ -245,9 +245,9 @@ extern "C" w_variable *get_mouse_pos(std::vector<w_variable *> args, std::map<st
     w_variable *arg = new w_variable();
     arg->type = 2; // int
     arg->content = (void *)(new int(x));
-    std::map<std::string, w_variable *> variables_t_bis = std::map<std::string, w_variable *>(variables_t);
-    variables_t_bis["self"] = list;
-    variables_t_bis["content"] = arg;
+    variable_table variables_t_bis = variable_table(variables_t);
+    variables_t_bis.assign("self", list);
+    variables_t_bis.assign("content", arg);
 
     w_function *plus = functions["!list.plus"];
 
@@ -256,13 +256,13 @@ extern "C" w_variable *get_mouse_pos(std::vector<w_variable *> args, std::map<st
     arg = new w_variable();
     arg->type = 2; // int
     arg->content = (void *)(new int(y));
-    variables_t_bis["content"] = arg;
+    variables_t_bis.assign("content", arg);
     visitor_visit(plus->trunc, variables_t_bis, thread_id);
 
     return list;
 }
 
-extern "C" w_variable *set_window_title(std::vector<w_variable *> args, std::map<std::string, w_variable *> variables_t, std::string reference, int thread_id)
+extern "C" w_variable *set_window_title(std::vector<w_variable *> args, variable_table variables_t, std::string reference, int thread_id)
 {
     if (args.size() != 1)
     {
@@ -279,7 +279,7 @@ extern "C" w_variable *set_window_title(std::vector<w_variable *> args, std::map
     return basic_return();
 }
 
-extern "C" w_variable *draw_texture(std::vector<w_variable *> args, std::map<std::string, w_variable *> variables_t, std::string reference, int thread_id)
+extern "C" w_variable *draw_texture(std::vector<w_variable *> args, variable_table variables_t, std::string reference, int thread_id)
 {
     if (args.size() != 5)
     {
@@ -316,7 +316,7 @@ extern "C" w_variable *draw_texture(std::vector<w_variable *> args, std::map<std
     return basic_return();
 }
 
-extern "C" w_variable *draw_rotated_texture(std::vector<w_variable *> args, std::map<std::string, w_variable *> variables_t, std::string reference, int thread_id)
+extern "C" w_variable *draw_rotated_texture(std::vector<w_variable *> args, variable_table variables_t, std::string reference, int thread_id)
 {
     if (args.size() != 6)
     {
@@ -365,7 +365,7 @@ extern "C" w_variable *draw_rotated_texture(std::vector<w_variable *> args, std:
     return basic_return();
 }
 
-extern "C" w_variable *rotate_texture(std::vector<w_variable *> args, std::map<std::string, w_variable *> variables_t, std::string reference, int thread_id)
+extern "C" w_variable *rotate_texture(std::vector<w_variable *> args, variable_table variables_t, std::string reference, int thread_id)
 {
     if (args.size() != 2)
     {
@@ -398,7 +398,7 @@ extern "C" w_variable *rotate_texture(std::vector<w_variable *> args, std::map<s
     return basic_return();
 }
 
-extern "C" w_variable *load_texture_as(std::vector<w_variable *> args, std::map<std::string, w_variable *> variables_t, std::string reference, int thread_id)
+extern "C" w_variable *load_texture_as(std::vector<w_variable *> args, variable_table variables_t, std::string reference, int thread_id)
 {
     if (args.size() != 2)
     {
@@ -426,7 +426,7 @@ extern "C" w_variable *load_texture_as(std::vector<w_variable *> args, std::map<
     return basic_return();
 }
 
-extern "C" w_variable *load_font_as(std::vector<w_variable *> args, std::map<std::string, w_variable *> variables_t, std::string reference, int thread_id)
+extern "C" w_variable *load_font_as(std::vector<w_variable *> args, variable_table variables_t, std::string reference, int thread_id)
 {
     if (args.size() != 3)
     {
@@ -442,7 +442,9 @@ extern "C" w_variable *load_font_as(std::vector<w_variable *> args, std::map<std
     }
 
     std::string filename = *(std::string *)arg->content;
-    filename = base_dir + "/" + filename;
+    if (base_dir != "")
+        filename = base_dir + "/" + filename;
+    
     std::string name = *(std::string *)arg2->content;
     int size = *(int *)arg3->content;
 
@@ -458,7 +460,7 @@ extern "C" w_variable *load_font_as(std::vector<w_variable *> args, std::map<std
     return basic_return();
 }
 
-extern "C" w_variable *mainloop(std::vector<w_variable *> args, std::map<std::string, w_variable *> variables_t, std::string reference, int thread_id)
+extern "C" w_variable *mainloop(std::vector<w_variable *> args, variable_table variables_t, std::string reference, int thread_id)
 {
     if (thread_id != 0)
     {
@@ -532,9 +534,9 @@ extern "C" w_variable *mainloop(std::vector<w_variable *> args, std::map<std::st
                 arg->type = 3; // object
                 arg->content = (void *)o;
 
-                std::map<std::string, w_variable *> variables_t_bis = std::map<std::string, w_variable *>(variables_t);
-                variables_t_bis["self"] = list;
-                variables_t_bis["content"] = arg;
+                variable_table variables_t_bis = variable_table(variables_t);
+                variables_t_bis.assign("self", list);
+                variables_t_bis.assign("content", arg);
 
                 w_function *plus = functions["!list.plus"];
                 visitor_visit(plus->trunc, variables_t_bis, thread_id);

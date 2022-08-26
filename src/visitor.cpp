@@ -9,8 +9,10 @@
 #include "include/main.hpp"
 #include "include/lexer.hpp"
 #include "include/parser.hpp"
+#include "include/trackers.hpp"
 
 std::map<std::string, w_function *> functions;
+std::map<std::string, std::string> functions_documentation;
 std::map<std::string, w_class_template *> classes;
 
 std::vector<std::string> inbuild_funcs;
@@ -30,13 +32,13 @@ std::stack<std::string> *references_thread_4 = new std::stack<std::string>();
 
 std::vector<std::string> included;
 
-std::map<std::string, w_variable *> prepare_arguments(std::vector<w_variable *> vars, node *trunc, std::map<std::string, w_variable *> variables_t)
+variable_table prepare_arguments(std::vector<w_variable *> vars, node *trunc, variable_table variables_t)
 {
-    std::map<std::string, w_variable *> var_bis = std::map<std::string, w_variable *>(variables_t);
+    variable_table var_bis = variable_table(variables_t);
     for (int i = 0; i < vars.size(); i++)
     {
         // std::cout << trunc->children[i]->children[0]->value << std::endl;
-        var_bis[trunc->children[i]->children[0]->value] = vars[i];
+        var_bis.assign(trunc->children[i]->children[0]->value, vars[i]);
     }
     return var_bis;
 }
@@ -61,25 +63,11 @@ std::stack<std::string> *what_reference(int thread_id)
     }
 }
 
-std::map<std::string, w_variable *> copy_var_table(std::map<std::string, w_variable *> t)
-{
-    std::map<std::string, w_variable *> r;
-    for (auto i : t)
-    {
-        r[std::get<0>(i)] = new w_variable(*std::get<1>(i));
-    }
-    return r;
-}
-
 bool accept_var_name(std::string name)
 {
     return true;
 }
 
-void variable_asignement(std::string name, w_variable *v, std::map<std::string, w_variable *> &variables_t)
-{
-    variables_t[name] = v;
-}
 
 bool parentethis_is_listed(node *trunc)
 {
@@ -269,15 +257,6 @@ bool class_exist(std::string name, std::map<std::string, w_class_template *> var
     return false;
 }
 
-bool variable_exist(std::string name, std::map<std::string, w_variable *> variables_t)
-{
-    if (variables_t.find(name) != variables_t.end())
-    {
-        return true;
-    }
-    return false;
-}
-
 void visitor_init_inbuild_functions()
 {
     is_initialized_inbuild = true;
@@ -444,17 +423,17 @@ bool visitor_is_inbuild(std::string name)
     return false;
 }
 
-w_variable *visitor_function_inbuild(std::string name, node *args, std::map<std::string, w_variable *> variables_t, int thread_id)
+w_variable *visitor_function_inbuild(std::string name, node *args, variable_table variables_t, int thread_id)
 {
     if (name == "!print")
     {
         for (auto arg_t : args->children)
         {
-            w_variable *arg = visitor_compute(arg_t, variables_t, thread_id);
-            print(arg, variables_t);
+            w_variable *arg = visitor_compute(arg_t, &variables_t, thread_id);
+            print(arg, variables_t.vars);
         }
         w_variable *r = new w_variable();
-        r->type = 2;
+        r->type = T_INT;
         r->content = (void *)(new int(0));
 
         return r;
@@ -466,7 +445,7 @@ w_variable *visitor_function_inbuild(std::string name, node *args, std::map<std:
             std::string err = "la fonction !type necessite un argument";
             error(err, (what_reference(thread_id))->top(), thread_id);
         }
-        w_variable *arg = visitor_compute(args->children[0], variables_t, thread_id);
+        w_variable *arg = visitor_compute(args->children[0], &variables_t, thread_id);
         return type(arg);
     }
     if (name == "!input")
@@ -476,8 +455,8 @@ w_variable *visitor_function_inbuild(std::string name, node *args, std::map<std:
             std::string err = "la fonction !input necessite un argument";
             error(err, (what_reference(thread_id))->top(), thread_id);
         }
-        w_variable *arg = visitor_compute(args->children[0], variables_t, thread_id);
-        return input(arg, variables_t);
+        w_variable *arg = visitor_compute(args->children[0], &variables_t, thread_id);
+        return input(arg, variables_t.vars);
     }
     if (name == "!system")
     {
@@ -486,8 +465,8 @@ w_variable *visitor_function_inbuild(std::string name, node *args, std::map<std:
             std::string err = "la fonction !system necessite un argument";
             error(err, (what_reference(thread_id))->top(), thread_id);
         }
-        w_variable *arg = visitor_compute(args->children[0], variables_t, thread_id);
-        return w_system(arg, variables_t);
+        w_variable *arg = visitor_compute(args->children[0], &variables_t, thread_id);
+        return w_system(arg, variables_t.vars);
     }
     if (name == "!char")
     {
@@ -496,8 +475,8 @@ w_variable *visitor_function_inbuild(std::string name, node *args, std::map<std:
             std::string err = "la fonction !char necessite un argument";
             error(err, (what_reference(thread_id))->top(), thread_id);
         }
-        w_variable *arg = visitor_compute(args->children[0], variables_t, thread_id);
-        return w_char(arg, variables_t, thread_id);
+        w_variable *arg = visitor_compute(args->children[0], &variables_t, thread_id);
+        return w_char(arg, variables_t.vars, thread_id);
     }
     if (name == "!c_en")
     {
@@ -509,7 +488,7 @@ w_variable *visitor_function_inbuild(std::string name, node *args, std::map<std:
         std::vector<w_variable *> arg_c;
         for (auto arg_t : args->children)
         {
-            arg_c.push_back(visitor_compute(arg_t, variables_t, thread_id));
+            arg_c.push_back(visitor_compute(arg_t, &variables_t, thread_id));
         }
         if (arg_c[0]->get_type() != "char")
         {
@@ -522,7 +501,7 @@ w_variable *visitor_function_inbuild(std::string name, node *args, std::map<std:
             std::string err = "le deuxième argument de !c_en doit etre de type int";
             error(err, (what_reference(thread_id))->top(), thread_id);
         }
-        return w_en(arg_c, variables_t);
+        return w_en(arg_c, variables_t.vars);
     }
     if (name == "!c_len")
     {
@@ -531,7 +510,7 @@ w_variable *visitor_function_inbuild(std::string name, node *args, std::map<std:
             std::string err = "la fonction !c_len necessite un argument";
             error(err, (what_reference(thread_id))->top(), thread_id);
         }
-        w_variable *arg = visitor_compute(args->children[0], variables_t, thread_id);
+        w_variable *arg = visitor_compute(args->children[0], &variables_t, thread_id);
         if (arg->get_type() != "char")
         {
             std::string err = "l'argument de !c_len doit etre de type char";
@@ -546,8 +525,8 @@ w_variable *visitor_function_inbuild(std::string name, node *args, std::map<std:
             std::string err = "la fonction !erreur necessite un argument";
             error(err, (what_reference(thread_id))->top(), thread_id);
         }
-        w_variable *arg = visitor_compute(args->children[0], variables_t, thread_id);
-        w_error(arg, variables_t, thread_id);
+        w_variable *arg = visitor_compute(args->children[0], &variables_t, thread_id);
+        w_error(arg, variables_t.vars, thread_id);
     }
     if (name == "!sortie")
     {
@@ -556,7 +535,7 @@ w_variable *visitor_function_inbuild(std::string name, node *args, std::map<std:
             std::string err = "la fonction !sortie necessite un argument";
             error(err, (what_reference(thread_id))->top(), thread_id);
         }
-        w_variable *arg = visitor_compute(args->children[0], variables_t, thread_id);
+        w_variable *arg = visitor_compute(args->children[0], &variables_t, thread_id);
         if (arg->get_type() != "int")
         {
             std::string err = "l'argument de !sortie doit etre de type int";
@@ -577,13 +556,13 @@ w_variable *visitor_function_inbuild(std::string name, node *args, std::map<std:
     
     // that means we are looking for a shared header
     std::string real_name = remove_function_call_prefix(name);
-    w_variable * (*fonction)(std::vector<w_variable *>, std::map<std::string, w_variable *>, std::string, int);
-    fonction = (w_variable* (*) (std::vector<w_variable *>, std::map<std::string, w_variable *>, std::string, int))dlsym(cpp_lib_handler, real_name.c_str());
+    w_variable * (*fonction)(std::vector<w_variable *>, variable_table, std::string, int);
+    fonction = (w_variable* (*) (std::vector<w_variable *>, variable_table, std::string, int))dlsym(cpp_lib_handler, real_name.c_str());
     std::vector<w_variable *> args_c;
 
     for (auto arg_t : args->children)
     {
-        w_variable *arg = visitor_compute(arg_t, variables_t, thread_id);
+        w_variable *arg = visitor_compute(arg_t, &variables_t, thread_id);
         args_c.push_back(arg);
     }
 
@@ -606,13 +585,13 @@ std::string remove_function_call_prefix(std::string name)
     return r;
 }
 
-w_variable *visitor_funcall(std::string name, node *args, std::map<std::string, w_variable *> variables_t, int thread_id)
+w_variable *visitor_funcall(std::string name, node *args, variable_table variables_t, int thread_id)
 {
     w_function *func;
     std::string var_name = remove_function_call_prefix(name);
-    if (variable_exist(var_name, variables_t))
+    if (variables_t.exist(name))
     {
-        w_variable *func_var = variables_t[var_name];
+        w_variable *func_var = variables_t.get(var_name);
         if (func_var->get_type() != "fonction")
         {
             std::string err = "le type '" + func_var->get_type() + "' ne peut pas être appelé";
@@ -647,16 +626,16 @@ w_variable *visitor_funcall(std::string name, node *args, std::map<std::string, 
         for (int i = 0; i < args->children.size(); i++)
         {
             std::string arg_n = func->arguments->children[i]->children[0]->value;
-            w_variable *arg_v = visitor_compute(args->children[i], variables_t, thread_id);
+            w_variable *arg_v = visitor_compute(args->children[i], &variables_t, thread_id);
             // variables_t[arg_n] = arg_v; we use the variable asignement
-            variable_asignement(arg_n, arg_v, variables_t);
+            variables_t.assign(arg_n, arg_v);
         }
         w_variable *res = visitor_visit(func->trunc, variables_t, thread_id);
         return res;
     }
 }
 
-w_variable *visitor_funcall_methode(std::string name, node *args, std::map<std::string, w_variable *> variables_t, w_variable *self, int thread_id)
+w_variable *visitor_funcall_methode(std::string name, node *args, variable_table variables_t, w_variable *self, int thread_id)
 {
 
     if (!function_exist(name, functions))
@@ -675,11 +654,11 @@ w_variable *visitor_funcall_methode(std::string name, node *args, std::map<std::
         for (int i = 0; i < args->children.size(); i++)
         {
             std::string arg_n = func->arguments->children[i]->children[0]->value;
-            w_variable *arg_v = visitor_compute(args->children[i], variables_t, thread_id);
-            variable_asignement(arg_n, arg_v, variables_t);
+            w_variable *arg_v = visitor_compute(args->children[i], &variables_t, thread_id);
+            variables_t.assign(arg_n, arg_v);
             // variables_t[arg_n] = arg_v;
         }
-        variable_asignement ("self", self, variables_t);
+        variables_t.assign("self", self);
         // variables_t["self"] = self;
         w_variable *res = visitor_visit(func->trunc, variables_t, thread_id);
         return res;
@@ -775,7 +754,7 @@ w_variable *visitor_use_inbuild(w_variable *a, w_variable *b, std::string opera,
         {
             w_variable *r = new w_variable();
             int *p = new int(1);
-            r->type = 2; // int
+            r->type = T_INT; // int
             r->content = (void *)p;
             return r;
         }
@@ -783,7 +762,7 @@ w_variable *visitor_use_inbuild(w_variable *a, w_variable *b, std::string opera,
         {
             w_variable *r = new w_variable();
             int *p = new int(0);
-            r->type = 2; // int
+            r->type = T_INT; // int
             r->content = (void *)p;
             return r;
         }
@@ -801,7 +780,7 @@ w_variable *visitor_use_inbuild(w_variable *a, w_variable *b, std::string opera,
 
 w_variable *visitor_link_operator(w_variable *a, w_variable *b, std::string opera, int thread_id)
 {
-    std::map<std::string, w_variable *> variables_t;
+    variable_table *variables_t = new variable_table();
     w_function *func;
     if (opera == "+")
     {
@@ -929,14 +908,13 @@ w_variable *visitor_link_operator(w_variable *a, w_variable *b, std::string oper
         return visitor_use_inbuild(a, b, opera, thread_id);
     }
 
-    // variables_t["self"] = a;
-    variable_asignement("self", a, variables_t);
-    // variables_t[func->arguments->children[0]->children[0]->value] = b;
-    variable_asignement(func->arguments->children[0]->children[0]->value, b, variables_t);
-    return visitor_visit(func->trunc, variables_t, thread_id);
+    variables_t->assign("self", a);
+    variables_t->assign(func->arguments->children[0]->children[0]->value, b);
+
+    return visitor_visit(func->trunc, *variables_t, thread_id);
 }
 
-w_variable *visitor_new_object(std::string name, node *args, std::map<std::string, w_variable *> variables_t, int thread_id)
+w_variable *visitor_new_object(std::string name, node *args, variable_table variables_t, int thread_id)
 {
     if (!class_exist(name, classes))
     {
@@ -949,7 +927,7 @@ w_variable *visitor_new_object(std::string name, node *args, std::map<std::strin
     { // attibutes
         std::string name = attr->children[0]->value;
         node *comp = attr->children[1];
-        w_variable *computed = visitor_compute(comp, variables_t, thread_id);
+        w_variable *computed = visitor_compute(comp, &variables_t, thread_id);
         r->attribute_attribution(name, computed);
     }
     for (auto meth : temp->trunc->children[2]->children)
@@ -958,7 +936,7 @@ w_variable *visitor_new_object(std::string name, node *args, std::map<std::strin
     }
     r->name = temp->trunc->children[0]->value;
     w_variable *var = new w_variable();
-    var->type = 3; // an object
+    var->type = T_OBJECT; // an object
     var->content = (void *)r;
 
 
@@ -975,16 +953,17 @@ w_variable *generate_function_variable(std::string name, int thread_id)
         error(err, what_reference(thread_id)->top(), thread_id);
     }
     w_variable *r = new w_variable();
-    r->type = 0;                                  // this is a function
+    r->type = T_FONCTION;                                  // this is a function
     r->content = (void *)(new std::string(name)); // the content is just the name of the variable
     return r;
 }
 
-w_variable *visitor_compute(node *c, std::map<std::string, w_variable *> variables_t, int thread_id)
+w_variable *visitor_compute(node *c, variable_table *variables_t, int thread_id)
 {
     w_variable *last_value = new w_variable();
-    last_value->type = 2;                       // By default, the type is int
+    last_value->type = T_INT;                       // By default, the type is int
     last_value->content = (void *)(new int(0)); // and the value is 0
+    bool unused = true;
     for (int i = 0; i < c->children.size(); i++)
     {
         (what_reference(thread_id))->push(c->children[i]->reference);
@@ -992,23 +971,25 @@ w_variable *visitor_compute(node *c, std::map<std::string, w_variable *> variabl
         if (c->children[i]->pre_value != nullptr)
         {
             last_value = c->children[i]->pre_value;
+            unused = false;
         }
         else if (is_explicit(expr))
         {
             if (is_char(expr))
             {
                 last_value = new w_variable();
-                last_value->type = 1; // char
+                last_value->type = T_CHAR; // char
                 std::string *r = new std::string(del_string(expr));
                 last_value->content = (void *)r;
             }
             else if (is_digit(expr))
             {
                 last_value = new w_variable();
-                last_value->type = 2;                 // int
+                last_value->type = T_INT;                 // int
                 int *r = new int(atoi(expr.c_str())); // we create an int pointer from the string
                 last_value->content = (void *)r;      // we cast the int pointer as a void pointer
             }
+            unused = false;
         }
         else if (is_attributed(expr)) // Contains '.'
         {
@@ -1029,17 +1010,17 @@ w_variable *visitor_compute(node *c, std::map<std::string, w_variable *> variabl
                 }
                 else
                 {
-                    if (!variable_exist(first_var_n, variables_t))
+                    if (!variables_t->exist(first_var_n))
                     {
                         std::string err = "la variable '" + first_var_n + "' n'existe pas";
                         error(err, c->children[i]->reference, thread_id);
                     }
-                    first_var = variables_t[first_var_n];
+                    first_var = variables_t->get(first_var_n);
                 }
 
                 if (!first_var->is_object())
                 {
-                    std::string err = "la variable '" + first_var_n + "' (" + *(std::string *)(w_char(first_var, variables_t, thread_id)->content) + ") doit être un objet";
+                    std::string err = "la variable '" + first_var_n + "' (" + *(std::string *)(w_char(first_var, variables_t->vars, thread_id)->content) + ") doit être un objet";
                     error(err, c->children[i]->reference, thread_id);
                 }
 
@@ -1093,6 +1074,7 @@ w_variable *visitor_compute(node *c, std::map<std::string, w_variable *> variabl
                     std::string name = last_var->get_type();
                     std::string f_name = "!" + name + "." + patent;
                     last_value = generate_function_variable(f_name, thread_id);
+                    unused = false;
                     // we generate a function variable
                 }
                 else if (!patent.empty())
@@ -1111,8 +1093,9 @@ w_variable *visitor_compute(node *c, std::map<std::string, w_variable *> variabl
                             }
                         }
                     }
-                    std::map<std::string, w_variable *> variables_t_bis = std::map<std::string, w_variable *>(variables_t);
+                    variable_table variables_t_bis = variable_table(*variables_t);
                     last_value = visitor_funcall_methode(f_name, c->children[i + 1], variables_t_bis, last_var, thread_id);
+                    unused = false;
                     i++; // we increment by one because they are parenthesis
                 }
             }
@@ -1132,16 +1115,16 @@ w_variable *visitor_compute(node *c, std::map<std::string, w_variable *> variabl
                 }
                 else
                 {
-                    if (!variable_exist(first_var_n, variables_t))
+                    if (!variables_t->exist(first_var_n))
                     {
                         std::string err = "la variable '" + first_var_n + "' n'existe pas";
                         error(err, c->children[i]->reference, thread_id);
                     }
-                    first_var = variables_t[first_var_n];
+                    first_var = variables_t->get(first_var_n);
                 }   
                 if (!first_var->is_object())
                 {
-                    std::string err = "la variable '" + first_var_n + "' (" + *(std::string *)(w_char(first_var, variables_t, thread_id)->content) + ") doit être un objet";
+                    std::string err = "la variable '" + first_var_n + "' (" + *(std::string *)(w_char(first_var, variables_t->vars, thread_id)->content) + ") doit être un objet";
                     error(err, c->children[i]->reference, thread_id);
                 }
 
@@ -1193,13 +1176,50 @@ w_variable *visitor_compute(node *c, std::map<std::string, w_variable *> variabl
                         error(err, c->children[i]->reference, thread_id);
                     }
                     last_value = last_o->get_attribute(patent);
+                    unused = false;
                 }
             }
+        }
+        else if (expr == "&")
+        { // we create a tracker
+            w_variable *track = new w_variable();
+            track->type = T_TRACKER;
+            if (i + 1 >= c->children.size())
+            {
+                std::string err = "l'operateur '&' (creation de traqueur) ne peux être utilisé que devant une variable";
+                error(err, c->children[i]->reference, thread_id);
+            }
+            std::string e = c->children[i + 1]->value;
+            i ++; // we increment by one 
+            tracker *t = new tracker(e, variables_t);
+
+            track->content = (void *)t;
+            last_value = track;
+            unused = false;
+        }
+        else if (expr == "*" && unused)
+        { // this is the opposit of & : we get the value of the tracker
+            node *p = new node("*");
+            node *next = c->children[i + 1];
+            while (i + 1 < c->children.size() and !is_operator(c->children[i + 1]->value))
+            { // we look forward to either the next operator or the end of the calculation
+                i++;
+                next = c->children[i];
+                p->push_child(next);
+            }
+            w_variable *val = visitor_compute(p, variables_t, thread_id);
+            if (val->get_type() != "traqueur")
+            {
+                std::string err = "ne peux pas récupérer le contenu du traquage du type '" + val->get_type() + "'";
+                error(err, c->children[i]->reference, thread_id);
+            }
+            tracker *t = (tracker *)val->content;
+            last_value = t->value(thread_id);
+            unused = false;
         }
         else if (is_operator(expr))
         {
             // we look up to the next value
-
             node *p = new node("*");
             node *next = c->children[i + 1];
             while (i + 1 < c->children.size() and !is_operator(c->children[i + 1]->value))
@@ -1210,30 +1230,35 @@ w_variable *visitor_compute(node *c, std::map<std::string, w_variable *> variabl
             }
             w_variable *next_val = visitor_compute(p, variables_t, thread_id);
             last_value = visitor_link_operator(last_value, next_val, expr, thread_id);
+            unused = false;
         }
         else if (expr[0] == '!')
         {                                                                         // call a function
             if (i + 1 >= c->children.size() || c->children[i + 1]->value != "()") // does not call
             {
                 last_value = generate_function_variable(c->children[i]->value, thread_id);
+                unused = false;
                 // std::string err = "l'appel d'une fonction doit etre suivie de ses arguments";
                 // error(err, c->children[i]->reference);
             }
             else
             {
-                last_value = visitor_funcall(expr, c->children[i + 1], variables_t, thread_id);
+                last_value = visitor_funcall(expr, c->children[i + 1], *variables_t, thread_id);
+                unused = false;
                 i++; // we need to increment by one, because of the parenthesis
             }
         }
-        else if (variable_exist(expr, variables_t)) // variable_exist(expr, variables_t))
+        else if (variables_t->exist(expr)) // variable_exist(expr, variables_t))
         {
             // we just take the value inside the variables table
-            last_value = variables_t[expr];
+            last_value = variables_t->get(expr);
+            unused = false;
         }
         else if (i + 1 < c->children.size() && c->children[i + 1]->value == "()") // create a new object
         {                                                                         // just avoid segfaults ...
             // call a new object
-            last_value = visitor_new_object(expr, c->children[i + 1], variables_t, thread_id);
+            last_value = visitor_new_object(expr, c->children[i + 1], *variables_t, thread_id);
+            unused = false;
             i++;
         }
         else if (expr == "()")
@@ -1246,9 +1271,9 @@ w_variable *visitor_compute(node *c, std::map<std::string, w_variable *> variabl
                     error(err, c->children[i]->reference, thread_id);
                 }
 
-                w_variable *r = visitor_new_object("list", new node("()"), variables_t, thread_id);
-                std::map<std::string, w_variable *> variables_t_bis = std::map<std::string, w_variable *>(variables_t);
-                variables_t_bis["self"] = r;
+                w_variable *r = visitor_new_object("list", new node("()"), *variables_t, thread_id);
+                variable_table variables_t_bis = variable_table(*variables_t);
+                variables_t_bis.assign("self", r);
 
                 std::string funcname = "!list.plus"; // the function to add elements to a list
 
@@ -1259,11 +1284,13 @@ w_variable *visitor_compute(node *c, std::map<std::string, w_variable *> variabl
                     visitor_funcall(funcname, parts, variables_t_bis, thread_id);
                 }
                 last_value = r; // we finally push the list
+                unused = false;
             }
             else
             { // just compute what is in the parentethis
                 node *parenthis = c->children[i];
                 last_value = visitor_compute(parenthis, variables_t, thread_id);
+                unused = false;
             }
         }
         else if (expr == "[]")
@@ -1280,10 +1307,11 @@ w_variable *visitor_compute(node *c, std::map<std::string, w_variable *> variabl
             }
             w_function *f = functions[name];
 
-            std::map<std::string, w_variable *> variables_t_bis = std::map<std::string, w_variable *>(variables_t);
-            variables_t_bis["self"] = last_value;
-            variables_t_bis[f->arguments->children[0]->children[0]->value] = b_value;
+            variable_table variables_t_bis = variable_table(*variables_t);
+            variables_t_bis.assign("self", last_value);
+            variables_t_bis.assign(f->arguments->children[0]->children[0]->value, b_value);
             last_value = visitor_visit(f->trunc, variables_t_bis, thread_id);
+            unused = false;
         }
         else
         {
@@ -1296,7 +1324,7 @@ w_variable *visitor_compute(node *c, std::map<std::string, w_variable *> variabl
     return last_value;
 }
 
-w_variable *visitor_keyword_return(node *trunc, std::map<std::string, w_variable *> variables_t, int thread_id)
+w_variable *visitor_keyword_return(node *trunc, variable_table variables_t, int thread_id)
 {
     (what_reference(thread_id))->push(trunc->reference);
     if (trunc->children.size() < 1)
@@ -1305,13 +1333,13 @@ w_variable *visitor_keyword_return(node *trunc, std::map<std::string, w_variable
         error(err, trunc->reference, thread_id);
     }
     node *arg = trunc->children[0];
-    w_variable *result = visitor_compute(arg, variables_t, thread_id);
+    w_variable *result = visitor_compute(arg, &variables_t, thread_id);
     if (!(what_reference(thread_id))->empty())
         (what_reference(thread_id))->pop();
     return result;
 }
 
-void visitor_keyword_free(node *trunc, std::map<std::string, w_variable *> &variables_t, int thread_id)
+void visitor_keyword_free(node *trunc,variable_table *variables_t, int thread_id)
 {
     (what_reference(thread_id))->push(trunc->reference);
     if (trunc->children.size() < 1)
@@ -1323,12 +1351,12 @@ void visitor_keyword_free(node *trunc, std::map<std::string, w_variable *> &vari
     w_variable *result = visitor_compute(arg, variables_t, thread_id);
     if (result->is_object())
     {
-        for (auto i : variables_t)
+        for (auto i : variables_t->vars)
         {
             std::string key = std::get<0>(i);
             if (std::get<1>(i) == result)
             {
-                variables_t.erase(key);
+                variables_t->vars.erase(key);
                 break;
             }
         }
@@ -1343,15 +1371,15 @@ void visitor_keyword_free(node *trunc, std::map<std::string, w_variable *> &vari
 
         std::string name = "!" + t->name + ".destructeur"; // we call the desctructor
         if (function_exist(name, functions))
-            visitor_funcall_methode(name, new node("*"), variables_t, result, thread_id);
+            visitor_funcall_methode(name, new node("*"), *variables_t, result, thread_id);
     }
 
     std::map<std::string, w_variable *>::iterator it;
-    for (it = variables_t.begin(); it != variables_t.end(); ++it)
+    for (it = variables_t->vars.begin(); it != variables_t->vars.end(); ++it)
     {
         if (it->second == result)
         {
-            variables_t.erase(it->first);
+            variables_t->vars.erase(it->first);
         }
     }
 
@@ -1360,7 +1388,7 @@ void visitor_keyword_free(node *trunc, std::map<std::string, w_variable *> &vari
         (what_reference(thread_id))->pop();
 }
 
-void visitor_keyword_tache(node *trunc, std::map<std::string, w_variable *> variables_t, int thread_id)
+void visitor_keyword_tache(node *trunc, variable_table variables_t, int thread_id)
 {
     (what_reference(thread_id))->push(trunc->reference);
     if (trunc->children.size() < 1)
@@ -1369,7 +1397,7 @@ void visitor_keyword_tache(node *trunc, std::map<std::string, w_variable *> vari
         error(err, trunc->reference, thread_id);
     }
     node *arg = trunc->children[0];
-    w_variable *result = visitor_compute(arg, variables_t, thread_id);
+    w_variable *result = visitor_compute(arg, &variables_t, thread_id);
 
     if (result->get_type() != "fonction" && result->get_type() != "list")
     {
@@ -1424,8 +1452,7 @@ void visitor_keyword_tache(node *trunc, std::map<std::string, w_variable *> vari
         }
 
         w_function *func = functions[name];
-
-        std::map<std::string, w_variable *> variables_bis = prepare_arguments(arguments, func->arguments, variables_t);
+        variable_table variables_bis = prepare_arguments(arguments, func->arguments, variables_t);
         visitor_visit(func->trunc, variables_bis, thread_id);
     }
 
@@ -1443,7 +1470,7 @@ bool visitor_is_included(std::string libname)
     return false;
 }
 
-void visitor_keyword_include(node *trunc, std::map<std::string, w_variable *> &variables_t, int thread_id)
+void visitor_keyword_include(node *trunc, variable_table *variables_t, int thread_id)
 {
     if (trunc->children.size() < 1)
     {
@@ -1498,13 +1525,20 @@ void visitor_funcdef(node *trunc)
     w_function *func = new w_function();
     std::string name = "!" + trunc->children[0]->value;
     func->set_arguments(visitor_separate_listed(trunc->children[1]));
+    if (is_char(trunc->children[2]->children[0]->value))
+    { // it is the description of the function, we can store it and remove it from the trunc
+        // we remove the '"' 
+        std::string description = del_string(trunc->children[2]->children[0]->value);
+        trunc->children[2]->children.erase(trunc->children[2]->children.begin()); // we delete the first value of the function code
+        functions_documentation[name] = description;
+    }
     func->set_content(trunc->children[2]);
     functions[name] = func;
     if (!references->empty())
         references->pop();
 }
 
-void visitor_vardef(node *trunc, std::map<std::string, w_variable *> &variables_t, int thread_id)
+void visitor_vardef(node *trunc, variable_table *variables_t, int thread_id)
 {
     // We pass the variables table by reference, so we can modify it
 
@@ -1521,12 +1555,12 @@ void visitor_vardef(node *trunc, std::map<std::string, w_variable *> &variables_
             first_var_n += expr[index];
             index++;
         }
-        if (!variable_exist(first_var_n, variables_t))
+        if (!variables_t->exist(first_var_n))
         {
             std::string err = "la variable " + first_var_n + " n'existe pas";
             error(err, trunc->children[0]->reference, thread_id);
         }
-        w_variable *first_var = variables_t[first_var_n];
+        w_variable *first_var = variables_t->get(first_var_n);
 
         if (!first_var->is_object())
         {
@@ -1587,8 +1621,7 @@ void visitor_vardef(node *trunc, std::map<std::string, w_variable *> &variables_
     }
     else
     {
-        variable_asignement(expr, result, variables_t);
-        // variables_t[expr] = result;
+        variables_t->assign(expr, result);
     }
 }
 
@@ -1608,7 +1641,7 @@ void visitor_classdef(node *trunc)
         references->pop();
 }
 
-std::tuple<std::string, w_variable *> visitor_if_declaration(node *trunc, std::map<std::string, w_variable *> &variables_t, int thread_id)
+std::tuple<std::string, w_variable *> visitor_if_declaration(node *trunc, variable_table *variables_t, int thread_id)
 {
     // We need to pass the variables table by reference, as we can modifie it later on
     // the if declaration :
@@ -1688,7 +1721,7 @@ std::tuple<std::string, w_variable *> visitor_if_declaration(node *trunc, std::m
     return std::tuple<std::string, w_variable *>{"", nullptr};
 }
 
-std::tuple<std::string, w_variable *> visitor_forloop(node *trunc, std::map<std::string, w_variable *> &variables_t, int thread_id)
+std::tuple<std::string, w_variable *> visitor_forloop(node *trunc, variable_table *variables_t, int thread_id)
 {
     // the for loop
     // pour
@@ -1728,7 +1761,7 @@ std::tuple<std::string, w_variable *> visitor_forloop(node *trunc, std::map<std:
     {
         // free(var_cont); // avoid memory leaks
         var = new w_variable(index);
-        variable_asignement(var_name, var, variables_t);
+        variables_t->assign(var_name, var);
         // variables_t[var_name] = var;
         std::tuple<std::string, w_variable *> ret = visitor_visit_incode(code, variables_t, thread_id);
         if (std::get<0>(ret) == "break")
@@ -1747,7 +1780,7 @@ std::tuple<std::string, w_variable *> visitor_forloop(node *trunc, std::map<std:
     return std::tuple<std::string, w_variable *>{"", nullptr};
 }
 
-std::tuple<std::string, w_variable *> visitor_whileloop(node *trunc, std::map<std::string, w_variable *> &variables_t, int thread_id)
+std::tuple<std::string, w_variable *> visitor_whileloop(node *trunc, variable_table *variables_t, int thread_id)
 {
     // the while loop
     // tant
@@ -1777,7 +1810,7 @@ std::tuple<std::string, w_variable *> visitor_whileloop(node *trunc, std::map<st
     return std::tuple<std::string, w_variable *>{"", nullptr};
 }
 
-std::tuple<std::string, w_variable *> visitor_visit_incode(node *trunc, std::map<std::string, w_variable *> &variables_t, int thread_id)
+std::tuple<std::string, w_variable *> visitor_visit_incode(node *trunc, variable_table *variables_t, int thread_id)
 {
     // Use for loops and if statements
     std::tuple<std::string, w_variable *> to_return = {"", nullptr};
@@ -1849,7 +1882,7 @@ std::tuple<std::string, w_variable *> visitor_visit_incode(node *trunc, std::map
         }
         else if (instruction->value == "renvoie")
         { // The renvoie keyword
-            w_variable *res = visitor_keyword_return(instruction, variables_t, thread_id);
+            w_variable *res = visitor_keyword_return(instruction, *variables_t, thread_id);
             return std::tuple<std::string, w_variable *>{"return", res};
         }
         else if (instruction->value == "libere")
@@ -1877,7 +1910,7 @@ std::tuple<std::string, w_variable *> visitor_visit_incode(node *trunc, std::map
     return to_return;
 }
 
-w_variable *visitor_visit(node *trunc, std::map<std::string, w_variable *> variables_t, int thread_id)
+w_variable *visitor_visit(node *trunc, variable_table variables_t, int thread_id)
 {
     int thread_number = 0;
     std::thread thread_in_scope[4];
@@ -1886,7 +1919,7 @@ w_variable *visitor_visit(node *trunc, std::map<std::string, w_variable *> varia
         visitor_init_inbuild_functions();
     }
     w_variable *to_return = new w_variable();
-    to_return->type = 2;
+    to_return->type = T_INT;
     to_return->content = (void *)(new int(0)); // by default, the result is an int ( 0 )
 
     for (int i = 0; i < trunc->children.size(); i++)
@@ -1898,7 +1931,7 @@ w_variable *visitor_visit(node *trunc, std::map<std::string, w_variable *> varia
         }
         else if (instruction->value == "vardef")
         {
-            visitor_vardef(instruction, variables_t, thread_id);
+            visitor_vardef(instruction, &variables_t, thread_id);
         }
         else if (instruction->value == "classdef")
         {
@@ -1906,7 +1939,7 @@ w_variable *visitor_visit(node *trunc, std::map<std::string, w_variable *> varia
         }
         else if (instruction->value == "ifdec")
         {
-            std::tuple<std::string, w_variable *> ret = visitor_if_declaration(instruction, variables_t, thread_id);
+            std::tuple<std::string, w_variable *> ret = visitor_if_declaration(instruction, &variables_t, thread_id);
             if (std::get<0>(ret) == "return")
             {
                 for (int p = 0; p < 4; p++)
@@ -1919,7 +1952,7 @@ w_variable *visitor_visit(node *trunc, std::map<std::string, w_variable *> varia
         }
         else if (instruction->value == "forloop")
         {
-            std::tuple<std::string, w_variable *> ret = visitor_forloop(instruction, variables_t, thread_id);
+            std::tuple<std::string, w_variable *> ret = visitor_forloop(instruction, &variables_t, thread_id);
             if (std::get<0>(ret) == "return")
             {
                 for (int p = 0; p < 4; p++)
@@ -1932,7 +1965,7 @@ w_variable *visitor_visit(node *trunc, std::map<std::string, w_variable *> varia
         }
         else if (instruction->value == "whileloop")
         {
-            std::tuple<std::string, w_variable *> ret = visitor_whileloop(instruction, variables_t, thread_id);
+            std::tuple<std::string, w_variable *> ret = visitor_whileloop(instruction, &variables_t, thread_id);
             if (std::get<0>(ret) == "return")
             {
 
@@ -1946,7 +1979,7 @@ w_variable *visitor_visit(node *trunc, std::map<std::string, w_variable *> varia
         }
         else if (instruction->value == "()")
         { // we just computes what is in parenthesis
-            visitor_compute(instruction, variables_t, thread_id);
+            visitor_compute(instruction, &variables_t, thread_id);
         }
         else if (instruction->value[0] == '!')
         { // we call the function
@@ -1958,7 +1991,7 @@ w_variable *visitor_visit(node *trunc, std::map<std::string, w_variable *> varia
             node *r = new node("*");
             r->push_child(instruction);
             r->push_child(trunc->children[i + 1]);
-            visitor_compute(r, variables_t, thread_id);
+            visitor_compute(r, &variables_t, thread_id);
             i++; // we increment by one because of the parenthesis
         }
         // we need to do a function for keywords
@@ -1974,16 +2007,14 @@ w_variable *visitor_visit(node *trunc, std::map<std::string, w_variable *> varia
         }
         else if (instruction->value == "libere")
         { // The renvoie keyword
-            visitor_keyword_free(instruction, variables_t, thread_id);
+            visitor_keyword_free(instruction, &variables_t, thread_id);
         }
         else if (instruction->value == "inclue")
         { // The renvoie keyword
-            visitor_keyword_include(instruction, variables_t, thread_id);
+            visitor_keyword_include(instruction, &variables_t, thread_id);
         }
         else if (instruction->value == "tache")
         { // The tache keyword
-            std::map<std::string, w_variable *> variables_t_bis = copy_var_table(variables_t);
-
             thread_utilized += 1;
 
             if (thread_utilized > 4)

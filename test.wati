@@ -1,6 +1,14 @@
 inclue "std.wati";
 
-l = list();
+somme = 0;
+a = &somme;
+n = 0;
+m = 101;
 
-a = !attributs(l);
-!println(a)
+pour i allant de n a m fait 
+    somme = somme + i;
+fin
+
+fonction traqueur.en_string () fait 
+    renvoie "(" + !type(*self) + ")" + !char(*self);
+fin

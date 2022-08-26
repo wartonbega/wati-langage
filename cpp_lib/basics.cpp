@@ -7,7 +7,7 @@
 #include "../src/include/variables.hpp"
 #include "../src/include/visitor.hpp"
 
-extern "C" w_variable *et(std::vector<w_variable *> args, std::map<std::string, w_variable *> variables_t, std::string reference, int thread_id)
+extern "C" w_variable *et(std::vector<w_variable *> args, variable_table variables_t, std::string reference, int thread_id)
 {
     if (args.size() != 2 || args[0]->get_type() != "int" || args[1]->get_type() != "int")
     {
@@ -24,7 +24,7 @@ extern "C" w_variable *et(std::vector<w_variable *> args, std::map<std::string, 
     return r;
 }
 
-extern "C" w_variable* ou(std::vector<w_variable *> args, std::map<std::string, w_variable *> variables_t, std::string reference, int thread_id)
+extern "C" w_variable* ou(std::vector<w_variable *> args, variable_table variables_t, std::string reference, int thread_id)
 {
     if (args.size() != 2 || args[0]->get_type() != "int" || args[1]->get_type() != "int")
     {
@@ -42,7 +42,7 @@ extern "C" w_variable* ou(std::vector<w_variable *> args, std::map<std::string, 
     return r;
 }
 
-extern "C" w_variable* pas(std::vector<w_variable *> args, std::map<std::string, w_variable *> variables_t, std::string reference, int thread_id)
+extern "C" w_variable* pas(std::vector<w_variable *> args, variable_table variables_t, std::string reference, int thread_id)
 {
     if (args.size() != 1 || args[0]->get_type() != "int")
     {
@@ -57,7 +57,7 @@ extern "C" w_variable* pas(std::vector<w_variable *> args, std::map<std::string,
     return r;
 }
 
-extern "C" w_variable* quitte(std::vector<w_variable *> args, std::map<std::string, w_variable *> variables_t, std::string reference, int thread_id)
+extern "C" w_variable* quitte(std::vector<w_variable *> args, variable_table variables_t, std::string reference, int thread_id)
 {
     if (args.size() != 1 || args[0]->get_type() != "int")
     {
@@ -69,7 +69,7 @@ extern "C" w_variable* quitte(std::vector<w_variable *> args, std::map<std::stri
     return nullptr;
 }
 
-extern "C" w_variable* attributs(std::vector<w_variable *> args, std::map<std::string, w_variable *> variables_t, std::string reference, int thread_id)
+extern "C" w_variable* attributs(std::vector<w_variable *> args, variable_table variables_t, std::string reference, int thread_id)
 {
     if (args.size() != 1 || !args[0]->is_object())
     {
@@ -79,14 +79,13 @@ extern "C" w_variable* attributs(std::vector<w_variable *> args, std::map<std::s
 
     w_variable *list = visitor_new_object("list", new node("*"), variables_t, thread_id); // list of attributs
 
-    for (auto var : o->attributes)
+    for (auto var : o->attributes->vars)
     {
         w_variable *var_name = new w_variable(std::get<0>(var));
 
-
-        std::map<std::string, w_variable *> variables_t_bis = std::map<std::string, w_variable *>(variables_t);
-        variables_t_bis["self"] = list;
-        variables_t_bis["content"] = var_name;
+        variable_table variables_t_bis = variable_table(variables_t);
+        variables_t_bis.assign("self", list);
+        variables_t_bis.assign("content", var_name);
 
         w_function *plus = functions["!list.plus"];
         visitor_visit(plus->trunc, variables_t_bis, thread_id);
@@ -94,7 +93,7 @@ extern "C" w_variable* attributs(std::vector<w_variable *> args, std::map<std::s
     return list;
 }
 
-extern "C" w_variable* methodes(std::vector<w_variable *> args, std::map<std::string, w_variable *> variables_t, std::string reference, int thread_id)
+extern "C" w_variable* methodes(std::vector<w_variable *> args, variable_table variables_t, std::string reference, int thread_id)
 {
     if (args.size() != 1 || !args[0]->is_object())
     {
@@ -112,9 +111,9 @@ extern "C" w_variable* methodes(std::vector<w_variable *> args, std::map<std::st
         {
             w_variable *var_name = new w_variable(name);
 
-            std::map<std::string, w_variable *> variables_t_bis = std::map<std::string, w_variable *>(variables_t);
-            variables_t_bis["self"] = list;
-            variables_t_bis["content"] = var_name;
+            variable_table variables_t_bis = variable_table(variables_t);
+            variables_t_bis.assign("self", list);
+            variables_t_bis.assign("content", var_name);
 
             w_function *plus = functions["!list.plus"];
             visitor_visit(plus->trunc, variables_t_bis, thread_id);
@@ -123,7 +122,7 @@ extern "C" w_variable* methodes(std::vector<w_variable *> args, std::map<std::st
     return list;
 }
 
-extern "C" w_variable* doc(std::vector<w_variable *> args, std::map<std::string, w_variable *> variables_t, std::string reference, int thread_id)
+extern "C" w_variable* doc(std::vector<w_variable *> args, variable_table variables_t, std::string reference, int thread_id)
 {
     if (args.size() != 1 || args[0]->get_type() != "fonction")
     {
@@ -144,7 +143,22 @@ extern "C" w_variable* doc(std::vector<w_variable *> args, std::map<std::string,
     }
     else
     {
-        documentation += "la fonction " +name + " n'as pas de documentation"; 
+        if (function_exist(name, functions))
+        {
+            if (functions_documentation.find(name) != functions_documentation.end())
+            {
+                documentation += functions_documentation[name];
+            }
+            else 
+            {
+                documentation += "la fonction " +name + " n'as pas de documentation";
+            }
+        }
+        else 
+        {
+            std::string err = "la fonction '" + name + "' n'existe pas";
+            error(err, reference, thread_id);
+        }
     }
     if (documentation.empty())
     {

@@ -154,6 +154,7 @@ int main(int argc, char *argv[])
 		filename += argv[1];
 	}
 	bool compile = 0;
+	bool show_ast = 0;
 	std::string output_name = "output.wati";
 	for (int i = 2; i < argc; ++i)
 	{
@@ -169,6 +170,10 @@ int main(int argc, char *argv[])
 				std::string err = "en cas de compilation, le nom du fichier de sortie doit être indiqué. Example : `wati fichier_source.wati -c sortie.wati`";
 			}
 		}
+		else if (std::string(argv[i]) == "--tree" || std::string(argv[i]) == "-t")
+		{
+			show_ast = 1;
+		}
 	}
 	base_dir = separate_base_dir(filename);
 	std::string r = open_file(argv[1]);
@@ -177,19 +182,24 @@ int main(int argc, char *argv[])
 
 	node *ast = parser(lexemes, "main", ref, filename + "1:1");
 
+	if (show_ast)
+	{
+		std::cout << ast->to_string(0) << std::endl;
+	}
+
 //	std::cout << ast->to_string(0) << std::endl;
 
 	if (compile)
 	{
-		ast = optimisator(ast, 1);
-		std::string output = compiler(ast, 0);
-		write_file(output_name, output);
-		compiler_info("'" + output_name + "' écrit");
+		//ast = optimisator(ast, 1);
+		//std::string output = compiler(ast, 0);
+		//write_file(output_name, output);
+		//compiler_info("'" + output_name + "' écrit");
 	}
 	else
 	{
-		std::map<std::string, w_variable *> variables_t;
-		init_vars(variables_t);
+		variable_table variables_t = variable_table();
+		init_vars(variables_t.vars);
 		visitor_visit(ast, variables_t, 0);
 	}
 	delete ast;

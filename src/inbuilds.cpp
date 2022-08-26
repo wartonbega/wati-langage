@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include "include/inbuilds.hpp"
 #include "include/visitor.hpp"
+#include "include/trackers.hpp"
 
 // Inbuild functions for values char and int
 // This are not objects so inbuilds functions to multiply, add ect... are not defined 
@@ -195,13 +196,30 @@ std::string convert_to_string(w_variable *content, std::map<std::string, w_varia
     {
         return std::to_string(content->convert_to_int());
     }
+    else if (type == "traqueur")
+    {
+        tracker *t = (tracker *)(content->content);
+        //if (function_exist("!traqueur.en_string", functions))
+        //{
+        //    variables_t["self"] = content;
+        //    node *args = new node("*");
+        //    variable_table t = variable_table();
+        //    t.vars = variables_t;
+        //    return convert_to_string(visitor_funcall("!traqueur.en_string", args, t, thread_id), variables_t, thread_id);
+        //}
+
+        std::string s = "<traqueur &=" + t->name_to_track + " *=" + convert_to_string(t->value(thread_id), variables_t, thread_id) + ">";
+        return s;
+    }
     else
     { // it is therefore an object
         w_object *r = (w_object *)content->content;
         std::string name = "!" + r->name + ".en_string";
         variables_t["self"] = content;
         node *args = new node("*");
-        return convert_to_string(visitor_funcall(name, args, variables_t, thread_id), variables_t, thread_id);
+        variable_table t = variable_table();
+        t.vars = variables_t;
+        return convert_to_string(visitor_funcall(name, args, t, thread_id), variables_t, thread_id);
     }
 }
 
@@ -300,13 +318,21 @@ w_variable *w_char(w_variable *content, std::map<std::string, w_variable *> vari
         r->content = (void *)s;
         return r;
     }
+    else if (type == "traqueur")
+    {
+        std::string *s = new std::string(std::to_string(content->convert_to_int()));
+        w_variable *r = new w_variable();
+        r->type = 1;
+        r->content = (void *)s;
+        return r;
+    }
     else
     { // it is therefore an object
-        w_object *r = (w_object *)content->content;
-        std::string name = "!" + r->name + ".en_string";
-        variables_t["self"] = content;
-        node *args = new node("*");
-        return w_char(visitor_funcall(name, args, variables_t, thread_id), variables_t, thread_id);
+        std::string *s = new std::string(std::to_string(content->convert_to_int()));
+        w_variable *r = new w_variable();
+        r->type = 1;
+        r->content = (void *)s;
+        return r;
     }
 }
 

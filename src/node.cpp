@@ -29,9 +29,16 @@ std::string node::to_string(int tabs)
     return t;
 }
 
-void node::push_child(node *n)
+node *node::set_prevalue(w_variable *v)
+{
+    this->pre_value = v;
+    return this;
+}
+
+node *node::push_child(node *n)
 {
     this->children.push_back(n);
+    return this;
 }
 
 node::node(std::string val)

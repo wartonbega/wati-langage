@@ -478,10 +478,15 @@ node *parser(std::vector<std::string> lexemes, std::string first_value, std::vec
                 std::string c_reference = ref[i];
                 node *var_asign = new node("vardef");
                 var_asign->reference = ref[i];
+
+                
                 node *name = new node(lexemes[i - 1]);
                 name->reference = ref[i - 1];
                 var_asign->push_child(name);
-                i++;
+
+                
+                i++; // we pass the '='
+
                 std::vector<std::string> b;
                 std::vector<std::string> r;
                 while (lexemes[i] != ";")
@@ -490,7 +495,7 @@ node *parser(std::vector<std::string> lexemes, std::string first_value, std::vec
                     r.push_back(ref[i]);
                     i++;
                 }
-                node *value = parser(b, "*", r, c_reference);
+                node *value = parser(b, "{}", r, c_reference);
                 var_asign->push_child(value);
                 ast->push_child(var_asign);
             }
@@ -564,7 +569,7 @@ node *parser(std::vector<std::string> lexemes, std::string first_value, std::vec
         }
         else
         {
-            if (i + 1 < lexemes.size() and lexemes[i + 1] != "=")
+            if ((i + 1 < lexemes.size() and lexemes[i + 1] != "=" and !is_operator(lexemes[i])))
             {
                 node *expr = new node(lexemes[i]);
                 expr->reference = ref[i];

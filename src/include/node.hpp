@@ -11,6 +11,8 @@ struct w_variable
     // 0 -> function
     // 1 -> char
     // 2 -> int
+    // 3 -> object
+    // 4 -> tracker
     int type;
     
     // the pointer to the real value
@@ -34,6 +36,8 @@ struct node
     std::string value;
     w_variable *pre_value; // so we don't need to create lots of new variables at each number for example
     
+    node *set_prevalue(w_variable *);
+
     std::string reference;
 
     node(std::string);
@@ -43,7 +47,7 @@ struct node
 
     std::string to_string(int tabs);
     
-    void push_child(node *);
+    node *push_child(node *);
 
 
     ~node();

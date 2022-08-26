@@ -16,7 +16,9 @@ bool lexer_is_operator(std::string expr)
         expr == "%" ||
         expr == "/" ||
         expr == "<" ||
-        expr == ">"
+        expr == ">" ||
+        expr == "&" ||
+        expr == "[]" //  this means that just [1, 2, 3] is in fact an operator
         )
     {
         return true;

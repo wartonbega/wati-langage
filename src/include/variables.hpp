@@ -8,6 +8,23 @@
 
 // the structure w_variable is now in node.hpp
 
+enum types 
+{
+    T_FONCTION,
+    T_CHAR,
+    T_INT,
+    T_OBJECT,
+    T_TRACKER
+};
+
+struct variable_table 
+{
+    std::map<std::string, w_variable *> vars;
+
+    void assign(std::string, w_variable *);
+    w_variable *get(std::string);
+    bool exist(std::string name);
+};
 
 struct w_function
 {
@@ -28,12 +45,17 @@ struct w_object
 {
     std::string name;                               // name of the 'type'
     std::vector<std::string> methods;               // all the names of the methods
-    std::map<std::string, w_variable *> attributes; // all the variables
+    variable_table *attributes; // all the variables
+
+    w_object()
+    {
+        this->attributes = new variable_table();
+    }
 
     ~w_object()
     {
         this->methods.clear();
-        this->attributes.clear();
+        this->attributes->vars.clear();
         this->name.clear();
     }
 

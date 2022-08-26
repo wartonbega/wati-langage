@@ -47,9 +47,9 @@ classe list contient
 
     methode en_string() fait
         si self.taille == 0 alors
-
             renvoie "[ ]";
         fin
+
         r = "[ ";
         n = self.head.next;
 

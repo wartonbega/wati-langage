@@ -2,22 +2,38 @@
 #include <iostream>
 
 
+void variable_table::assign(std::string name, w_variable *value)
+{
+    this->vars[name] = value;
+}
+
+w_variable *variable_table::get(std::string name)
+{
+    return this->vars[name];
+}
+
+bool variable_table::exist(std::string name)
+{
+    return this->vars.find(name) != this->vars.end();
+}
 
 std::string w_variable::get_type()
 {
     switch (this->type)
     {
-    case 0:
+    case T_FONCTION:
         return "fonction";
-    case 1:
+    case T_CHAR:
         return "char";
-    case 2:
+    case T_INT:
         return "int";
-    case 3:
+    case T_OBJECT:
         {
             w_object* o =  (w_object*)this->content;
             return o->name;
         }
+    case T_TRACKER:
+        return "traqueur";
     default:
         break;
     }
@@ -74,12 +90,12 @@ int w_variable::convert_to_int()
 
 w_variable *w_object::get_attribute(std::string name)
 {
-    return this->attributes[name];
+    return this->attributes->get(name);
 }
 
 bool w_object::attribute_exist(std::string name)
 {
-    if (this->attributes.find(name) != this->attributes.end())
+    if (this->attributes->exist(name))
     {
         return true;
     }
@@ -99,9 +115,8 @@ bool w_object::methods_exist(std::string name)
 }
 void w_object::attribute_attribution(std::string name, w_variable * value)
 {
-    this->attributes[name] = value;    
+    this->attributes->assign(name, value);
 }
-
 
 void w_function::set_arguments(node *args)
 {
