@@ -3,6 +3,9 @@
 #include <map>
 #include <string>
 
+#include <chrono>    
+#include <ctime>
+
 #include "../src/include/node.hpp"
 #include "../src/include/variables.hpp"
 #include "../src/include/visitor.hpp"
@@ -84,8 +87,8 @@ extern "C" w_variable* attributs(std::vector<w_variable *> args, variable_table 
         w_variable *var_name = new w_variable(std::get<0>(var));
 
         variable_table variables_t_bis = variable_table(variables_t);
-        variables_t_bis.assign("self", list);
-        variables_t_bis.assign("content", var_name);
+        variables_t_bis.assign("self", list, thread_id);
+        variables_t_bis.assign("content", var_name, thread_id);
 
         w_function *plus = functions["!list.plus"];
         visitor_visit(plus->trunc, variables_t_bis, thread_id);
@@ -112,8 +115,8 @@ extern "C" w_variable* methodes(std::vector<w_variable *> args, variable_table v
             w_variable *var_name = new w_variable(name);
 
             variable_table variables_t_bis = variable_table(variables_t);
-            variables_t_bis.assign("self", list);
-            variables_t_bis.assign("content", var_name);
+            variables_t_bis.assign("self", list, thread_id);
+            variables_t_bis.assign("content", var_name, thread_id);
 
             w_function *plus = functions["!list.plus"];
             visitor_visit(plus->trunc, variables_t_bis, thread_id);
@@ -166,4 +169,32 @@ extern "C" w_variable* doc(std::vector<w_variable *> args, variable_table variab
     }
 
     return new w_variable(documentation);
+}
+
+extern "C" w_variable* dirs(std::vector<w_variable *> args, variable_table variables_t, std::string reference, int thread_id)
+{
+    w_variable *list = visitor_new_object("list", new node("*"), variables_t, thread_id); // list of attributs
+
+    for (auto var : variables_t.vars)
+    {
+        std::string name = std::get<0>(var);
+        w_variable *var_name = new w_variable(name);
+
+        variable_table variables_t_bis = variable_table(variables_t);
+        variables_t_bis.assign("self", list, thread_id);
+        variables_t_bis.assign("content", var_name, thread_id);
+
+        w_function *plus = functions["!list.plus"];
+        visitor_visit(plus->trunc, variables_t_bis, thread_id);
+    }
+    return list;
+}
+
+using namespace std::chrono;
+
+extern "C" w_variable* temps(std::vector<w_variable *> args, variable_table variables_t, std::string reference, int thread_id)
+{
+    // we get the current time in milliseconds since the epoch
+    int64_t ms = duration_cast< milliseconds >(system_clock::now().time_since_epoch()).count();
+    return new w_variable(ms);
 }

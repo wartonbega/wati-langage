@@ -115,5 +115,5 @@ void tracker::set_value(w_variable *v, int thread_id)
     }
 
     // we assign to the right value
-    this->variable_t->assign(this->name_to_track, v);
+    this->variable_t->assign(this->name_to_track, v, thread_id);
 }

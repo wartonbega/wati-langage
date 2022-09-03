@@ -1,0 +1,15 @@
+inclue "std.wati";
+
+fonction change (t) fait 
+    *t = 69;
+fin
+
+i = 420;
+t = &i;
+
+!println("Avant changement : ")
+!println(*t)
+
+!change(t)
+!println("Après changement : ")
+!println(i)

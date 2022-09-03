@@ -8,6 +8,8 @@
 
 // the structure w_variable is now in node.hpp
 
+bool accept_var_name(std::string name);
+
 enum types 
 {
     T_FONCTION,
@@ -17,11 +19,11 @@ enum types
     T_TRACKER
 };
 
-struct variable_table 
+struct variable_table  // this is like a namespace for the variables to be
 {
     std::map<std::string, w_variable *> vars;
 
-    void assign(std::string, w_variable *);
+    void assign(std::string, w_variable *, int);
     w_variable *get(std::string);
     bool exist(std::string name);
 };

@@ -31,9 +31,7 @@ bool texture_exist(std::string name)
 
 w_variable *basic_return()
 {
-    w_variable *t = new w_variable();
-    t->type = 2; // INT
-    t->content = (void *)(new int(0));
+    w_variable *t = new w_variable(0);
     return t;
 }
 
@@ -66,7 +64,7 @@ extern "C" w_variable *set_color(std::vector<w_variable *> args, variable_table 
     // r, v, b, a
     if (args.size() != 4)
     {
-        error("!init_window necessite 2 arguments, `rouge`, `vert`, `bleue` et `alpha`", reference, thread_id);
+        error("!set_color necessite 3 arguments, `rouge`, `vert`, `bleue` et `alpha`", reference, thread_id);
     }
 
     w_variable *r = args[0];
@@ -75,7 +73,7 @@ extern "C" w_variable *set_color(std::vector<w_variable *> args, variable_table 
     w_variable *a = args[3];
     if (r->get_type() != "int" || v->get_type() != "int" || b->get_type() != "int" || a->get_type() != "int")
     {
-        error("!init_window necessite 2 arguments, `rouge`, `vert`, `bleue` et `alpha`, de type 'int'", reference, thread_id);
+        error("!set_color necessite 2 arguments, `rouge`, `vert`, `bleue` et `alpha`, de type 'int'", reference, thread_id);
     }
     int rouge = *(int *)r->content;
     int vert = *(int *)v->content;
@@ -91,7 +89,7 @@ extern "C" w_variable *fill_rect(std::vector<w_variable *> args, variable_table 
     // x, y, width, height
     if (args.size() != 4)
     {
-        error("!fill_rect necessite 2 arguments, `x`, `y`, `largeur` et `longueure`", reference, thread_id);
+        error("!fill_rect necessite 4 arguments, `x`, `y`, `largeur` et `longueure`", reference, thread_id);
     }
 
     w_variable *x_ = args[0];
@@ -100,7 +98,7 @@ extern "C" w_variable *fill_rect(std::vector<w_variable *> args, variable_table 
     w_variable *h = args[3];
     if (w->get_type() != "int" || h->get_type() != "int" || x_->get_type() != "int" || y_->get_type() != "int")
     {
-        error("!fill_rect necessite 2 arguments, `x`, `y`, `largeur` et `longueure`, de type 'int'", reference, thread_id);
+        error("!fill_rect necessite 4 arguments, `x`, `y`, `largeur` et `longueure`, de type 'int'", reference, thread_id);
     }
 
     int x = *(int *)x_->content;
@@ -244,8 +242,8 @@ extern "C" w_variable *get_mouse_pos(std::vector<w_variable *> args, variable_ta
     arg->type = 2; // int
     arg->content = (void *)(new int(x));
     variable_table variables_t_bis = variable_table(variables_t);
-    variables_t_bis.assign("self", list);
-    variables_t_bis.assign("content", arg);
+    variables_t_bis.assign("self", list, thread_id);
+    variables_t_bis.assign("content", arg, thread_id);
 
     w_function *plus = functions["!list.plus"];
 
@@ -254,7 +252,7 @@ extern "C" w_variable *get_mouse_pos(std::vector<w_variable *> args, variable_ta
     arg = new w_variable();
     arg->type = 2; // int
     arg->content = (void *)(new int(y));
-    variables_t_bis.assign("content", arg);
+    variables_t_bis.assign("content", arg, thread_id);
     visitor_visit(plus->trunc, variables_t_bis, thread_id);
 
     return list;
@@ -533,8 +531,8 @@ extern "C" w_variable *mainloop(std::vector<w_variable *> args, variable_table v
                 arg->content = (void *)o;
 
                 variable_table variables_t_bis = variable_table(variables_t);
-                variables_t_bis.assign("self", list);
-                variables_t_bis.assign("content", arg);
+                variables_t_bis.assign("self", list, thread_id);
+                variables_t_bis.assign("content", arg, thread_id);
 
                 w_function *plus = functions["!list.plus"];
                 visitor_visit(plus->trunc, variables_t_bis, thread_id);

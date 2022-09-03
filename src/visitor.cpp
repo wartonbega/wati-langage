@@ -38,7 +38,7 @@ variable_table prepare_arguments(std::vector<w_variable *> vars, node *trunc, va
     for (int i = 0; i < vars.size(); i++)
     {
         // std::cout << trunc->children[i]->children[0]->value << std::endl;
-        var_bis.assign(trunc->children[i]->children[0]->value, vars[i]);
+        var_bis.assign(trunc->children[i]->children[0]->value, vars[i], 0);
     }
     return var_bis;
 }
@@ -61,11 +61,6 @@ std::stack<std::string> *what_reference(int thread_id)
     default:
         return references;
     }
-}
-
-bool accept_var_name(std::string name)
-{
-    return true;
 }
 
 
@@ -346,9 +341,7 @@ void visitor_init_inbuild_functions()
     inbuild_funcs_documentation.push_back("Finis le programme avec le code indiqué. !sortie( var(int) ) -> int");
     inbuild_funcs.push_back("!c_en");
     inbuild_funcs_documentation.push_back("Accède au caractère X d'une variable 'char'. !c_en( var(char) ) -> char");
-    inbuild_funcs.push_back("!temps");
-    inbuild_funcs_documentation.push_back("Renvoie le temps écoulé depuis l'epoch (en secondes). !temps( ) -> int");
-
+    
     std::string fs = open_file("/usr/local/lib/wati/cpp_lib/functions");
     if (fs == "file_not_found")
     { // very, very bad
@@ -432,9 +425,7 @@ w_variable *visitor_function_inbuild(std::string name, node *args, variable_tabl
             w_variable *arg = visitor_compute(arg_t, &variables_t, thread_id);
             print(arg, variables_t.vars);
         }
-        w_variable *r = new w_variable();
-        r->type = T_INT;
-        r->content = (void *)(new int(0));
+        w_variable *r = new w_variable(0);
 
         return r;
     }
@@ -543,16 +534,6 @@ w_variable *visitor_function_inbuild(std::string name, node *args, variable_tabl
         }
         w_exit(arg);
     }
-    if (name == "!temps")
-    {
-        // No args
-        if (args->children.size() != 0)
-        {
-            std::string err = "la fonction !temps n'as pas d'argument";
-            error(err, (what_reference(thread_id))->top(), thread_id);
-        }
-        return w_time();
-    }
     
     // that means we are looking for a shared header
     std::string real_name = remove_function_call_prefix(name);
@@ -628,7 +609,7 @@ w_variable *visitor_funcall(std::string name, node *args, variable_table variabl
             std::string arg_n = func->arguments->children[i]->children[0]->value;
             w_variable *arg_v = visitor_compute(args->children[i], &variables_t, thread_id);
             // variables_t[arg_n] = arg_v; we use the variable asignement
-            variables_t.assign(arg_n, arg_v);
+            variables_t.assign(arg_n, arg_v, thread_id);
         }
         w_variable *res = visitor_visit(func->trunc, variables_t, thread_id);
         return res;
@@ -655,17 +636,17 @@ w_variable *visitor_funcall_methode(std::string name, node *args, variable_table
         {
             std::string arg_n = func->arguments->children[i]->children[0]->value;
             w_variable *arg_v = visitor_compute(args->children[i], &variables_t, thread_id);
-            variables_t.assign(arg_n, arg_v);
+            variables_t.assign(arg_n, arg_v, thread_id);
             // variables_t[arg_n] = arg_v;
         }
-        variables_t.assign("self", self);
+        variables_t.assign("self", self, thread_id);
         // variables_t["self"] = self;
         w_variable *res = visitor_visit(func->trunc, variables_t, thread_id);
         return res;
     }
 }
 
-w_variable *visitor_use_inbuild_int(int a, int b, std::string opera, int thread_id)
+w_variable *visitor_use_inbuild_int(int64_t a, int64_t b, std::string opera, int thread_id)
 {
     if (opera == "+")
     {
@@ -752,18 +733,12 @@ w_variable *visitor_use_inbuild(w_variable *a, w_variable *b, std::string opera,
     {
         if (opera == "!=")
         {
-            w_variable *r = new w_variable();
-            int *p = new int(1);
-            r->type = T_INT; // int
-            r->content = (void *)p;
+            w_variable *r = new w_variable(1);
             return r;
         }
         else
         {
-            w_variable *r = new w_variable();
-            int *p = new int(0);
-            r->type = T_INT; // int
-            r->content = (void *)p;
+            w_variable *r = new w_variable(0);
             return r;
         }
     }
@@ -908,8 +883,8 @@ w_variable *visitor_link_operator(w_variable *a, w_variable *b, std::string oper
         return visitor_use_inbuild(a, b, opera, thread_id);
     }
 
-    variables_t->assign("self", a);
-    variables_t->assign(func->arguments->children[0]->children[0]->value, b);
+    variables_t->assign("self", a, thread_id);
+    variables_t->assign(func->arguments->children[0]->children[0]->value, b, thread_id);
 
     return visitor_visit(func->trunc, *variables_t, thread_id);
 }
@@ -960,9 +935,7 @@ w_variable *generate_function_variable(std::string name, int thread_id)
 
 w_variable *visitor_compute(node *c, variable_table *variables_t, int thread_id)
 {
-    w_variable *last_value = new w_variable();
-    last_value->type = T_INT;                       // By default, the type is int
-    last_value->content = (void *)(new int(0)); // and the value is 0
+    w_variable *last_value = new w_variable(0);
     bool unused = true;
     for (int i = 0; i < c->children.size(); i++)
     {
@@ -977,17 +950,11 @@ w_variable *visitor_compute(node *c, variable_table *variables_t, int thread_id)
         {
             if (is_char(expr))
             {
-                last_value = new w_variable();
-                last_value->type = T_CHAR; // char
-                std::string *r = new std::string(del_string(expr));
-                last_value->content = (void *)r;
+                last_value = new w_variable(del_string(expr));
             }
             else if (is_digit(expr))
             {
-                last_value = new w_variable();
-                last_value->type = T_INT;                 // int
-                int *r = new int(atoi(expr.c_str())); // we create an int pointer from the string
-                last_value->content = (void *)r;      // we cast the int pointer as a void pointer
+                last_value = new w_variable(atoi(expr.c_str()));
             }
             unused = false;
         }
@@ -1273,7 +1240,7 @@ w_variable *visitor_compute(node *c, variable_table *variables_t, int thread_id)
 
                 w_variable *r = visitor_new_object("list", new node("()"), *variables_t, thread_id);
                 variable_table variables_t_bis = variable_table(*variables_t);
-                variables_t_bis.assign("self", r);
+                variables_t_bis.assign("self", r, thread_id);
 
                 std::string funcname = "!list.plus"; // the function to add elements to a list
 
@@ -1308,8 +1275,8 @@ w_variable *visitor_compute(node *c, variable_table *variables_t, int thread_id)
             w_function *f = functions[name];
 
             variable_table variables_t_bis = variable_table(*variables_t);
-            variables_t_bis.assign("self", last_value);
-            variables_t_bis.assign(f->arguments->children[0]->children[0]->value, b_value);
+            variables_t_bis.assign("self", last_value, thread_id);
+            variables_t_bis.assign(f->arguments->children[0]->children[0]->value, b_value, thread_id);
             last_value = visitor_visit(f->trunc, variables_t_bis, thread_id);
             unused = false;
         }
@@ -1673,7 +1640,7 @@ void visitor_vardef(node *trunc, variable_table *variables_t, int thread_id)
             t->set_value(result, thread_id);
         }
         else
-            variables_t->assign(expr, result);
+            variables_t->assign(expr, result, thread_id);
     }
 }
 
@@ -1813,7 +1780,7 @@ std::tuple<std::string, w_variable *> visitor_forloop(node *trunc, variable_tabl
     {
         // free(var_cont); // avoid memory leaks
         var = new w_variable(index);
-        variables_t->assign(var_name, var);
+        variables_t->assign(var_name, var, thread_id);
         // variables_t[var_name] = var;
         std::tuple<std::string, w_variable *> ret = visitor_visit_incode(code, variables_t, thread_id);
         if (std::get<0>(ret) == "break")
@@ -1970,9 +1937,7 @@ w_variable *visitor_visit(node *trunc, variable_table variables_t, int thread_id
     {
         visitor_init_inbuild_functions();
     }
-    w_variable *to_return = new w_variable();
-    to_return->type = T_INT;
-    to_return->content = (void *)(new int(0)); // by default, the result is an int ( 0 )
+    w_variable *to_return = new w_variable(0);
 
     for (int i = 0; i < trunc->children.size(); i++)
     {

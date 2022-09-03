@@ -1,9 +1,9 @@
-!mainloop
-!init_window
-!quit_window
-!fill_rect
-!set_color
-!get_mouse_pos
+!mainloop Démmare la boucle principale d'execution. !mainloop( fonction_execution(fonction) ) -> 0
+!init_window Initialise la fenêtre SDL. !init_window( largeur(int), longueur(int) ) -> 0
+!quit_window Ferme et quitte SLD (et donc la fenêtre crée). !quit_window( ) -> 0
+!fill_rect Remplis le contenue d'un rectange de la couleur actuelle. !fill_rect( x(int), y(int), longueur(int), largeur(int) ) -> 0
+!set_color Met la couleur indiquée (rvba) comme couleur actuelle. !set_color( rouge(int), vert(int), bleu(int), alpha(int) ) -> 0
+!get_mouse_pos Renvoie les coordonnées actuelles de la souris. !get_mouse_pos( ) -> list[ x(int), y(int) ]
 !set_delay
 !et
 !ou
@@ -22,6 +22,8 @@
 !wcos 
 !ecrit Écrit le contenue dans un fichier indiqué. !ecrit( nom_de_fichier(char), contenu(char) ) -> 0
 !ouvre Ouvre le fichier indiqué et renvoie son contenu. !ouvre( nom_de_fichier(char) ) -> char
-!attributs Renvoie les attributs d'un objet. !attributs( objet ) -> list
-!methodes Renvoie les methodes d'un objet. !methodes( objet ) -> list
+!attributs Renvoie les attributs d'un objet. !attributs( objet ) -> list[char]
+!methodes Renvoie les methodes d'un objet. !methodes( objet ) -> list[char]
 !doc Renvoie la documentation d'une fonction. !doc( var(fonction) ) -> char
+!dirs Renvoie une liste des noms de variable dans le namespace courrant. !dirs( ) -> list[char]
+!temps Renvoie le temps écoulé depuis l'epoch (en millisecondes). !temps( ) -> int

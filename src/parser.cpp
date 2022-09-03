@@ -589,17 +589,11 @@ node *parser(std::vector<std::string> lexemes, std::string first_value, std::vec
                     w_variable * last_value;
                     if (is_char(lexemes[i]))
                     {
-                        last_value = new w_variable();
-                        last_value->type = 1; // char
-                        std::string *r = new std::string(del_string(lexemes[i]));
-                        last_value->content = (void *)r;
+                        last_value = new w_variable(del_string(lexemes[i]));
                     }
                     else if (is_digit(lexemes[i]))
                     {
-                        last_value = new w_variable();
-                        last_value->type = 2;                 // int
-                        int *r = new int(atoi(lexemes[i].c_str())); // we create an int pointer from the string
-                        last_value->content = (void *)r;      // we cast the int pointer as a void pointer
+                        last_value = new w_variable(atoi(lexemes[i].c_str()));
                     }
                     expr->pre_value = last_value;
                 }
@@ -614,17 +608,11 @@ node *parser(std::vector<std::string> lexemes, std::string first_value, std::vec
                     w_variable * last_value;
                     if (is_char(lexemes[i]))
                     {
-                        last_value = new w_variable();
-                        last_value->type = 1; // char
-                        std::string *r = new std::string(del_string(lexemes[i]));
-                        last_value->content = (void *)r;
+                        last_value = new w_variable(del_string(lexemes[i]));
                     }
                     else if (is_digit(lexemes[i]))
                     {
-                        last_value = new w_variable();
-                        last_value->type = 2;                 // int
-                        int *r = new int(atoi(lexemes[i].c_str())); // we create an int pointer from the string
-                        last_value->content = (void *)r;      // we cast the int pointer as a void pointer
+                        last_value = new w_variable(atoi(lexemes[i].c_str()));
                     }
                     expr->pre_value = last_value;
                 }

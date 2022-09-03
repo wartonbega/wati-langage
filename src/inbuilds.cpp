@@ -56,128 +56,86 @@ w_variable *char_minus(std::string a, std::string b)
 
 w_variable *char_equals(std::string a, std::string b)
 { // returns a variable as a bool (int)
-    w_variable *r = new w_variable();
-    int *result = new int(a == b);
-    r->type = 2; // we set the type to int (2)
-    r->content = (void *)result; // we cast the value int to a void pointer
+    w_variable *r = new w_variable(a == b);
     return r;
 }
 
 w_variable *char_ne(std::string a, std::string b)
 { // returns a variable as a bool (int)
-    w_variable *r = new w_variable();
-    int *result = new int(a != b);
-    r->type = 2; // we set the type to int (2)
-    r->content = (void *)result; // we cast the value int to a void pointer
+    w_variable *r = new w_variable(a != b);
     return r;
 }
 
-w_variable *int_plus(int a, int b)
+w_variable *int_plus(int64_t a, int64_t b)
 { // returns a variable as an int
 
-    w_variable *r = new w_variable();
-    int *result = new int(a + b);
-    r->type = 2; // we set the type to int (2)
-    r->content = (void *)result; // we cast the value int to a void pointer
+    w_variable *r = new w_variable(a + b);
     return r;
 }
 
-w_variable *int_minus(int a, int b)
+w_variable *int_minus(int64_t a, int64_t b)
 { // returns a variable as an int
-    w_variable *r = new w_variable();
-    int *result = new int(a - b);
-    r->type = 2; // we set the type to int (2)
-    r->content = (void *)result; // we cast the value int to a void pointer
+    w_variable *r = new w_variable(a - b);
     return r;
 }
 
-w_variable *int_times(int a, int b)
+w_variable *int_times(int64_t a, int64_t b)
 { // returns a variable as a int 
-    w_variable *r = new w_variable();
-    int *result = new int(a * b);
-    r->type = 2; // we set the type to int (2)
-    r->content = (void *)result; // we cast the value int to a void pointer
+    w_variable *r = new w_variable(a * b);
     return r;
 }
 
-w_variable *int_div(int a, int b)
+w_variable *int_div(int64_t a, int64_t b)
 { // returns a variable as a int 
-    w_variable *r = new w_variable();
-    int *result = new int(a / b);
-    r->type = 2; // we set the type to int (2)
-    r->content = (void *)result; // we cast the value int to a void pointer
+    w_variable *r = new w_variable(a / b);
     return r;
 }
 
-w_variable *int_equals(int a, int b)
+w_variable *int_equals(int64_t a, int64_t b)
 { // returns a variable as a int 
-    w_variable *r = new w_variable();
-    int *result = new int(a == b);
-    r->type = 2; // we set the type to int (2)
-    r->content = (void *)result; // we cast the value int to a void pointer
+    w_variable *r = new w_variable(a == b);
     return r;
 }
 
-w_variable *int_lt(int a, int b)
+w_variable *int_lt(int64_t a, int64_t b)
 { // returns a variable as a int 
-    w_variable *r = new w_variable();
-    int *result = new int(a < b);
-    r->type = 2; // we set the type to int (2)
-    r->content = (void *)result; // we cast the value int to a void pointer
+    w_variable *r = new w_variable(a < b);
     return r;
 }
 
-w_variable *int_gt(int a, int b)
+w_variable *int_gt(int64_t a, int64_t b)
 { // returns a variable as a int 
-    w_variable *r = new w_variable();
-    int *result = new int(a > b);
-    r->type = 2; // we set the type to int (2)
-    r->content = (void *)result; // we cast the value int to a void pointer
+    w_variable *r = new w_variable(a > b);
     return r;
 }
 
-w_variable *int_ge(int a, int b)
+w_variable *int_ge(int64_t a, int64_t b)
 { // returns a variable as a int 
-    w_variable *r = new w_variable();
-    int *result = new int(a >= b);
-    r->type = 2; // we set the type to int (2)
-    r->content = (void *)result; // we cast the value int to a void pointer
+    w_variable *r = new w_variable(a >= b);
     return r;
 }
 
-w_variable *int_le(int a, int b)
+w_variable *int_le(int64_t a, int64_t b)
 { // returns a variable as a int 
-    w_variable *r = new w_variable();
-    int *result = new int(a <= b);
-    r->type = 2; // we set the type to int (2)
-    r->content = (void *)result; // we cast the value int to a void pointer
+    w_variable *r = new w_variable(a <= b);
     return r;
 }
 
-w_variable *int_mod(int a, int b)
+w_variable *int_mod(int64_t a, int64_t b)
 { // returns a variable as a int 
-    w_variable *r = new w_variable();
-    int *result = new int(a % b);
-    r->type = 2; // we set the type to int (2)
-    r->content = (void *)result; // we cast the value int to a void pointer
+    w_variable *r = new w_variable(a % b);
     return r;
 }
 
-w_variable *int_power(int a, int b)
+w_variable *int_power(int64_t a, int64_t b)
 { // returns a variable as a int 
-    w_variable *r = new w_variable();
-    int *result = new int(pow(a, b));
-    r->type = 2; // we set the type to int (2)
-    r->content = (void *)result; // we cast the value int to a void pointer
+    w_variable *r = new w_variable(pow(a, b));
     return r;
 }
 
-w_variable *int_ne(int a, int b)
+w_variable *int_ne(int64_t a, int64_t b)
 { // returns a variable as a int 
-    w_variable *r = new w_variable();
-    int *result = new int(a != b);
-    r->type = 2; // we set the type to int (2)
-    r->content = (void *)result; // we cast the value int to a void pointer
+    w_variable *r = new w_variable(a != b);
     return r;
 }
 

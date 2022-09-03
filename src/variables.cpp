@@ -1,9 +1,28 @@
 #include "include/variables.hpp"
+#include "include/types.hpp"
+#include "include/visitor.hpp"
 #include <iostream>
 
 
-void variable_table::assign(std::string name, w_variable *value)
+bool accept_var_name(std::string name)
 {
+    if (name[0] == '!')
+        return false;
+    if (is_digit(name))
+        return false;
+    if (is_explicit(name))
+        return false;
+
+    return true;
+}
+
+void variable_table::assign(std::string name, w_variable *value, int thread_id)
+{
+    if (!accept_var_name(name))
+    {
+        std::string err = "nom de variable incorrecte : '" + name + "'";
+        error(err, what_reference(thread_id)->top(), thread_id);
+    }
     this->vars[name] = value;
 }
 
@@ -42,9 +61,9 @@ std::string w_variable::get_type()
 
 w_variable::w_variable(){}
 
-w_variable::w_variable(int content)
+w_variable::w_variable(int64_t content)
 {
-    int *r = new int(content);
+    int64_t *r = new int64_t(content);
     this->content = (void *)r;
     this->type = 2; // int
 }
@@ -55,7 +74,6 @@ w_variable::w_variable(std::string content)
     this->content = (void *)r;
     this->type = 1; // char
 }
-
 
 w_variable::~w_variable()
 {
@@ -83,9 +101,9 @@ std::string w_variable::convert_to_char()
     return *(std::string *)this->content;
 }
 
-int w_variable::convert_to_int()
+int64_t w_variable::convert_to_int()
 {
-    return *(int *)this->content;
+    return *(int64_t *)this->content;
 }
 
 w_variable *w_object::get_attribute(std::string name)
@@ -115,7 +133,7 @@ bool w_object::methods_exist(std::string name)
 }
 void w_object::attribute_attribution(std::string name, w_variable * value)
 {
-    this->attributes->assign(name, value);
+    this->attributes->assign(name, value, 0);
 }
 
 void w_function::set_arguments(node *args)

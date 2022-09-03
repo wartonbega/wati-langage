@@ -4,9 +4,6 @@ fonction observer (t) fait
     valeur_depart = *t;
     tant que 1 fait 
         si *t != valeur_depart alors 
-            si *t == "q" alors
-                renvoie;
-            fin
             !println("Detection changement de valeur : " + !char(*t) + "\nChangement pour : " + !char(valeur_depart))
             *t = valeur_depart;
         fin
@@ -15,16 +12,11 @@ fin
 
 i = 69;
 t = &i;
-  
-tache (!observer, t);
 
+tache (!observer, t);
 pour x allant de 0 a 100 fait 
-    !dors(10)
+    !dors(1)
     r = !inputln("Valeur : ");
-    si r == "q" alors
-        i = "q";
-        casse;
-    fin
     si r != "" alors
         i = r;
     fin

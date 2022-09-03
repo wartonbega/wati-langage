@@ -10,6 +10,13 @@ classe texture contient
         self.count = 0;
     fin
 
+    methode tourne_origine (angle) fait 
+        self.diff = self.rotation - angle % 360;
+        si diff != 0 alors 
+            !rotate_texture ()
+        fin
+    fin
+
     methode render () fait
         self.count = self.count + 1;
         !draw_texture(self.nom, self.x, self.y, self.h, self.w)

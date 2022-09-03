@@ -21,13 +21,13 @@ struct w_variable
 
     ~w_variable();
     w_variable();
-    w_variable(int);
+    w_variable(int64_t);
     w_variable(std::string);
 
     std::string get_type();
     bool is_object();
     std::string convert_to_char();
-    int convert_to_int();
+    int64_t convert_to_int();
 };
 
 struct node
