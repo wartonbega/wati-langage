@@ -7,6 +7,9 @@ Il ne demande pas de compétence particulières lors de l'apprentissage, d'une p
 
 Quand on commence à programmer dans un langage pour la première fois, les erreurs peuvent être un obstacle majeur. Ici, les erreurs sont simples, listées et en français. Plus de problème de vocabulaire, ou de mots techniques.
 
+## Informations & nouveautées
+Cette version est la dernière pour les deux prochaines années, puisque pour des raisons d'étude, je ne pourrais pas continuer à developper.
+
 ## Installation
 Pour installer le wati langage : 
 - Pour Macos : executer le fichier `install_macos.sh`
