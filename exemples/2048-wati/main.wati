@@ -16,7 +16,6 @@ classe game contient
             !self.map_save.plus(l_)
             !self.map.plus(l)
         fin
-
         self.random = random();
 
         self.window_w = 600;

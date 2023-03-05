@@ -10,6 +10,7 @@ t = &i;
 !println("Avant changement : ")
 !println(*t)
 
-!change(t)
+!change(t) 
+
 !println("Après changement : ")
 !println(i)

@@ -45,8 +45,13 @@ fin
 
 classe float contient
     methode constructeur (int) fait
-        self.content = int;
-        self.ten_pow = 0;
+        si !type(int) == "float" fait
+            self.content = int.content;
+            self.ten_pow = int.ten_pow;
+        sinon 
+            self.content = int;
+            self.ten_pow = 0;
+        fin
     fin
 
     methode en_string () fait
@@ -97,139 +102,27 @@ classe float contient
     fin
 
     methode times (num) fait
-        si (!type(num) == "float") alors
-            self.content = self.content * num.content;
-            self.ten_pow = self.ten_pow + num.ten_pow;
-        fin
-        si (!type(num) == "int") alors
-            f = float(num);
-            self = self * f;
-            libere f;
-        fin
-        renvoie self;
+        renvoie float(!float_times(self, num));
     fin
 
     methode div (num) fait
-        si (!type(num) == "float") alors
-            m = self.content * 100000;
-            self.content = m / num.content;
-            self.ten_pow = self.ten_pow - 5 - num.ten_pow;
-            !self.arrondis_puissance();
-        fin
-
-        si (!type(num) == "int") alors
-            f = float(num);
-            self = self / f;
-            libere f;
-        fin
-        renvoie self;
+        renvoie float(!float_div(self, num));
     fin
 
     methode plus (num) fait
-        si (!type(num) == "float") alors
-            si (!et(self.ten_pow >= 0, num.ten_pow >= 0)) fait
-                n = self.content * (10 ^ self.ten_pow);
-                m = num.content * (10 ^ num.ten_pow);
-                self.ten_pow = 0;
-                self.content = n + m;
-                !self.arrondis_puissance()
-                renvoie self;
-            fin
-
-            p_g = !plus_grand(self.ten_pow, num.ten_pow);
-            si (p_g == self.ten_pow) alors
-                diff = self.ten_pow - num.ten_pow;
-                n = self.content * (10 ^ diff);
-                m = num.content;
-                self.content = n + m;
-                self.ten_pow = num.ten_pow;
-            fin
-            si (p_g == num.ten_pow) alors
-                diff = num.ten_pow - self.ten_pow;
-                n = num.content * (10 ^ diff);
-                m = self.content;
-                self.content = n + m;
-            fin
-        fin
-        si (!type(num) == "int") alors
-            f = float(num);
-            self = self + f;
-            libere f;
-        fin
-        renvoie self;
+        renvoie float(!float_plus(self, num));
     fin
     
     methode minus (num) fait
-        si (!type(num) == "float") alors
-            si (!et(self.ten_pow >= 0, num.ten_pow >= 0)) fait
-                n = self.content * (10 ^ self.ten_pow);
-                m = num.content * (10 ^ num.ten_pow);
-                self.ten_pow = 0;
-                self.content = n - m;
-                !self.arrondis_puissance()
-                renvoie self;
-            fin
-
-            p_g = !plus_grand(self.ten_pow, num.ten_pow);
-            si (p_g == self.ten_pow) alors
-                diff = self.ten_pow - num.ten_pow;
-                n = self.content * (10 ^ diff);
-                m = num.content;
-                self.content = n - m;
-                self.ten_pow = num.ten_pow;
-            fin
-            si (p_g == num.ten_pow) alors
-                diff = num.ten_pow - self.ten_pow;
-                n = num.content * (10 ^ diff);
-                m = self.content;
-                self.content = n - m;
-            fin
-        fin
-        si (!type(num) == "int") alors
-            f = float(num);
-            self = self - f;
-            libere f;
-        fin
-        renvoie self;
+        renvoie float(!float_minus(self, num));
     fin
 
-
     methode mod (num) fait
-        si (!type(num) == "float") alors
-            si self.ten_pow == num.ten_pow alors 
-                self.content = self.content % num.content;
-            fin
-            si self.ten_pow < num.ten_pow alors
-                diff = num.ten_pow - self.ten_pow;
-                n = num.content * (10 ^ diff);
-                m = self.content;
-                self.content = m % n;
-            fin
-            si self.ten_pow > num.ten_pow alors
-                diff = self.ten_pow - num.ten_pow;
-                m = self.content * (10 ^ diff);
-                n = num.content;
-                self.content = m % n;
-            fin
-        fin
-
-        si (!type(num) == "int") alors
-            f = float(num);
-            self = self % f;
-            libere f;
-        fin
-        renvoie self;
+        renvoie float(!float_mod(self, num));
     fin
 
     methode power (num) fait
-        si (!type(num) != "int") alors
-            !erreur("type 'float' ne peut pas supporter l'opération '^' avec le type " + !type(num))
-        fin
-        si (!type(num) == "int") alors
-            self.content = self.content ^ num;
-            self.ten_pow = self.ten_pow * num;
-        fin
-        renvoie self;
+        renvoie !float_power(self, num);
     fin
 
     methode equals (num) fait
@@ -262,7 +155,7 @@ classe float contient
 
     methode lt (num) fait
         si (!type(num) == "float") alors
-            si self.ten_pow == num.ten_pow alors 
+            si self.ten_pow == num.ten_pow alors
                 renvoie self.content < num.content;
             fin
             si self.ten_pow < num.ten_pow alors
@@ -328,7 +221,7 @@ classe float contient
         renvoie !pas(!self.equals(num));
     fin
 
-    methode to_int (num) fait
+    methode to_int () fait
         renvoie self.content * (10^self.ten_pow);
     fin
 
