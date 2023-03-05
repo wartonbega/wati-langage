@@ -10,11 +10,7 @@
 #ifndef VISITOR_H
 #define VISITOR_H
 
-extern std::stack<std::string> *references;
-extern std::stack<std::string> *references_thread_1;
-extern std::stack<std::string> *references_thread_2;
-extern std::stack<std::string> *references_thread_3;
-extern std::stack<std::string> *references_thread_4;
+extern std::vector<std::stack<std::string> *>references;
 
 extern std::vector<std::string> inbuild_funcs;
 extern std::vector<std::string> inbuild_funcs_documentation;

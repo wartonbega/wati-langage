@@ -75,12 +75,39 @@ extern "C" w_variable *set_color(std::vector<w_variable *> args, variable_table 
     {
         error("!set_color necessite 2 arguments, `rouge`, `vert`, `bleue` et `alpha`, de type 'int'", reference, thread_id);
     }
-    int rouge = *(int *)r->content;
-    int vert = *(int *)v->content;
-    int bleue = *(int *)b->content;
-    int alpha = *(int *)a->content;
+    int rouge = r->convert_to_int();
+    int vert  = v->convert_to_int();
+    int bleue = b->convert_to_int();
+    int alpha = a->convert_to_int();
 
     SDL_SetRenderDrawColor(ren, rouge, vert, bleue, alpha);
+    return basic_return();
+}
+
+extern "C" w_variable *draw_line(std::vector<w_variable *> args, variable_table variables_t, std::string reference, int thread_id)
+{
+    // x, y, width, height
+    if (args.size() != 4)
+    {
+        error("!draw_line necessite 4 arguments, `x`, `y`, `x'` et `y'`", reference, thread_id);
+    }
+
+    w_variable *x_ = args[0];
+    w_variable *y_ = args[1];
+    w_variable *x_prime = args[2];
+    w_variable *y_prime = args[3];
+    if (x_prime->get_type() != "int" || y_prime->get_type() != "int" || x_->get_type() != "int" || y_->get_type() != "int")
+    {
+        error("!draw_line necessite 4 arguments, `x`, `y`, `x'` et `y'`, de type 'int'", reference, thread_id);
+    }
+
+    int64_t x = x_->convert_to_int();
+    int64_t y = y_->convert_to_int();
+    int64_t xp = x_prime->convert_to_int();
+    int64_t yp = y_prime->convert_to_int();
+    
+    SDL_RenderDrawLine(ren, x, y, xp, yp);
+
     return basic_return();
 }
 
@@ -101,10 +128,10 @@ extern "C" w_variable *fill_rect(std::vector<w_variable *> args, variable_table 
         error("!fill_rect necessite 4 arguments, `x`, `y`, `largeur` et `longueure`, de type 'int'", reference, thread_id);
     }
 
-    int x = *(int *)x_->content;
-    int y = *(int *)y_->content;
-    int width = *(int *)w->content;
-    int height = *(int *)h->content;
+    int64_t x = x_->convert_to_int();
+    int64_t y = y_->convert_to_int();
+    int64_t width = w->convert_to_int();
+    int64_t height = h->convert_to_int();
 
     SDL_Rect r;
     r.x = x;
@@ -131,10 +158,10 @@ extern "C" w_variable *draw_text(std::vector<w_variable *> args, variable_table 
     w_variable *arg4 = args[4]; // text -> char
     w_variable *arg5 = args[5]; // font -> char
 
-    int x = *(int *)arg0->content;
-    int y = *(int *)arg1->content;
-    int h = *(int *)arg2->content;
-    int w = *(int *)arg3->content;
+    int64_t x = arg0->convert_to_int();
+    int64_t y = arg1->convert_to_int();
+    int64_t h = arg2->convert_to_int();
+    int64_t w = arg3->convert_to_int();
 
     std::string text_content = *(std::string *)arg4->content;
     std::string font_name = *(std::string *)arg5->content;
@@ -179,8 +206,8 @@ extern "C" w_variable *init_window(std::vector<w_variable *> args, variable_tabl
         error("!init_window necessite 2 arguments, `largeur` et `longueure` de type 'int'", reference, thread_id);
     }
 
-    int width = *(int *)w->content;
-    int height = *(int *)w->content;
+    int64_t width = w->convert_to_int();
+    int64_t height = h->convert_to_int();
 
     SDL_Init(SDL_INIT_EVERYTHING);
     SDL_CreateWindowAndRenderer(width, height, 0, &win, &ren);
@@ -213,7 +240,7 @@ extern "C" w_variable *set_delay(std::vector<w_variable *> args, variable_table 
     {
         error("!set_delay necessite 1 arguments : `longueure`, de type 'int'", reference, thread_id);
     }
-    int de = *(int *)d->content;
+    int64_t de = d->convert_to_int();
     delay = de;
     return basic_return();
 }
@@ -227,7 +254,6 @@ extern "C" w_variable *clear(std::vector<w_variable *> args, variable_table vari
 extern "C" w_variable *render(std::vector<w_variable *> args, variable_table variables_t, std::string reference, int thread_id)
 {
     SDL_RenderPresent(ren);
-
     return basic_return();
 }
 
@@ -240,7 +266,7 @@ extern "C" w_variable *get_mouse_pos(std::vector<w_variable *> args, variable_ta
     w_variable *list = visitor_new_object("list", new node("*"), variables_t, thread_id); // events
     w_variable *arg = new w_variable();
     arg->type = 2; // int
-    arg->content = (void *)(new int(x));
+    arg->content = (void *)(new int64_t(x));
     variable_table variables_t_bis = variable_table(variables_t);
     variables_t_bis.assign("self", list, thread_id);
     variables_t_bis.assign("content", arg, thread_id);
@@ -251,7 +277,7 @@ extern "C" w_variable *get_mouse_pos(std::vector<w_variable *> args, variable_ta
 
     arg = new w_variable();
     arg->type = 2; // int
-    arg->content = (void *)(new int(y));
+    arg->content = (void *)(new int64_t(y));
     variables_t_bis.assign("content", arg, thread_id);
     visitor_visit(plus->trunc, variables_t_bis, thread_id);
 
@@ -289,10 +315,10 @@ extern "C" w_variable *draw_texture(std::vector<w_variable *> args, variable_tab
     w_variable *arg4 = args[4];
 
     std::string name = *(std::string *)arg->content;
-    int x = *(int *)arg1->content;
-    int y = *(int *)arg2->content;
-    int width = *(int *)arg3->content;
-    int height = *(int *)arg4->content;
+    int64_t x = arg1->convert_to_int();
+    int64_t y = arg2->convert_to_int();
+    int64_t width = arg3->convert_to_int();
+    int64_t height = arg4->convert_to_int();
 
     SDL_Rect texture_rect;
     texture_rect.x = x;
@@ -327,11 +353,11 @@ extern "C" w_variable *draw_rotated_texture(std::vector<w_variable *> args, vari
     w_variable *arg5 = args[5];
 
     std::string name = *(std::string *)arg->content;
-    int x = *(int *)arg1->content;
-    int y = *(int *)arg2->content;
-    int width = *(int *)arg3->content;
-    int height = *(int *)arg4->content;
-    int angle = *(int *)arg5->content;
+    int64_t x = arg1->convert_to_int();
+    int64_t y = arg2->convert_to_int();
+    int64_t width = arg3->convert_to_int();
+    int64_t height = arg4->convert_to_int();
+    int64_t angle = arg5->convert_to_int();
 
     SDL_Rect texture_rect;
     texture_rect.x = x;
@@ -371,7 +397,7 @@ extern "C" w_variable *rotate_texture(std::vector<w_variable *> args, variable_t
     w_variable *arg1 = args[1];
 
     std::string name = *(std::string *)arg->content;
-    int angle = *(int *)arg1->content;
+    int64_t angle = arg1->convert_to_int();
 
     if (!texture_exist(name))
     {
@@ -443,7 +469,7 @@ extern "C" w_variable *load_font_as(std::vector<w_variable *> args, variable_tab
         filename = base_dir + "/" + filename;
 
     std::string name = *(std::string *)arg2->content;
-    int size = *(int *)arg3->content;
+    int64_t size = arg3->convert_to_int();
 
     TTF_Font *Sans = TTF_OpenFont(filename.c_str(), size);
 
@@ -464,9 +490,15 @@ extern "C" w_variable *mainloop(std::vector<w_variable *> args, variable_table v
         std::string err = "la fonction !mainloop doit être lancée depuis le thread principale";
         error(err, reference, thread_id);
     }
-    if (args.size() != 1)
+    if (args.size() > 2)
     {
-        error("la fonction !main_loop necessite un argument", reference, thread_id);
+        error("la fonction !mainloop necessite un ou deux arguments", reference, thread_id);
+    }
+
+    if (args.size() == 2)
+    {
+        w_variable *self = args[1];
+        variables_t.assign("self", self, thread_id);
     }
 
     w_variable *fonction_presume = args[0];
@@ -547,7 +579,7 @@ extern "C" w_variable *mainloop(std::vector<w_variable *> args, variable_table v
 
         std::cout << std::flush; // we need to flush the output otherwise nothing will print untill the end of the loop
 
-        if (ret->get_type() != "int" || *(int *)ret->content != 1)
+        if (ret->get_type() != "int" || *(int64_t *)ret->content != 1)
         {
             quit = 1;
             break;

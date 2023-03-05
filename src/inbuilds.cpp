@@ -306,7 +306,7 @@ w_variable *c_len(w_variable *content)
 void w_error(w_variable *content, std::map<std::string, w_variable *> variables_t, int thread_id)
 {
     std::string r = convert_to_string(content, variables_t, thread_id);
-    error(r, references->top(), thread_id);
+    error(r, what_reference(0)->top(), thread_id);
 }
 
 void w_exit(w_variable *content) 

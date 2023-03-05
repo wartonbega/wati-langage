@@ -188,7 +188,7 @@ int main(int argc, char *argv[])
 	}
 
 //	std::cout << ast->to_string(0) << std::endl;
-
+	references.push_back(new std::stack<std::string>);
 	if (compile)
 	{
 		//ast = optimisator(ast, 1);

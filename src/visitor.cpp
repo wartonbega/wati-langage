@@ -24,12 +24,7 @@ bool is_initialized_inbuild = false;
 
 int thread_utilized = 1;
 
-std::stack<std::string> *references = new std::stack<std::string>();
-std::stack<std::string> *references_thread_1 = new std::stack<std::string>();
-std::stack<std::string> *references_thread_2 = new std::stack<std::string>();
-std::stack<std::string> *references_thread_3 = new std::stack<std::string>();
-std::stack<std::string> *references_thread_4 = new std::stack<std::string>();
-
+std::vector<std::stack<std::string> *> references;
 std::vector<std::string> included;
 
 variable_table prepare_arguments(std::vector<w_variable *> vars, node *trunc, variable_table variables_t)
@@ -45,22 +40,7 @@ variable_table prepare_arguments(std::vector<w_variable *> vars, node *trunc, va
 
 std::stack<std::string> *what_reference(int thread_id)
 {
-    switch (thread_id)
-    {
-    case 0:
-        return references;
-    case 1:
-        return references_thread_1;
-    case 2:
-        return references_thread_2;
-    case 3:
-        return references_thread_3;
-    case 4:
-        return references_thread_4;
-
-    default:
-        return references;
-    }
+    return references[thread_id];
 }
 
 
@@ -570,7 +550,7 @@ w_variable *visitor_funcall(std::string name, node *args, variable_table variabl
 {
     w_function *func;
     std::string var_name = remove_function_call_prefix(name);
-    if (variables_t.exist(name))
+    if (variables_t.exist(var_name))
     {
         w_variable *func_var = variables_t.get(var_name);
         if (func_var->get_type() != "fonction")
@@ -1200,13 +1180,11 @@ w_variable *visitor_compute(node *c, variable_table *variables_t, int thread_id)
             unused = false;
         }
         else if (expr[0] == '!')
-        {                                                                         // call a function
+        {// call a function
             if (i + 1 >= c->children.size() || c->children[i + 1]->value != "()") // does not call
             {
                 last_value = generate_function_variable(c->children[i]->value, thread_id);
                 unused = false;
-                // std::string err = "l'appel d'une fonction doit etre suivie de ses arguments";
-                // error(err, c->children[i]->reference);
             }
             else
             {
@@ -1239,8 +1217,6 @@ w_variable *visitor_compute(node *c, variable_table *variables_t, int thread_id)
                 }
 
                 w_variable *r = visitor_new_object("list", new node("()"), *variables_t, thread_id);
-                variable_table variables_t_bis = variable_table(*variables_t);
-                variables_t_bis.assign("self", r, thread_id);
 
                 std::string funcname = "!list.plus"; // the function to add elements to a list
 
@@ -1248,9 +1224,9 @@ w_variable *visitor_compute(node *c, variable_table *variables_t, int thread_id)
 
                 for (auto parts : elements->children)
                 {
-                    visitor_funcall(funcname, parts, variables_t_bis, thread_id);
+                    visitor_funcall_methode(funcname, parts, *variables_t, r, thread_id);
                 }
-                last_value = r; // we finally push the list
+                last_value = r; // we finally put the list as the last value
                 unused = false;
             }
             else
@@ -1488,7 +1464,7 @@ void visitor_keyword_include(node *trunc, variable_table *variables_t, int threa
 
 void visitor_funcdef(node *trunc)
 {
-    references->push(trunc->reference);
+    what_reference(0)->push(trunc->reference);
     w_function *func = new w_function();
     std::string name = "!" + trunc->children[0]->value;
     func->set_arguments(visitor_separate_listed(trunc->children[1]));
@@ -1501,8 +1477,8 @@ void visitor_funcdef(node *trunc)
     }
     func->set_content(trunc->children[2]);
     functions[name] = func;
-    if (!references->empty())
-        references->pop();
+    if (!what_reference(0)->empty())
+        what_reference(0)->pop();
 }
 
 void visitor_vardef(node *trunc, variable_table *variables_t, int thread_id)
@@ -1646,7 +1622,7 @@ void visitor_vardef(node *trunc, variable_table *variables_t, int thread_id)
 
 void visitor_classdef(node *trunc)
 {
-    references->push(trunc->reference);
+    what_reference(0)->push(trunc->reference);
     w_class_template *c = new w_class_template();
     c->trunc = trunc;
     classes[trunc->children[0]->value] = c;
@@ -1656,8 +1632,8 @@ void visitor_classdef(node *trunc)
         f->children[0]->value = trunc->children[0]->value + "." + f->children[0]->value;
         visitor_funcdef(f); // we define the methode as a function
     }
-    if (!references->empty())
-        references->pop();
+    if (!what_reference(0)->empty())
+        what_reference(0)->pop();
 }
 
 std::tuple<std::string, w_variable *> visitor_if_declaration(node *trunc, variable_table *variables_t, int thread_id)
@@ -1932,7 +1908,7 @@ std::tuple<std::string, w_variable *> visitor_visit_incode(node *trunc, variable
 w_variable *visitor_visit(node *trunc, variable_table variables_t, int thread_id)
 {
     int thread_number = 0;
-    std::thread thread_in_scope[4];
+    std::thread thread_in_scope[100];
     if (!is_initialized_inbuild)
     {
         visitor_init_inbuild_functions();
@@ -2015,7 +1991,7 @@ w_variable *visitor_visit(node *trunc, variable_table variables_t, int thread_id
         else if (instruction->value == "renvoie")
         { // The libere keyword
             w_variable *res = visitor_keyword_return(instruction, variables_t, thread_id);
-            for (int p = 0; p < 4; p++)
+            for (int p = 0; p < sizeof(thread_in_scope)/sizeof(thread_in_scope[0]); p++)
             {
                 if (thread_in_scope[p].joinable())
                     thread_in_scope[p].join();
@@ -2032,14 +2008,15 @@ w_variable *visitor_visit(node *trunc, variable_table variables_t, int thread_id
         }
         else if (instruction->value == "tache")
         { // The tache keyword
-            thread_utilized += 1;
 
-            if (thread_utilized > 4)
-            {
-                std::string err = "ne peut pas créer plus de 4 threads";
-                error(err, instruction->reference, thread_id);
-            }
+            // if (thread_utilized > 4)
+            // {
+            //     std::string err = "ne peut pas créer plus de 4 threads";
+            //     error(err, instruction->reference, thread_id);
+            // }
+            references.push_back(new std::stack<std::string>);
             thread_in_scope[thread_number++] = std::thread(visitor_keyword_tache, instruction, variables_t, thread_utilized);
+            thread_utilized += 1;
         }
         else if (instruction->value != ";")
         {
@@ -2047,12 +2024,11 @@ w_variable *visitor_visit(node *trunc, variable_table variables_t, int thread_id
             error(err, instruction->reference, thread_id);
         }
     }
-    for (int p = 0; p < 4; p++)
+    for (int p = 0; p < thread_number; p++)
     {
         if (thread_in_scope[p].joinable())
         {
             thread_in_scope[p].join();
-            thread_number--;
         }
     }
     return to_return;

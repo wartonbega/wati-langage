@@ -35,13 +35,13 @@ extern "C" w_variable* ou(std::vector<w_variable *> args, variable_table variabl
     }
 
 
-    int a = *(int *)(args[0]->content);
-    int b = *(int *)(args[1]->content);
+    int64_t a = *(int64_t *)(args[0]->content);
+    int64_t b = *(int64_t *)(args[1]->content);
 
     w_variable *r = new w_variable();
     r->type = 2; // int
     
-    r->content = (void *)(new int(a || b));
+    r->content = (void *)(new int64_t(a || b));
     return r;
 }
 
@@ -52,11 +52,11 @@ extern "C" w_variable* pas(std::vector<w_variable *> args, variable_table variab
         error("!pas : doit avoir un argument de type 'int'", reference, thread_id);
     }
 
-    int a = *(int *)(args[0]->content);
+    int64_t a = *(int64_t *)(args[0]->content);
 
     w_variable *r = new w_variable();
     r->type = 2; // int
-    r->content = (void *)(new int(!a));
+    r->content = (void *)(new int64_t(!a));
     return r;
 }
 
@@ -67,7 +67,7 @@ extern "C" w_variable* quitte(std::vector<w_variable *> args, variable_table var
         error("!quitte : doit avoir un argument de type 'int'", reference, thread_id);
     }
 
-    int a = *(int *)(args[0]->content);
+    int64_t a = *(int64_t *)(args[0]->content);
     exit(a);
     return nullptr;
 }

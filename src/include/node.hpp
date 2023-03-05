@@ -16,8 +16,9 @@ struct w_variable
     int type;
     
     // the pointer to the real value
-    // we can cast it according to the type of the variable
     void *content;
+    // we can cast it according to the type of the variable
+    bool lock; // if true, then the memory is being accessed by a thread. In this case, do not try to access it.
 
     ~w_variable();
     w_variable();
