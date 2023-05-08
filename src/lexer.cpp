@@ -112,9 +112,10 @@ std::vector<std::string> lexer(std::string content, std::vector<std::string> &re
     int r_lines = 1;
 
     int index = 0;
+    content += "\n";
     while (index < content.size())
     {
-        if (content[index] == '\\' and content[index + 1] == '\\')
+        if (content[index] == '/' and content[index + 1] == '/')
         { // this is a comment untill the end of the line
             while (content[index] != '\n')
             {

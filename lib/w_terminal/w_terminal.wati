@@ -1,0 +1,124 @@
+inclue "w_terminal/colors.wati";
+
+classe w_terminal contient
+    methode constructeur () fait 
+        t = !terminal_taille();
+        self.lignes = t[0]; 
+        self.colonnes = t[1]; 
+        !system("clear")
+        libere t;
+        
+        self.noir = terminal_black;
+        self.rouge = terminal_red;
+        self.vert = terminal_green;
+        self.jaune = terminal_yellow;
+        self.bleu = terminal_blue;
+        self.magenta = terminal_magenta;
+        self.cyan = terminal_cyan;
+        self.blanc = terminal_white;
+        self.gras = terminal_bold;
+        self.souligne = terminal_underline;
+        self.envers = terminal_reverse;
+        self.clignotant = terminal_blink;
+        self.normal = "";
+
+        self.running = 1;
+    fin
+
+    methode actualiser() fait
+        "Permet de mettre à jour les informations du terminal (nombre de colonnes, lignes)"
+        // met à jour les infos du terminal
+        t = !terminal_taille();
+        self.lignes = t[0]; 
+        self.colonnes = t[1]; 
+        libere t;
+    fin
+
+    methode ecrit(x, y, contenu) fait
+        "Écrit le contenu à la position x, y du terminal"
+        // Écrit dans le terminal a la position (x, y) le contenu
+        si !ou(!type(x) != "int", !type(y) != "int") fait 
+            !erreur("!w_terminal.ecrit : les coordonnées doivent être de type int")
+        fin
+
+        !terminal_curseur(x, y)
+        !print(contenu)
+    fin
+
+    methode input(x, y, prompt) fait 
+        "Attend une entrée de l'utilisateur à la position x, y du terminal"
+        // Prend l'input a la position (x, y)
+        si !ou(!type(x) != "int", !type(y) != "int") fait 
+            !erreur("!w_terminal.input : les coordonnées doivent être de type int")
+        fin
+        !terminal_curseur(x, y)
+        renvoie !inputln(prompt);
+    fin
+
+    methode couleur(couleur, contenu) fait
+        "Renvoie la contenu à la couleur indiquée (les couleurs sont des attributs de la classe w_terminal)"
+        // renvoie le texte a la couleur précisée
+        r = couleur + contenu + terminal_reset;
+        renvoie r;
+    fin
+
+    methode tuer() fait 
+        "Termine les instances de multithreading qui sont associées à ce terminal"
+        // Finis le terminal et les tâches de fond qui y sont associés
+        self.running = 0;
+    fin
+
+    methode chargement(num, ligne, start, end, couleur) fait
+        "Crée une barre de chargement de 'num' pourcent, à la position (row, col), à la couleur indiquée"
+        // Fait une barre de chargement, en fonction de num (en %)
+
+        !typecheck_error(num, "int", "!w_terminal : Le pourcentage doit être de type int")
+        !typecheck_error(ligne, "int", "!w_terminal : La ligne doit être de type int")
+        !typecheck_error(start, "int", "!w_terminal : La position de début doit être de type int")
+        !typecheck_error(end, "int", "!w_terminal : La position de fin doît être de type int")
+
+        si start > end fait
+            !erreur("!w_terminal.chargement : la position du début est plus grande que celle de fin")
+        fin
+
+        si end > self.colonnes fait  // Peut causer des erreurs puisque la taille du terminal est updatée toutes les secondes
+            !erreur("!w_terminal.chargement : la position de fin est plus grande que la taille du terminal")
+        fin
+
+        si num > 100 fait
+            !erreur("!w_terminal.chargement : le pourcentage est plus grand que 100")
+        fin
+
+        // La différence est la longueur de la ligne
+        diff = end - start;
+        !terminal_curseur(ligne, start) // On se place au début 
+
+        !print(couleur)
+        
+        !print("[")
+        k = num * (diff - 5) / 100; // La proportion de '#' qui doît être imprimée
+        pour i allant de 0 a k fait 
+            !print("#")
+        fin
+
+        pour i allant de 0 a (diff - k - 5) fait 
+            !print(" ")
+        fin
+        
+        //!terminal_curseur(ligne, diff + start-5) // On se place maintenant à la fin
+        !print("]")
+        !print(num, "%") 
+        !print(terminal_reset)
+        // Terminé !
+    fin
+fin
+
+fonction term_update(t) fait
+    time = !temps();
+    tant que t.running fait 
+        si !temps() - time > 1000 fait
+            !t.actualiser()
+            time = !temps();
+        fin
+    fin
+fin

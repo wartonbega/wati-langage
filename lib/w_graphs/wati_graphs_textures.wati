@@ -23,6 +23,6 @@ classe texture contient
     fin
 
     methode translation (n_x, n_y, frames) fait
-        
+        renvoie 0;
     fin
 fin

@@ -1,6 +1,3 @@
-
-
-
 classe Event contient
     methode constructeur (type, val) fait
         self.type = type;
@@ -31,8 +28,10 @@ fonction Event.ne (x) fait
 fin
 
 fonction Event.en_string () fait
+    
     si self.val != "" alors
         renvoie "<Event type=" + self.type + " val=" + self.val + ">";
     fin
     renvoie "<Event type=" + self.type + ">";
 fin
+

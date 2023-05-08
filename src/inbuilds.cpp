@@ -157,15 +157,6 @@ std::string convert_to_string(w_variable *content, std::map<std::string, w_varia
     else if (type == "traqueur")
     {
         tracker *t = (tracker *)(content->content);
-        //if (function_exist("!traqueur.en_string", functions))
-        //{
-        //    variables_t["self"] = content;
-        //    node *args = new node("*");
-        //    variable_table t = variable_table();
-        //    t.vars = variables_t;
-        //    return convert_to_string(visitor_funcall("!traqueur.en_string", args, t, thread_id), variables_t, thread_id);
-        //}
-
         std::string s = "<traqueur &=" + t->name_to_track + " *=" + convert_to_string(t->value(thread_id), variables_t, thread_id) + ">";
         return s;
     }
@@ -205,6 +196,7 @@ void print(w_variable *content, std::map<std::string, w_variable *> variables_t)
         }
         i ++;
     }
+    std::cout << std::flush;
 }
 
 w_variable *type(w_variable *content)
@@ -296,9 +288,9 @@ w_variable *w_char(w_variable *content, std::map<std::string, w_variable *> vari
 
 w_variable *c_len(w_variable *content)
 {
-    int *s = new int(content->convert_to_char().size());
+    int64_t *s = new int64_t(content->convert_to_char().size());
     w_variable *r = new w_variable();
-    r->type = 2;
+    r->type = T_INT;
     r->content = (void *)s;
     return r;
 }
@@ -318,7 +310,7 @@ void w_exit(w_variable *content)
 w_variable *w_en(std::vector<w_variable *>content, std::map<std::string, w_variable *> variables_t)
 {
     std::string p = convert_to_string(content[0], variables_t, 0);
-    int i = content[1]->convert_to_int();
+    int64_t i = content[1]->convert_to_int();
 
     std::string u;
     u += p[i];
@@ -335,7 +327,7 @@ w_variable *w_time()
     time_t t = time(NULL); // get the time
     struct tm *tm = localtime(&t); // we get the time
     time_t u = tm->tm_gmtoff;
-    int *r = new int(t); // we convert the time to seconds
+    int64_t *r = new int64_t(t); // we convert the time to seconds
     w_variable *result = new w_variable(); // we create a new variable
     result->type = 2; // int
     result->content = (void *)r; // we cast the value int to a void pointer

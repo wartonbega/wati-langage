@@ -1,0 +1,23 @@
+
+// Par Anton Appel, le 8 mai 2023
+// Librairie dédiée à la verification des types et a la manipulation de ces derniers
+
+
+fonction typecheck(var, t) fait 
+    "Vérifie le type de la variable 'var'. Renvoie un booléen"
+    // Doit vérifier le type de la variable 'var'
+    // Renvoie 0 ou 1
+    si !type(var) != t fait 
+        renvoie 0;
+    fin
+    renvoie 1;
+fin
+
+fonction typecheck_error(var, t, e) fait 
+    "Vérifie le type de la variable 'var'. Lance une erreur si le type n'est pas le bon"
+    // Doit vérifier le type de la variable 'var'
+    // Peut lancer une erreur
+    si !type(var) != t fait 
+        !erreur(e)
+    fin
+fin

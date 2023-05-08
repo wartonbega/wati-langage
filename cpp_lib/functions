@@ -35,3 +35,5 @@
 !float_mod
 !float_power
 !w_sqrt
+!terminal_taille Renvoie le nombre de colonnes et de lignes dans le terminal : (row, col). !terminal_taille( ) -> list[int]
+!terminal_curseur Place le curseur à une coordonnée du terminal : (row, col). !terminal_taille( row(int), col(int) ) -> 0

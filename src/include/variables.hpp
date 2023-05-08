@@ -26,6 +26,9 @@ struct variable_table  // this is like a namespace for the variables to be
     void assign(std::string, w_variable *, int);
     w_variable *get(std::string);
     bool exist(std::string name);
+    void garbage_collector();
+    void unuse();
+    void use();
 };
 
 struct w_function
@@ -37,6 +40,7 @@ struct w_function
 
     void set_arguments(node *args);
     void set_content(node *trunc);
+
     w_function()
     {
         this->inbuild = false;

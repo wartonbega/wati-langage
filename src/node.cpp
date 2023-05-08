@@ -1,5 +1,7 @@
 #include "./include/node.hpp"
 
+
+
 std::vector<std::string> node::get_childs_value()
 {
     std::vector<std::string> childs;
@@ -32,6 +34,7 @@ std::string node::to_string(int tabs)
 node *node::set_prevalue(w_variable *v)
 {
     this->pre_value = v;
+    v->use += 1;
     return this;
 }
 

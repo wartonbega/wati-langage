@@ -1,7 +1,17 @@
 inclue "std.wati";
+inclue "w_terminal/w_terminal.wati";
 
-fonction toto(x) fait 
-    renvoie x ^ 2;
+
+t = w_terminal();
+
+tache (!term_update, t);
+
+!println(!en_int("9"))
+!println(10^0)
+
+tant que 1 fait
+    r = !t.input(13, 1, "nombre : ");
+    r = !en_int(r);
+    !t.ecrit(10, 40, r)
+    !t.chargement(r, 14, 5, 105, t.gras + t.bleu)
 fin
-
-!print(!toto(2))

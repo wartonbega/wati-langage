@@ -1,0 +1,29 @@
+---
+name: CodeQL
+
+on:
+  push:
+    paths-ignore:
+      - "dependabot/**"
+  pull_request:
+    branches:
+      - "dependabot/**"
+  schedule:
+    - cron: '18 23 * * 1'
+
+jobs:
+  analyze:
+    name: Analyze
+    runs-on: ubuntu-20.04
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v2
+      with:
+        languages: 'cpp'
+    - name: Autobuild
+      uses: github/codeql-action/autobuild@v2
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v2

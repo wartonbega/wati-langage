@@ -1,3 +1,5 @@
+// Par Anton Appel
+
 
 fonction puissance_de_dix (int) fait
     si (int > 0) alors
@@ -102,23 +104,23 @@ classe float contient
     fin
 
     methode times (num) fait
-        renvoie float(!float_times(self, num));
+        renvoie !float_times(self, num);
     fin
 
     methode div (num) fait
-        renvoie float(!float_div(self, num));
+        renvoie !float_div(self, num);
     fin
 
     methode plus (num) fait
-        renvoie float(!float_plus(self, num));
+        renvoie !float_plus(self, num);
     fin
     
     methode minus (num) fait
-        renvoie float(!float_minus(self, num));
+        renvoie !float_minus(self, num);
     fin
 
     methode mod (num) fait
-        renvoie float(!float_mod(self, num));
+        renvoie !float_mod(self, num);
     fin
 
     methode power (num) fait

@@ -16,6 +16,11 @@ bool accept_var_name(std::string name)
     return true;
 }
 
+void variable_table::garbage_collector()
+{
+    return;
+}
+
 void variable_table::assign(std::string name, w_variable *value, int thread_id)
 {
     if (!accept_var_name(name))
@@ -23,7 +28,28 @@ void variable_table::assign(std::string name, w_variable *value, int thread_id)
         std::string err = "nom de variable incorrecte : '" + name + "'";
         error(err, what_reference(thread_id)->top(), thread_id);
     }
+    if (!this->exist(name))
+        value->use += 1;
+    
     this->vars[name] = value;
+}
+
+void variable_table::unuse()
+{
+    // Décrémente de 1 chaque utilisation de variable (le namespace n'est donc plus utilisé)   
+    for (auto const& [key, val] : this->vars)
+    {
+        val->use -= 1;
+    }
+}
+
+void variable_table::use()
+{
+    // Décrémente de 1 chaque utilisation de variable (le namespace n'est donc plus utilisé)   
+    for (auto const& [key, val] : this->vars)
+    {
+        val->use += 1;
+    }
 }
 
 w_variable *variable_table::get(std::string name)
@@ -65,14 +91,16 @@ w_variable::w_variable(int64_t content)
 {
     int64_t *r = new int64_t(content);
     this->content = (void *)r;
-    this->type = 2; // int
+    this->type = T_INT;
+    this->use = 0;
 }
 
 w_variable::w_variable(std::string content)
 {
     std::string *r = new std::string(content);
     this->content = (void *)r;
-    this->type = 1; // char
+    this->type = T_CHAR; 
+    this->use = 0;
 }
 
 w_variable::~w_variable()

@@ -10,8 +10,8 @@ fonction max (a, b) fait
 fin
 
 classe grapher contient
-    non_tracee = 1;
     methode constructeur (func) fait 
+        self.non_tracee = 1;
         self.func = func;
         self.decalx = 200;
         self.decaly = 300;
@@ -50,13 +50,13 @@ classe grapher contient
             event = events[i];
             si event.type == "KeyDown" alors
                 si event == "Right" alors 
-                    self.decalx = self.decalx + 10;
-                sinonsi event == "Left" alors 
                     self.decalx = self.decalx - 10;
+                sinonsi event == "Left" alors 
+                    self.decalx = self.decalx + 10;
                 sinonsi event == "Up" alors 
-                    self.decaly = self.decaly + 10;
-                sinonsi event == "Down" alors 
                     self.decaly = self.decaly - 10;
+                sinonsi event == "Down" alors 
+                    self.decaly = self.decaly + 10;
                 fin
                 self.non_tracee = 1;
             fin
@@ -87,7 +87,7 @@ classe grapher contient
 fin
 
 fonction f (x) fait 
-    renvoie float(1) / 100 * (x ^ 2);
+    renvoie float(1) / 100 * (x ^ 3);
 fin
 
 p = grapher(!f);

@@ -94,3 +94,36 @@ fin
 fonction char.index(int) fait
     renvoie !c_en(self, int);
 fin
+
+fonction int(c) fait 
+    si c == "1" fait 
+        renvoie 1;
+    sinonsi c == "2" fait 
+        renvoie 2;
+    sinonsi c == "3" fait 
+        renvoie 3;
+    sinonsi c == "4" fait 
+        renvoie 4;
+    sinonsi c == "5" fait 
+        renvoie 5;
+    sinonsi c == "6" fait 
+        renvoie 6;
+    sinonsi c == "7" fait 
+        renvoie 7;
+    sinonsi c == "8" fait 
+        renvoie 8;
+    sinonsi c == "9" fait 
+        renvoie 9;
+    sinon 
+        renvoie 0;
+    fin
+fin
+
+fonction en_int(c) fait 
+    n = 0;
+    q = !c_len(c);
+    pour i allant de 0 a q fait 
+        n = n*10 + !int(c[i]);
+    fin
+    renvoie n;
+fin

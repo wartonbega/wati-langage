@@ -44,9 +44,10 @@ fonction inputln_caché (x, cache) faits
         si (e != "") alors
             buffer = buffer + e;
         fin
-        
         e = !input("");
-        si (e != "\b") alors
+        si e == "\n" alors
+            casse;
+        sinonsi (e != "\b") alors
             !print("\b", cache)
         fin
         si (e == "\b") alors

@@ -1,6 +1,6 @@
 inclue "std.wati";
-inclue "w_graphs/wati_graphs_events.wati";
 inclue "w_graphs/wati_graphs_textures.wati";
+inclue "w_graphs/wati_graphs_events.wati";
 
 classe game contient
     methode constructeur () fait
@@ -100,7 +100,6 @@ classe game contient
 
     methode loop (events) fait
         si self.state == "game" alors
-            
             pour i allant de 0 a events.taille fait
                 event = events[i];
                 si !et(event == "KeyDown", self.anti_repett) alors
@@ -153,6 +152,7 @@ classe game contient
                 sinonsi event == "KeyUp" alors
                     self.anti_repett = 1;
                 fin
+                
             fin
             
         sinonsi self.state == "win" alors
@@ -302,6 +302,5 @@ classe game contient
         self.last_y = y;
     fin
 fin
-
 self = game();
 !mainloop(!self.loop)

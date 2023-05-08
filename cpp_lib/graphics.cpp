@@ -549,7 +549,6 @@ extern "C" w_variable *mainloop(std::vector<w_variable *> args, variable_table v
 
             if (!res.empty())
             {
-
                 w_variable *type_ = new w_variable(res);
                 w_variable *val_ = new w_variable(cont);
 

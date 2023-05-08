@@ -19,5 +19,5 @@ if [ ! -d "$CPP_LIBS" ]; then
     exit 1
 fi
 
-sudo cp -R $LIBS /usr/local/lib/wati/lib
-sudo cp -R $CPP_LIBS /usr/local/lib/wati/cpp_lib
+sudo cp -R $LIBS /usr/local/lib/wati/
+sudo cp -R $CPP_LIBS /usr/local/lib/wati/

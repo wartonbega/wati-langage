@@ -894,9 +894,7 @@ w_variable *visitor_new_object(std::string name, node *args, variable_table vari
     var->type = T_OBJECT; // an object
     var->content = (void *)r;
 
-
     visitor_funcall_methode("!" + name + ".constructeur", args, variables_t, var, thread_id);
-
     return var;
 }
 
@@ -934,6 +932,7 @@ w_variable *visitor_compute(node *c, variable_table *variables_t, int thread_id)
             }
             else if (is_digit(expr))
             {
+                
                 last_value = new w_variable(atoi(expr.c_str()));
             }
             unused = false;
@@ -953,6 +952,7 @@ w_variable *visitor_compute(node *c, variable_table *variables_t, int thread_id)
 
                 if (first_var_n == "")
                 {
+                    
                     first_var = last_value;
                 }
                 else
@@ -1020,13 +1020,13 @@ w_variable *visitor_compute(node *c, variable_table *variables_t, int thread_id)
                 {
                     std::string name = last_var->get_type();
                     std::string f_name = "!" + name + "." + patent;
+                    
                     last_value = generate_function_variable(f_name, thread_id);
                     unused = false;
                     // we generate a function variable
                 }
                 else if (!patent.empty())
                 {
-
                     std::string name = last_var->get_type();
                     std::string f_name = "!" + name + "." + patent;
                     if (!function_exist(f_name, functions))
@@ -1041,6 +1041,7 @@ w_variable *visitor_compute(node *c, variable_table *variables_t, int thread_id)
                         }
                     }
                     variable_table variables_t_bis = variable_table(*variables_t);
+                    
                     last_value = visitor_funcall_methode(f_name, c->children[i + 1], variables_t_bis, last_var, thread_id);
                     unused = false;
                     i++; // we increment by one because they are parenthesis
@@ -1122,6 +1123,7 @@ w_variable *visitor_compute(node *c, variable_table *variables_t, int thread_id)
                         std::string err = "'" + last_o->name + "' n'as pas d'attribut '" + patent + "'";
                         error(err, c->children[i]->reference, thread_id);
                     }
+                    
                     last_value = last_o->get_attribute(patent);
                     unused = false;
                 }
@@ -1141,6 +1143,7 @@ w_variable *visitor_compute(node *c, variable_table *variables_t, int thread_id)
             tracker *t = new tracker(e, variables_t);
 
             track->content = (void *)t;
+            
             last_value = track;
             unused = false;
         }
@@ -1161,6 +1164,7 @@ w_variable *visitor_compute(node *c, variable_table *variables_t, int thread_id)
                 error(err, c->children[i]->reference, thread_id);
             }
             tracker *t = (tracker *)val->content;
+            
             last_value = t->value(thread_id);
             unused = false;
         }
@@ -1183,11 +1187,13 @@ w_variable *visitor_compute(node *c, variable_table *variables_t, int thread_id)
         {// call a function
             if (i + 1 >= c->children.size() || c->children[i + 1]->value != "()") // does not call
             {
+                
                 last_value = generate_function_variable(c->children[i]->value, thread_id);
                 unused = false;
             }
             else
             {
+                
                 last_value = visitor_funcall(expr, c->children[i + 1], *variables_t, thread_id);
                 unused = false;
                 i++; // we need to increment by one, because of the parenthesis
@@ -1196,12 +1202,14 @@ w_variable *visitor_compute(node *c, variable_table *variables_t, int thread_id)
         else if (variables_t->exist(expr)) // variable_exist(expr, variables_t))
         {
             // we just take the value inside the variables table
+            
             last_value = variables_t->get(expr);
             unused = false;
         }
         else if (i + 1 < c->children.size() && c->children[i + 1]->value == "()") // create a new object
         {                                                                         // just avoid segfaults ...
             // call a new object
+            
             last_value = visitor_new_object(expr, c->children[i + 1], *variables_t, thread_id);
             unused = false;
             i++;
@@ -1226,12 +1234,14 @@ w_variable *visitor_compute(node *c, variable_table *variables_t, int thread_id)
                 {
                     visitor_funcall_methode(funcname, parts, *variables_t, r, thread_id);
                 }
+                
                 last_value = r; // we finally put the list as the last value
                 unused = false;
             }
             else
             { // just compute what is in the parentethis
                 node *parenthis = c->children[i];
+                
                 last_value = visitor_compute(parenthis, variables_t, thread_id);
                 unused = false;
             }
@@ -1253,6 +1263,7 @@ w_variable *visitor_compute(node *c, variable_table *variables_t, int thread_id)
             variable_table variables_t_bis = variable_table(*variables_t);
             variables_t_bis.assign("self", last_value, thread_id);
             variables_t_bis.assign(f->arguments->children[0]->children[0]->value, b_value, thread_id);
+            
             last_value = visitor_visit(f->trunc, variables_t_bis, thread_id);
             unused = false;
         }
@@ -1282,7 +1293,7 @@ w_variable *visitor_keyword_return(node *trunc, variable_table variables_t, int 
     return result;
 }
 
-void visitor_keyword_free(node *trunc,variable_table *variables_t, int thread_id)
+void visitor_keyword_free(node *trunc, variable_table *variables_t, int thread_id)
 {
     (what_reference(thread_id))->push(trunc->reference);
     if (trunc->children.size() < 1)
@@ -1907,6 +1918,8 @@ std::tuple<std::string, w_variable *> visitor_visit_incode(node *trunc, variable
 
 w_variable *visitor_visit(node *trunc, variable_table variables_t, int thread_id)
 {
+    //variables_t.use(); // Incrémente de 1 les variables qui sont crées pour le garbage collector
+
     int thread_number = 0;
     std::thread thread_in_scope[100];
     if (!is_initialized_inbuild)
@@ -2008,12 +2021,6 @@ w_variable *visitor_visit(node *trunc, variable_table variables_t, int thread_id
         }
         else if (instruction->value == "tache")
         { // The tache keyword
-
-            // if (thread_utilized > 4)
-            // {
-            //     std::string err = "ne peut pas créer plus de 4 threads";
-            //     error(err, instruction->reference, thread_id);
-            // }
             references.push_back(new std::stack<std::string>);
             thread_in_scope[thread_number++] = std::thread(visitor_keyword_tache, instruction, variables_t, thread_utilized);
             thread_utilized += 1;
@@ -2031,5 +2038,10 @@ w_variable *visitor_visit(node *trunc, variable_table variables_t, int thread_id
             thread_in_scope[p].join();
         }
     }
+
+    // On supprime les variables supplémentaires
+    //variables_t.unuse();
+    //variables_t.garbage_collector();
+    
     return to_return;
 }

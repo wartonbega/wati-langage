@@ -11,7 +11,6 @@ pour i allant de 0 a 100 fait
     lists = lists + n;
 fin
 
-
 fonction f(x) fait
     renvoie x ^ 2 + 10;
 fin

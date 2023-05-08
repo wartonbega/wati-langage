@@ -2,6 +2,7 @@
 
 inclue "fonctions.wati";
 inclue "list.wati";
+inclue "t_list.wati";
 inclue "dictionnaire.wati";
 inclue "inout.wati";
 inclue "maths.wati";
@@ -10,6 +11,7 @@ inclue "string.wati";
 inclue "float.wati";
 inclue "thread.wati";
 inclue "temps.wati";
+inclue "types.wati";
 
 vrai = 1;
 faux = 0;

@@ -24,9 +24,7 @@ classe future contient
     fin
 
     methode join () fait
-        tant que !pas(self.est_finis) fait
-
-        fin
+        tant que !pas(self.est_finis) fait fin
         renvoie self;
     fin
 
@@ -64,7 +62,7 @@ fonction thread (future, target) fait
     si (!type(future) != "future") alors
         !erreur("!thread : le type du premier argument doit être 'thread'")
     fin
-    si !type(target) != "fonction" alors
+    si (!type(target) != "fonction") alors
         !erreur("!thread : le type du deuxième arguement doit être 'fonction'")
     fin
 
