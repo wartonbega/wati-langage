@@ -1,0 +1,5 @@
+inclue "std.wati";
+
+//!println(!inputln_caché("test : ", "*"))
+a = !inputln("");
+!println(a)

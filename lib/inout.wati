@@ -52,7 +52,9 @@ fonction inputln_caché (x, cache) faits
         fin
         si (e == "\b") alors
             si (buffer.taille > 0) alors
+                !print(buffer)
                 !buffer.pop(buffer.taille - 1);
+                !print(buffer)
                 !print("\b   \b\b\b")
             fin
             si (buffer.taille == 0) alors

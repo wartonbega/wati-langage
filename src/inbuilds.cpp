@@ -218,7 +218,7 @@ w_variable *input(w_variable *content, std::map<std::string, w_variable *> varia
     
     if (chr == 127)
     {
-        *res += "\\b";
+        *res += "\b";
         putchar('\b');
         putchar('\b');
     }
