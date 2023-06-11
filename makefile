@@ -2,6 +2,11 @@
 build:
 	g++ -O3 -std=c++17 -pthread ./src/*.cpp -o ./bin/wati -ldl
 
+build_install:
+	g++ -O3 -std=c++17 -pthread ./src/*.cpp -o ./bin/wati -ldl
+	sudo cp ./bin/wati /usr/local/bin/wati
+
+
 build_linux:
 	g++ -O3 -std=c++17 -pthread ./src/*.cpp -o ./bin/wati -ldl
 

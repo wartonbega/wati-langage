@@ -12,6 +12,7 @@ inclue "float.wati";
 inclue "thread.wati";
 inclue "temps.wati";
 inclue "types.wati";
+inclue "w_erreurs/w_erreurs.wati";
 
 vrai = 1;
 faux = 0;

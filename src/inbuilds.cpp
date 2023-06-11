@@ -9,7 +9,13 @@
 // This are not objects so inbuilds functions to multiply, add ect... are not defined 
 // in a class but here.
 
-//
+
+// definitions of the arrow keys
+#define KEY_UP 72
+#define KEY_DOWN 80
+#define KEY_LEFT 75
+#define KEY_RIGHT 77
+
 
 std::string s_delete_index(int index, std::string expr)
 {
@@ -168,7 +174,7 @@ std::string convert_to_string(w_variable *content, std::map<std::string, w_varia
         node *args = new node("*");
         variable_table t = variable_table();
         t.vars = variables_t;
-        return convert_to_string(visitor_funcall(name, args, t, thread_id), variables_t, thread_id);
+        return convert_to_string(visitor_funcall(name, args, t, &t, thread_id), variables_t, thread_id);
     }
 }
 
@@ -215,13 +221,24 @@ w_variable *input(w_variable *content, std::map<std::string, w_variable *> varia
     chr = getchar();
     
     std::string *res = new std::string();
-    
+    //std::cout << int(chr) << std::endl;
     if (chr == 127)
     {
         *res += "\b";
         putchar('\b');
         putchar('\b');
     }
+    // FIXME
+    else if (chr == 10)
+        *res += "\n";
+    else if (chr == 27)
+        *res += "";
+    else if (chr == 28)
+        *res += "";
+    else if (chr == KEY_LEFT)
+        *res += "";
+    else if (chr == KEY_RIGHT)
+        *res += "";
     else
         *res += chr;
     

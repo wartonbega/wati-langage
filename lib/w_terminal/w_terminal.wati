@@ -58,7 +58,7 @@ classe w_terminal contient
     methode couleur(couleur, contenu) fait
         "Renvoie la contenu à la couleur indiquée (les couleurs sont des attributs de la classe w_terminal)"
         // renvoie le texte a la couleur précisée
-        r = couleur + contenu + terminal_reset;
+        r = couleur + !char(contenu) + terminal_reset;
         renvoie r;
     fin
 
@@ -86,7 +86,7 @@ classe w_terminal contient
         fin
 
         si num > 100 fait
-            !erreur("!w_terminal.chargement : le pourcentage est plus grand que 100")
+            !erreur("!w_terminal.chargement : le pourcentage est plus grand que 100 (taille de " +!char(num) + ")")
         fin
 
         // La différence est la longueur de la ligne
@@ -107,16 +107,45 @@ classe w_terminal contient
         
         //!terminal_curseur(ligne, diff + start-5) // On se place maintenant à la fin
         !print("]")
-        !print(num, "%") 
+        !print(num, "%")
+
+        // Il est impératif d'effacer les artéfactes de pourcentages lorsque la ligne écrite est 
+        // plus petite que celle qui la précède
+        si num < 10 fait 
+            !print("  ")
+        sinonsi num < 100 fait
+            !print(" ")
+        fin 
+        
         !print(terminal_reset)
         // Terminé !
     fin
+
+    methode centre() fait 
+        "Renvoie le couple de coordonnées du centre du terminal : (lignes, colonnes)"
+        renvoie (self.lignes/2, self.colonnes/2);
+    fin
+
+    methode ligne_blanche(ligne) fait 
+        "Écrit une ligne blanche à la ligne indiquée"
+        l = "";
+        pour i allant de 0 a self.lignes fait 
+            l = l + " ";
+        fin
+        !self.ecrit(ligne, 0, l)
+    fin
+
+    methode position() fait 
+        renvoie !terminal_curseur_pos();
+    fin
 fin
 
-fonction term_update(t) fait
+fonction term_update(t, n) fait
+    "Fonction à destination d'un autre fil d'execution. Met à jour le terminal toute les n secondes"
     time = !temps();
+    n = n*1000; // Conversion des secondes en millisecondes
     tant que t.running fait 
-        si !temps() - time > 1000 fait
+        si !temps() - time > n fait
             !t.actualiser()
             time = !temps();
         fin

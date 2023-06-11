@@ -120,10 +120,30 @@ fonction int(c) fait
 fin
 
 fonction en_int(c) fait 
+    "Transforme un 'char' en 'int'"
+    // Peut accpeter un tracker
+    nb = c;
+    si !type(c) == "traqueur" fait
+        nb = *c;
+    fin
     n = 0;
-    q = !c_len(c);
-    pour i allant de 0 a q fait 
-        n = n*10 + !int(c[i]);
+    q = !c_len(nb);
+    s = 0;
+
+    si nb[0] == "-" alors 
+        s = 1;
+    fin
+    
+    pour i allant de s a q fait 
+        n = n*10 + !int(nb[i]);
+    fin
+    
+    si s alors 
+        n = -n;
+    fin
+    
+    si !type(c) == "traqueur" fait 
+        *c = n;
     fin
     renvoie n;
 fin

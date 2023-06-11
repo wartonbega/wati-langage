@@ -2,15 +2,14 @@ classe random contient
     methode constructeur () fait
         self.a = 31415821;
         self.m = 10^8;
-        self.seed = !temps();
+        self.seed = !temps() % 100;
     fin
     
     methode rand (max) fait
         r = self.a * self.seed + 1;
         self.seed = r % self.m;
-        r = r % max;
         si r < 0 alors
-            r = r * (-1);
+            r = -r;
         fin
         renvoie r;
     fin

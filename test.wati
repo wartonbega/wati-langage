@@ -1,17 +1,18 @@
 inclue "std.wati";
-inclue "w_terminal/w_terminal.wati";
 
+fonction cap100(num) fait 
+    // Cape à 100 le maximum de num, avec num de type tracker
+    r = (*num) > 100;
+    si (*num) > 100 fait 
+        *num = 100;
+    fin
+fin
 
-t = w_terminal();
+tache (!term_update, t, 1); // Lance une tache de fond en execution en parralèle, avec la fonction et ses arguments
 
-tache (!term_update, t);
-
-!println(!en_int("9"))
-!println(10^0)
 r = "";
 tant que r != "q" fait
-    r = !t.input(13, 1, "nombre : ");
-    r = !en_int(r);
-    !t.ecrit(10, 40, r)
-    !t.chargement(r, 14, 5, t.colonnes, t.gras + t.bleu)
+    !en_int(&r);
+    !cap100(&r)
+    r = !t.input(8, 1, "nombre : ");
 fin

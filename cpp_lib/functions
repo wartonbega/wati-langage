@@ -36,4 +36,8 @@
 !float_power
 !w_sqrt
 !terminal_taille Renvoie le nombre de colonnes et de lignes dans le terminal : (row, col). !terminal_taille( ) -> list[int]
-!terminal_curseur Place le curseur à une coordonnée du terminal : (row, col). !terminal_taille( row(int), col(int) ) -> 0
+!terminal_curseur Place le curseur à une coordonnée du terminal : (row, col). !terminal_curseur( row(int), col(int) ) -> 0
+!terminal_curseur_pos Renvoie le couple de coordonnées du curseur dans le terminal : (row, col). !terminal_curseur_pos(  ) -> list[int]
+!execute Évalue et exécute du wati-code. !execute( code(char) ) -> 0
+!essaie Execute la fonction avec ses arguements, et en cas d'erreur, execute la deuxième fonction. !essaie( func(fonction), args(list), f_erreur ) -> 0
+!avertissement Lance un avertissement. !avertissement( message(char) ) -> 0

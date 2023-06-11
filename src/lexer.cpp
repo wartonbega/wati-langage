@@ -74,6 +74,8 @@ bool lexer_is_breaking_expr(std::string expr)
     {
         return true;
     }
+    if (expr == "=")
+        return true;
     if (expr == ";" or expr == ",")
     {
         return true;

@@ -1,0 +1,18 @@
+inclue "std.wati";
+
+// La classe w_erreur ne fait que contenir les différentes parties de l'erreur
+// elle sera lancée automatiquement si elle n'est pas attrapée
+
+classe w_erreur contient
+    methode constructeur (erreur, type, reference, appel) fait 
+        self.erreur = erreur; // Le message d'erreur
+        self.type = type; // Le type d'erreur (optionnel)
+        self.reference = reference; // La référence originale de l'erreur
+        self.appel = appel; // Toute les références récursive de l'erreur
+    fin
+
+    methode en_string() fait 
+        // Ne fait que renvoyer de manière informative l'erreur sous forme de string
+        renvoie "<w_erreur : '" + self.erreur + "'>";
+    fin
+fin

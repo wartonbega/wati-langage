@@ -574,7 +574,7 @@ extern "C" w_variable *mainloop(std::vector<w_variable *> args, variable_table v
         node *events = new node("*");
         events->pre_value = list;
         args->push_child(events);
-        w_variable *ret = visitor_funcall(func_name, args, variables_t, thread_id);
+        w_variable *ret = visitor_funcall(func_name, args, variables_t, &variables_t, thread_id);
 
         std::cout << std::flush; // we need to flush the output otherwise nothing will print untill the end of the loop
 

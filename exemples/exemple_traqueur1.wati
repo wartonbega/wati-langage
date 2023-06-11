@@ -4,13 +4,25 @@ fonction change (t) fait
     *t = 69;
 fin
 
+fonction cap100(num) fait 
+    // Cape à 100 le maximum de num, avec num un tracker
+    !println(num)
+    r = (*num) > 100;
+    !println(r)
+    si r fait 
+        !print("True")
+        *num = 100;
+    fin
+    !println(num)
+fin
+
 i = 420;
 t = &i;
 
 !println("Avant changement : ")
-!println(*t)
+!println(i)
 
-!change(t) 
+!cap100(&i)
 
 !println("Après changement : ")
 !println(i)

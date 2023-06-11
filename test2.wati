@@ -1,5 +1,26 @@
 inclue "std.wati";
 
-//!println(!inputln_caché("test : ", "*"))
-a = !inputln("");
-!println(a)
+classe Animal fait
+    methode constructeur(nom, espece, age) fait
+        self.nom = nom;
+        self.espece = espece;
+        self.age = age;
+        self.sexe = "Indéterminé";
+    fin
+
+    methode affiche_informations() fait
+        !println("Nom : " + self.nom);
+        !println("Espèce : " + self.espece);
+        !println("Âge : " + !char(self.age));
+        !println("Sexe : " + self.sexe);
+    fin
+
+    methode definir_sexe(sexe) fait
+        self.sexe = sexe;
+    fin
+fin
+
+a = Animal("Léo", "Lion", 5);
+!a.affiche_informations(); // Affiche les informations initiales de l'animal
+!a.definir_sexe(69); // Définit le sexe de l'animal
+!a.affiche_informations(); // Affiche les informations mises à jour de l'animal

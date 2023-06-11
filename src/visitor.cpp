@@ -30,9 +30,8 @@ std::vector<std::string> included;
 variable_table prepare_arguments(std::vector<w_variable *> vars, node *trunc, variable_table variables_t)
 {
     variable_table var_bis = variable_table(variables_t);
-    for (int i = 0; i < vars.size(); i++)
+    for (int i = 0; i < trunc->children.size(); i++)
     {
-        // std::cout << trunc->children[i]->children[0]->value << std::endl;
         var_bis.assign(trunc->children[i]->children[0]->value, vars[i], 0);
     }
     return var_bis;
@@ -41,6 +40,13 @@ variable_table prepare_arguments(std::vector<w_variable *> vars, node *trunc, va
 std::stack<std::string> *what_reference(int thread_id)
 {
     return references[thread_id];
+}
+
+std::string ref_pop(int thread_id)
+{
+    std::string s = references[thread_id]->top();
+    references.pop_back();
+    return s;
 }
 
 
@@ -151,10 +157,22 @@ std::string give_file_error(std::string filename, int line, int column, std::str
 
 void error(std::string err, std::string ref, int thread_id)
 {
-    std::cout << "\n";
-    std::string err_s = TERMINAL_BOLDRED + ref + TERMINAL_BOLDBLACK + " erreur : " + TERMINAL_BOLDRED + err;
+    w_variable *erreur = new w_variable();
+    erreur->type = T_OBJECT;
+    w_object *o = new w_object();
+    o->name = "w_erreur";
+    erreur->content = (void *)o;
+
+    if (!class_exist("w_erreur", classes))
+    {
+        std::cout << "La classe w_erreur n'a pas été correctement importée. L'utilisation du wati en dépend" << std::endl;
+        exit(1);
+    }
+    
     std::vector<std::string> c_ref = cut_error_ref(ref);
     std::string filename = c_ref[0];
+
+    std::string ref_error;
 
     int line;
     int col;
@@ -167,12 +185,11 @@ void error(std::string err, std::string ref, int thread_id)
     {
     }
 
-    std::cout << err_s << std::endl;
-    std::cout << give_file_error(filename, line, col, ref) << "\n\n";
+    ref_error += give_file_error(filename, line, col, ref) + "\n\n";
 
     while (!(what_reference(thread_id))->empty())
     {
-        std::string s_ref = (what_reference(thread_id))->top();
+        std::string s_ref = ref_pop(thread_id);
         std::string s_fln = cut_error_ref(s_ref)[0];
         int s_lne;
         int s_col;
@@ -186,10 +203,21 @@ void error(std::string err, std::string ref, int thread_id)
         }
         if (!(what_reference(thread_id))->empty())
             (what_reference(thread_id))->pop();
-        std::cout << TERMINAL_BOLDCYAN + "\nréférencé depuis :\n"
-                  << give_file_error(s_fln, s_lne, s_col, s_ref);
+        ref_error += TERMINAL_BOLDCYAN + "\nréférencé depuis :\n" + give_file_error(s_fln, s_lne, s_col, s_ref);
     }
-    exit(1);
+    variable_table vt = variable_table();
+    w_variable *w_err = new w_variable(err);
+    w_variable *w_type = new w_variable("");
+    w_variable *w_ref = new w_variable(ref);
+    w_variable *w_appel = new w_variable(ref_error);
+    vt.assign("erreur", w_err, thread_id);
+    vt.assign("type", w_type, thread_id);
+    vt.assign("reference", w_ref, thread_id);
+    vt.assign("appel", w_appel, thread_id);
+    vt.assign("self", erreur, thread_id);
+    w_function *func = functions["!w_erreur.constructeur"];
+    visitor_visit(func->trunc, vt, thread_id);
+    throw erreur;
 }
 
 void warning(std::string err, std::string ref)
@@ -223,9 +251,9 @@ bool function_exist(std::string name, std::map<std::string, w_function *> funcs)
     return false;
 }
 
-bool class_exist(std::string name, std::map<std::string, w_class_template *> variables_t)
+bool class_exist(std::string name, std::map<std::string, w_class_template *> classes)
 {
-    if (variables_t.find(name) != variables_t.end() || visitor_is_inbuild(name))
+    if (classes.find(name) != classes.end() || visitor_is_inbuild(name))
     {
         return true;
     }
@@ -414,7 +442,7 @@ w_variable *visitor_function_inbuild(std::string name, node *args, variable_tabl
         if (args->children.size() != 1)
         {
             std::string err = "la fonction !type necessite un argument";
-            error(err, (what_reference(thread_id))->top(), thread_id);
+            error(err, ref_pop(thread_id), thread_id);
         }
         w_variable *arg = visitor_compute(args->children[0], &variables_t, thread_id);
         return type(arg);
@@ -424,7 +452,7 @@ w_variable *visitor_function_inbuild(std::string name, node *args, variable_tabl
         if (args->children.size() != 1)
         {
             std::string err = "la fonction !input necessite un argument";
-            error(err, (what_reference(thread_id))->top(), thread_id);
+            error(err, ref_pop(thread_id), thread_id);
         }
         w_variable *arg = visitor_compute(args->children[0], &variables_t, thread_id);
         return input(arg, variables_t.vars);
@@ -434,7 +462,7 @@ w_variable *visitor_function_inbuild(std::string name, node *args, variable_tabl
         if (args->children.size() != 1)
         {
             std::string err = "la fonction !system necessite un argument";
-            error(err, (what_reference(thread_id))->top(), thread_id);
+            error(err, ref_pop(thread_id), thread_id);
         }
         w_variable *arg = visitor_compute(args->children[0], &variables_t, thread_id);
         return w_system(arg, variables_t.vars);
@@ -444,7 +472,7 @@ w_variable *visitor_function_inbuild(std::string name, node *args, variable_tabl
         if (args->children.size() != 1)
         {
             std::string err = "la fonction !char necessite un argument";
-            error(err, (what_reference(thread_id))->top(), thread_id);
+            error(err, ref_pop(thread_id), thread_id);
         }
         w_variable *arg = visitor_compute(args->children[0], &variables_t, thread_id);
         return w_char(arg, variables_t.vars, thread_id);
@@ -454,7 +482,7 @@ w_variable *visitor_function_inbuild(std::string name, node *args, variable_tabl
         if (args->children.size() != 2)
         {
             std::string err = "la fonction !c_en necessite un argument";
-            error(err, (what_reference(thread_id))->top(), thread_id);
+            error(err, ref_pop(thread_id), thread_id);
         }
         std::vector<w_variable *> arg_c;
         for (auto arg_t : args->children)
@@ -464,13 +492,13 @@ w_variable *visitor_function_inbuild(std::string name, node *args, variable_tabl
         if (arg_c[0]->get_type() != "char")
         {
             std::string err = "le premier argument de !c_en doit etre de type char";
-            error(err, (what_reference(thread_id))->top(), thread_id);
+            error(err, ref_pop(thread_id), thread_id);
         }
 
         if (arg_c[1]->get_type() != "int")
         {
             std::string err = "le deuxième argument de !c_en doit etre de type int";
-            error(err, (what_reference(thread_id))->top(), thread_id);
+            error(err, ref_pop(thread_id), thread_id);
         }
         return w_en(arg_c, variables_t.vars);
     }
@@ -479,13 +507,13 @@ w_variable *visitor_function_inbuild(std::string name, node *args, variable_tabl
         if (args->children.size() != 1)
         {
             std::string err = "la fonction !c_len necessite un argument";
-            error(err, (what_reference(thread_id))->top(), thread_id);
+            error(err, ref_pop(thread_id), thread_id);
         }
         w_variable *arg = visitor_compute(args->children[0], &variables_t, thread_id);
         if (arg->get_type() != "char")
         {
             std::string err = "l'argument de !c_len doit etre de type char";
-            error(err, (what_reference(thread_id))->top(), thread_id);
+            error(err, ref_pop(thread_id), thread_id);
         }
         return c_len(arg);
     }
@@ -494,7 +522,7 @@ w_variable *visitor_function_inbuild(std::string name, node *args, variable_tabl
         if (args->children.size() != 1)
         {
             std::string err = "la fonction !erreur necessite un argument";
-            error(err, (what_reference(thread_id))->top(), thread_id);
+            error(err, ref_pop(thread_id), thread_id);
         }
         w_variable *arg = visitor_compute(args->children[0], &variables_t, thread_id);
         w_error(arg, variables_t.vars, thread_id);
@@ -504,13 +532,13 @@ w_variable *visitor_function_inbuild(std::string name, node *args, variable_tabl
         if (args->children.size() != 1)
         {
             std::string err = "la fonction !sortie necessite un argument";
-            error(err, (what_reference(thread_id))->top(), thread_id);
+            error(err, ref_pop(thread_id), thread_id);
         }
         w_variable *arg = visitor_compute(args->children[0], &variables_t, thread_id);
         if (arg->get_type() != "int")
         {
             std::string err = "l'argument de !sortie doit etre de type int";
-            error(err, (what_reference(thread_id))->top(), thread_id);
+            error(err, ref_pop(thread_id), thread_id);
         }
         w_exit(arg);
     }
@@ -546,8 +574,10 @@ std::string remove_function_call_prefix(std::string name)
     return r;
 }
 
-w_variable *visitor_funcall(std::string name, node *args, variable_table variables_t, int thread_id)
+w_variable *visitor_funcall(std::string name, node *args, variable_table variables_t, variable_table *variables_t_parent, int thread_id)
 {
+    // La table de variable parente sert à calculer les arguements, pour entre autre
+    // que les pointeurs soient référencés au bon endroit
     w_function *func;
     std::string var_name = remove_function_call_prefix(name);
     if (variables_t.exist(var_name))
@@ -556,14 +586,14 @@ w_variable *visitor_funcall(std::string name, node *args, variable_table variabl
         if (func_var->get_type() != "fonction")
         {
             std::string err = "le type '" + func_var->get_type() + "' ne peut pas être appelé";
-            error(err, (what_reference(thread_id))->top(), thread_id);
+            error(err, ref_pop(thread_id), thread_id);
         }
 
         name = *(std::string *)(func_var->content);
         if (!function_exist(name, functions))
         {
             std::string err = "la fonction " + name + " n'existe pas";
-            error(err, (what_reference(thread_id))->top(), thread_id);
+            error(err, ref_pop(thread_id), thread_id);
         }
     }
     if (!function_exist(name, functions))
@@ -582,12 +612,12 @@ w_variable *visitor_funcall(std::string name, node *args, variable_table variabl
         if (func->arguments->children.size() != args->children.size())
         {
             std::string err = "la fonction " + name + " requiers " + std::to_string(func->arguments->children.size()) + " argument(s), " + std::to_string(args->children.size()) + " argument(s) as(ont) été indiqué(s)";
-            error(err, (what_reference(thread_id))->top(), thread_id);
+            error(err, ref_pop(thread_id), thread_id);
         }
         for (int i = 0; i < args->children.size(); i++)
         {
             std::string arg_n = func->arguments->children[i]->children[0]->value;
-            w_variable *arg_v = visitor_compute(args->children[i], &variables_t, thread_id);
+            w_variable *arg_v = visitor_compute(args->children[i], variables_t_parent, thread_id);
             // variables_t[arg_n] = arg_v; we use the variable asignement
             variables_t.assign(arg_n, arg_v, thread_id);
         }
@@ -596,13 +626,13 @@ w_variable *visitor_funcall(std::string name, node *args, variable_table variabl
     }
 }
 
-w_variable *visitor_funcall_methode(std::string name, node *args, variable_table variables_t, w_variable *self, int thread_id)
+w_variable *visitor_funcall_methode(std::string name, node *args, variable_table variables_t, variable_table *variables_t_parent, w_variable *self, int thread_id)
 {
 
     if (!function_exist(name, functions))
     {
         std::string err = "la fonction " + name + " n'existe pas";
-        error(err, (what_reference(thread_id))->top(), thread_id);
+        error(err, ref_pop(thread_id), thread_id);
     }
     w_function *func = functions[name];
     args = visitor_separate_listed(args);
@@ -615,7 +645,7 @@ w_variable *visitor_funcall_methode(std::string name, node *args, variable_table
         for (int i = 0; i < args->children.size(); i++)
         {
             std::string arg_n = func->arguments->children[i]->children[0]->value;
-            w_variable *arg_v = visitor_compute(args->children[i], &variables_t, thread_id);
+            w_variable *arg_v = visitor_compute(args->children[i], variables_t_parent, thread_id);
             variables_t.assign(arg_n, arg_v, thread_id);
             // variables_t[arg_n] = arg_v;
         }
@@ -677,7 +707,7 @@ w_variable *visitor_use_inbuild_int(int64_t a, int64_t b, std::string opera, int
         return int_ne(a, b);
     }
     std::string err = "operateur inconnu : '" + opera + "'";
-    error(err, (what_reference(thread_id))->top(), thread_id);
+    error(err, ref_pop(thread_id), thread_id);
     // Throw an error, unknown operator
     return nullptr;
 }
@@ -701,7 +731,7 @@ w_variable *visitor_use_inbuild_char(std::string a, std::string b, std::string o
         return char_minus(a, b);
     }
     std::string err = "operateur inconnu : '" + opera + "'";
-    error(err, (what_reference(thread_id))->top(), thread_id);
+    error(err, ref_pop(thread_id), thread_id);
     // Throw an error, unknown operator
     return nullptr;
 }
@@ -743,7 +773,7 @@ w_variable *visitor_link_operator(w_variable *a, w_variable *b, std::string oper
         if (!function_exist(f_name, functions))
         {
             std::string err = "il n'existe pas de fonction " + f_name;
-            error(err, (what_reference(thread_id))->top(), thread_id);
+            error(err, ref_pop(thread_id), thread_id);
         }
         func = functions[f_name];
     }
@@ -753,7 +783,7 @@ w_variable *visitor_link_operator(w_variable *a, w_variable *b, std::string oper
         if (!function_exist(f_name, functions))
         {
             std::string err = "il n'existe pas de fonction " + f_name;
-            error(err, (what_reference(thread_id))->top(), thread_id);
+            error(err, ref_pop(thread_id), thread_id);
         }
         func = functions[f_name];
     }
@@ -763,7 +793,7 @@ w_variable *visitor_link_operator(w_variable *a, w_variable *b, std::string oper
         if (!function_exist(f_name, functions))
         {
             std::string err = "il n'existe pas de fonction " + f_name;
-            error(err, (what_reference(thread_id))->top(), thread_id);
+            error(err, ref_pop(thread_id), thread_id);
         }
         func = functions[f_name];
     }
@@ -773,7 +803,7 @@ w_variable *visitor_link_operator(w_variable *a, w_variable *b, std::string oper
         if (!function_exist(f_name, functions))
         {
             std::string err = "il n'existe pas de fonction " + f_name;
-            error(err, (what_reference(thread_id))->top(), thread_id);
+            error(err, ref_pop(thread_id), thread_id);
         }
         func = functions[f_name];
     }
@@ -783,7 +813,7 @@ w_variable *visitor_link_operator(w_variable *a, w_variable *b, std::string oper
         if (!function_exist(f_name, functions))
         {
             std::string err = "il n'existe pas de fonction " + f_name;
-            error(err, (what_reference(thread_id))->top(), thread_id);
+            error(err, ref_pop(thread_id), thread_id);
         }
         func = functions[f_name];
     }
@@ -793,7 +823,7 @@ w_variable *visitor_link_operator(w_variable *a, w_variable *b, std::string oper
         if (!function_exist(f_name, functions))
         {
             std::string err = "il n'existe pas de fonction " + f_name;
-            error(err, (what_reference(thread_id))->top(), thread_id);
+            error(err, ref_pop(thread_id), thread_id);
         }
         func = functions[f_name];
     }
@@ -803,7 +833,7 @@ w_variable *visitor_link_operator(w_variable *a, w_variable *b, std::string oper
         if (!function_exist(f_name, functions))
         {
             std::string err = "il n'existe pas de fonction " + f_name;
-            error(err, (what_reference(thread_id))->top(), thread_id);
+            error(err, ref_pop(thread_id), thread_id);
         }
         func = functions[f_name];
     }
@@ -813,7 +843,7 @@ w_variable *visitor_link_operator(w_variable *a, w_variable *b, std::string oper
         if (!function_exist(f_name, functions))
         {
             std::string err = "il n'existe pas de fonction " + f_name;
-            error(err, (what_reference(thread_id))->top(), thread_id);
+            error(err, ref_pop(thread_id), thread_id);
         }
         func = functions[f_name];
     }
@@ -823,7 +853,7 @@ w_variable *visitor_link_operator(w_variable *a, w_variable *b, std::string oper
         if (!function_exist(f_name, functions))
         {
             std::string err = "il n'existe pas de fonction " + f_name;
-            error(err, (what_reference(thread_id))->top(), thread_id);
+            error(err, ref_pop(thread_id), thread_id);
         }
         func = functions[f_name];
     }
@@ -833,7 +863,7 @@ w_variable *visitor_link_operator(w_variable *a, w_variable *b, std::string oper
         if (!function_exist(f_name, functions))
         {
             std::string err = "il n'existe pas de fonction " + f_name;
-            error(err, (what_reference(thread_id))->top(), thread_id);
+            error(err, ref_pop(thread_id), thread_id);
         }
         func = functions[f_name];
     }
@@ -843,7 +873,7 @@ w_variable *visitor_link_operator(w_variable *a, w_variable *b, std::string oper
         if (!function_exist(f_name, functions))
         {
             std::string err = "il n'existe pas de fonction " + f_name;
-            error(err, (what_reference(thread_id))->top(), thread_id);
+            error(err, ref_pop(thread_id), thread_id);
         }
         func = functions[f_name];
     }
@@ -853,7 +883,7 @@ w_variable *visitor_link_operator(w_variable *a, w_variable *b, std::string oper
         if (!function_exist(f_name, functions))
         {
             std::string err = "il n'existe pas de fonction " + f_name;
-            error(err, (what_reference(thread_id))->top(), thread_id);
+            error(err, ref_pop(thread_id), thread_id);
         }
         func = functions[f_name];
     }
@@ -874,7 +904,7 @@ w_variable *visitor_new_object(std::string name, node *args, variable_table vari
     if (!class_exist(name, classes))
     {
         std::string err = "la classe '" + name + "' n'existe pas";
-        error(err, (what_reference(thread_id))->top(), thread_id);
+        error(err, ref_pop(thread_id), thread_id);
     }
     w_class_template *temp = classes[name];
     w_object *r = new w_object();
@@ -894,7 +924,7 @@ w_variable *visitor_new_object(std::string name, node *args, variable_table vari
     var->type = T_OBJECT; // an object
     var->content = (void *)r;
 
-    visitor_funcall_methode("!" + name + ".constructeur", args, variables_t, var, thread_id);
+    visitor_funcall_methode("!" + name + ".constructeur", args, variables_t, &variables_t, var, thread_id);
     return var;
 }
 
@@ -1042,7 +1072,7 @@ w_variable *visitor_compute(node *c, variable_table *variables_t, int thread_id)
                     }
                     variable_table variables_t_bis = variable_table(*variables_t);
                     
-                    last_value = visitor_funcall_methode(f_name, c->children[i + 1], variables_t_bis, last_var, thread_id);
+                    last_value = visitor_funcall_methode(f_name, c->children[i + 1], variables_t_bis, variables_t, last_var, thread_id);
                     unused = false;
                     i++; // we increment by one because they are parenthesis
                 }
@@ -1194,7 +1224,7 @@ w_variable *visitor_compute(node *c, variable_table *variables_t, int thread_id)
             else
             {
                 
-                last_value = visitor_funcall(expr, c->children[i + 1], *variables_t, thread_id);
+                last_value = visitor_funcall(expr, c->children[i + 1], *variables_t, variables_t, thread_id);
                 unused = false;
                 i++; // we need to increment by one, because of the parenthesis
             }
@@ -1232,7 +1262,7 @@ w_variable *visitor_compute(node *c, variable_table *variables_t, int thread_id)
 
                 for (auto parts : elements->children)
                 {
-                    visitor_funcall_methode(funcname, parts, *variables_t, r, thread_id);
+                    visitor_funcall_methode(funcname, parts, *variables_t, variables_t, r, thread_id);
                 }
                 
                 last_value = r; // we finally put the list as the last value
@@ -1325,7 +1355,7 @@ void visitor_keyword_free(node *trunc, variable_table *variables_t, int thread_i
 
         std::string name = "!" + t->name + ".destructeur"; // we call the desctructor
         if (function_exist(name, functions))
-            visitor_funcall_methode(name, new node("*"), *variables_t, result, thread_id);
+            visitor_funcall_methode(name, new node("*"), *variables_t, variables_t, result, thread_id);
     }
 
     std::map<std::string, w_variable *>::iterator it;
@@ -1362,7 +1392,7 @@ void visitor_keyword_tache(node *trunc, variable_table variables_t, int thread_i
     if (result->get_type() == "fonction")
     {
         std::string name = *(std::string *)result->content;
-        visitor_funcall(name, new node("()"), variables_t, thread_id);
+        visitor_funcall(name, new node("()"), variables_t, &variables_t, thread_id);
     }
     else if (result->get_type() == "list")
     {
@@ -1370,7 +1400,7 @@ void visitor_keyword_tache(node *trunc, variable_table variables_t, int thread_i
         // (!funcname, arg1, arg2, ...)
         node *arg = new node("*");
         arg->push_child(new node("0"));
-        w_variable *potential_function = visitor_funcall_methode("!list.en", arg, variables_t, result, thread_id);
+        w_variable *potential_function = visitor_funcall_methode("!list.en", arg, variables_t, &variables_t, result, thread_id);
 
         w_object *o;
         if (result->content != NULL)
@@ -1383,13 +1413,14 @@ void visitor_keyword_tache(node *trunc, variable_table variables_t, int thread_i
 
         w_variable *len_var = o->get_attribute("taille");
         std::vector<w_variable *> arguments;
-        int len = *(int *)len_var->content;
+        int64_t len = *(int64_t *)len_var->content;
 
         for (int i = 1; i < len; i++)
         {
             node *arg_bis = new node("*");
-            arg->push_child(new node(std::to_string(i)));
-            arguments.push_back(visitor_funcall_methode("!list.en", arg, variables_t, result, thread_id));
+            arg_bis->push_child(new node(std::to_string(i)));
+            arguments.push_back(visitor_funcall_methode("!list.en", arg_bis, variables_t, &variables_t, result, thread_id));
+            free((void *)arg_bis);
         }
 
         if (potential_function->get_type() != "fonction")

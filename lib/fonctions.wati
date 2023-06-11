@@ -1,3 +1,14 @@
+// Par Anton Appel, le 8 mai 2023
+// Permet de faire le lien entre l'utilisation des fonctions en tant
+// qu'objet en wati et les fonctions en elles-mêmes
+
+
+// La comparaison entre deux fonctions doît toujours démontrer l'inégalité
+// entre les deux fonctions
 fonction fonction.ne (x) fait
     renvoie 1;
+fin
+
+fonction fonction.eq (x) fait 
+    renvoie 0;
 fin

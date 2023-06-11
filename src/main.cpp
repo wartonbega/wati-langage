@@ -51,6 +51,21 @@ std::string separate_base_dir(std::string expr)
 	return total;
 }
 
+std::string throw_error(w_variable *err_)
+{
+	w_object *f = (w_object*)err_->content;
+	std::string err = f->get_attribute("erreur")->convert_to_char();
+	std::string ref = f->get_attribute("reference")->convert_to_char();
+	std::string comp_ref = f->get_attribute("appel")->convert_to_char();
+
+    std::string complete_error = "\n";
+    std::string err_s = TERMINAL_BOLDRED + ref + TERMINAL_BOLDBLACK + " erreur : " + TERMINAL_BOLDRED + err;
+
+    complete_error += err_s + "\n";
+	complete_error += comp_ref;
+    return complete_error;
+}
+
 void init_vars(std::map<std::string, w_variable *> &variables_t)
 {
 	std::string *c;
@@ -139,15 +154,10 @@ int main(int argc, char *argv[])
 {
 	system("stty -icanon");
 	system("export PATH=/usr/local/lib/wati/:$PATH");
-	if (argc < 2)
-	{
-		std::cout << "On as besoin de au moins 1 argument a l'appel du programme (le nom du fichier)" << std::endl;
-		exit(1);
-	}
 	std::string filename;
 	if (argc < 2)
 	{
-		filename = "test.wati";
+		filename += "/usr/local/lib/wati/lib/console.wati";
 	}
 	else 
 	{
@@ -176,7 +186,8 @@ int main(int argc, char *argv[])
 		}
 	}
 	base_dir = separate_base_dir(filename);
-	std::string r = open_file(argv[1]);
+	std::string r = open_file(filename.c_str());
+
 	std::vector<std::string> ref;
 	std::vector<std::string> lexemes = lexer(r, ref, filename);
 
@@ -187,7 +198,6 @@ int main(int argc, char *argv[])
 		std::cout << ast->to_string(0) << std::endl;
 	}
 
-//	std::cout << ast->to_string(0) << std::endl;
 	references.push_back(new std::stack<std::string>);
 	if (compile)
 	{
@@ -200,7 +210,15 @@ int main(int argc, char *argv[])
 	{
 		variable_table variables_t = variable_table();
 		init_vars(variables_t.vars);
-		visitor_visit(ast, variables_t, 0);
+		try
+		{
+			visitor_visit(ast, variables_t, 0);
+		}
+		catch (w_variable *error)
+		{
+			std::cout << throw_error(error) << std::endl;
+			exit(1);
+		}
 	}
 	delete ast;
 	return 0;
