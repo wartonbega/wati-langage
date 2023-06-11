@@ -273,8 +273,7 @@ extern "C" w_variable* essaie(std::vector<w_variable *> args, variable_table var
         std::vector<w_variable *> f_a = arguments_from_list(function_args, variables_t, reference, thread_id);
         w_function *f1 = functions[f1_name];
         variable_table variable_table_bis = prepare_arguments(f_a, f1->arguments, variables_t);
-        
-        visitor_visit(f1->trunc, variable_table_bis, thread_id);
+        return visitor_visit(f1->trunc, variable_table_bis, thread_id);
     }
     catch (w_variable *error)
     {
@@ -282,7 +281,7 @@ extern "C" w_variable* essaie(std::vector<w_variable *> args, variable_table var
         error_func_arg.push_back(error);
         w_function *f2 = functions[f2_name];
         variable_table variable_table_bis = prepare_arguments(error_func_arg, f2->arguments, variables_t);
-        visitor_visit(f2->trunc, variable_table_bis, thread_id);
+        return visitor_visit(f2->trunc, variable_table_bis, thread_id);
     }
     return new w_variable(0);
 }
