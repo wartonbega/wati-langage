@@ -273,7 +273,7 @@ w_variable *w_char(w_variable *content, std::map<std::string, w_variable *> vari
     {
         std::string *s = new std::string("<fonction "+ *(std::string *)(content->content) +">");
         w_variable *r = new w_variable();
-        r->type = 1;
+        r->type = T_CHAR;
         r->content = (void *)s;
         return r;
     }
@@ -281,23 +281,23 @@ w_variable *w_char(w_variable *content, std::map<std::string, w_variable *> vari
     {
         std::string *s = new std::string(std::to_string(content->convert_to_int()));
         w_variable *r = new w_variable();
-        r->type = 1;
+        r->type = T_CHAR;
         r->content = (void *)s;
         return r;
     }
     else if (type == "traqueur")
     {
-        std::string *s = new std::string(std::to_string(content->convert_to_int()));
+        std::string *s = new std::string(convert_to_string(content, variables_t, thread_id));
         w_variable *r = new w_variable();
-        r->type = 1;
+        r->type = T_CHAR;
         r->content = (void *)s;
         return r;
     }
     else
     { // it is therefore an object
-        std::string *s = new std::string(std::to_string(content->convert_to_int()));
+        std::string *s = new std::string(convert_to_string(content, variables_t, thread_id));
         w_variable *r = new w_variable();
-        r->type = 1;
+        r->type = T_CHAR;
         r->content = (void *)s;
         return r;
     }

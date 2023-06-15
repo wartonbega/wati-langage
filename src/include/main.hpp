@@ -7,6 +7,10 @@
 #define MAIN_H
 
 extern std::string base_dir;
+
+extern std::string main_filename; 
+extern bool show_tree;
+
 int main(int argc, char *argv[]);
 std::string separate_base_dir(std::string expr);
 std::string open_file(const char *name);

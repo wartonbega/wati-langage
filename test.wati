@@ -1,5 +1,3 @@
-inclue "std.wati";
-
 fonction cap100(num) fait 
     // Cape à 100 le maximum de num, avec num de type tracker
     r = (*num) > 100;
@@ -8,11 +6,3 @@ fonction cap100(num) fait
     fin
 fin
 
-tache (!term_update, t, 1); // Lance une tache de fond en execution en parralèle, avec la fonction et ses arguments
-
-r = "";
-tant que r != "q" fait
-    !en_int(&r);
-    !cap100(&r)
-    r = !t.input(8, 1, "nombre : ");
-fin

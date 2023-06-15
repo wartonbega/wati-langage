@@ -165,7 +165,7 @@ void error(std::string err, std::string ref, int thread_id)
 
     if (!class_exist("w_erreur", classes))
     {
-        std::cout << "La classe w_erreur n'a pas été correctement importée. L'utilisation du wati en dépend" << std::endl;
+        warning("La classe w_erreur n'a pas été correctement importée. L'utilisation du wati en dépend", ref);
         exit(1);
     }
     
@@ -176,9 +176,14 @@ void error(std::string err, std::string ref, int thread_id)
 
     int line;
     int col;
+    int adder;
+    if (c_ref[0] == main_filename)
+        adder = 1;
+    else
+        adder = 0;
     try // To avoid 'libc++abi: terminating with uncaught exception of type std::invalid_argument: stoi: no conversion'
     {
-        line = stoi(c_ref[1]);
+        line = stoi(c_ref[1]) - adder;
         col = stoi(c_ref[2]);
     }
     catch (std::invalid_argument err)
@@ -193,9 +198,16 @@ void error(std::string err, std::string ref, int thread_id)
         std::string s_fln = cut_error_ref(s_ref)[0];
         int s_lne;
         int s_col;
+        int s_adder;
+        
+        if (cut_error_ref(s_ref)[0] == main_filename)
+            s_adder = 1;
+        else
+            s_adder = 0;
+
         try // To avoid error : 'libc++abi: terminating with uncaught exception of type std::invalid_argument: stoi: no conversion'
         {
-            s_lne = stoi(cut_error_ref(s_ref)[1]);
+            s_lne = stoi(cut_error_ref(s_ref)[1]) - s_adder;
             s_col = stoi(cut_error_ref(s_ref)[2]);
         }
         catch (std::invalid_argument err)
@@ -1250,7 +1262,7 @@ w_variable *visitor_compute(node *c, variable_table *variables_t, int thread_id)
             { // then we try to create a new list classe
                 if (!class_exist("list", classes))
                 {
-                    std::string err = "la classe 'list' n'existe pas, on ne peux donc pas initialiser de nouvelles listes à partir de parenthèses.\nPeut être avez-vous oublié d'inclue la librairie standard (std.wati)";
+                    std::string err = "la classe 'list' n'existe pas, on ne peux donc pas initialiser de nouvelles listes à partir de parenthèses.\nPeut être avez-vous oublié d'inclure la librairie standard (std.wati)";
                     error(err, c->children[i]->reference, thread_id);
                 }
 
@@ -1457,6 +1469,7 @@ bool visitor_is_included(std::string libname)
 
 void visitor_keyword_include(node *trunc, variable_table *variables_t, int thread_id)
 {
+    what_reference(thread_id)->push(trunc->reference);
     if (trunc->children.size() < 1)
     {
         std::string err = "le mot-clé 'inclue' doit avoir au moins un argument";
@@ -1484,6 +1497,7 @@ void visitor_keyword_include(node *trunc, variable_table *variables_t, int threa
             filename2 = "/usr/local/lib/wati/lib/" + filename;
             if (visitor_is_included(filename2))
             { // meaning we already included it
+                what_reference(thread_id)->pop();
                 return;
             }
             r = open_file(filename2.c_str());
@@ -1491,6 +1505,7 @@ void visitor_keyword_include(node *trunc, variable_table *variables_t, int threa
         if (r == "file_not_found")
         { // it clearly doesn't exists
             std::string err = "fichier introuvable '" + filename2 + "'";
+            warning(err, trunc->children[0]->reference);
             error(err, trunc->children[0]->reference, thread_id);
         }
 
@@ -1499,9 +1514,14 @@ void visitor_keyword_include(node *trunc, variable_table *variables_t, int threa
         std::vector<std::string> lexemes = lexer(r, ref, filename2);
 
         node *ast = parser(lexemes, filename2, ref, filename2 + "1:1");
+        if (show_tree)
+        {
+            std::cout << ast->to_string(0) << std::endl;
+        }
         visitor_visit_incode(ast, variables_t, thread_id);
     }
     base_dir = dir;
+    what_reference(thread_id)->pop();
 }
 
 void visitor_funcdef(node *trunc)
@@ -1938,12 +1958,17 @@ std::tuple<std::string, w_variable *> visitor_visit_incode(node *trunc, variable
         { // The renvoie keyword
             visitor_keyword_include(instruction, variables_t, thread_id);
         }
+        else if (instruction->value == "libere")
+        { // The renvoie keyword
+            visitor_keyword_free(instruction, variables_t, thread_id);
+        }
         else if (instruction->value != ";")
         {
             std::string err = "instruction inconnue '" + instruction->value + "'. \nAttention, l'instruction est peut-être inconnue dans le contexte (boucle, appel de fonction ect...). \nSi ça fait partie d'un calcule, il faut utiliser des parenthèses.";
             error(err, instruction->reference, thread_id);
         }
     }
+ 
     return to_return;
 }
 

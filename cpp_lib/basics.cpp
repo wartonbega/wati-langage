@@ -22,8 +22,6 @@ extern "C" w_variable *et(std::vector<w_variable *> args, variable_table variabl
     {
         error("!et : doit avoir deux arguments de type 'int'", reference, thread_id);
     }
-
-
     int64_t a = *(int64_t *)(args[0]->content);
     int64_t b = *(int64_t *)(args[1]->content);
 

@@ -6,6 +6,8 @@
 #include "include/compiler.hpp"
 
 std::string base_dir;
+std::string main_filename; 
+bool show_tree;
 
 void write_file(std::string name, std::string content)
 {
@@ -150,19 +152,21 @@ void init_vars(std::map<std::string, w_variable *> &variables_t)
 	variables_t["terminal_blink"] = var;
 }
 
+
 int main(int argc, char *argv[])
 {
 	system("stty -icanon");
 	system("export PATH=/usr/local/lib/wati/:$PATH");
 	std::string filename;
-	if (argc < 2)
+	if (argc < 2) // the command wich was typed is just 'wati'
 	{
-		filename += "/usr/local/lib/wati/lib/console.wati";
+		filename += "/usr/local/lib/wati/lib/console.wati"; // therefore we lunch the standard console
 	}
 	else 
 	{
 		filename += argv[1];
 	}
+
 	bool compile = 0;
 	bool show_ast = 0;
 	std::string output_name = "output.wati";
@@ -183,10 +187,23 @@ int main(int argc, char *argv[])
 		else if (std::string(argv[i]) == "--tree" || std::string(argv[i]) == "-t")
 		{
 			show_ast = 1;
+			show_tree = true;
 		}
 	}
+	
+
 	base_dir = separate_base_dir(filename);
 	std::string r = open_file(filename.c_str());
+	if (r == "file_not_found") 
+	{
+		warning("Fichier non-trouvé : '" + filename + "'", "");
+		exit(2);
+	}
+	// We absolutly need to include the standard library in ordre for the error
+	// system to work.
+	main_filename = filename;
+	r = "inclue \"std.wati\";\n" + r;
+
 
 	std::vector<std::string> ref;
 	std::vector<std::string> lexemes = lexer(r, ref, filename);
@@ -199,27 +216,19 @@ int main(int argc, char *argv[])
 	}
 
 	references.push_back(new std::stack<std::string>);
-	if (compile)
+	
+	variable_table variables_t = variable_table();
+	init_vars(variables_t.vars);
+	try
 	{
-		//ast = optimisator(ast, 1);
-		//std::string output = compiler(ast, 0);
-		//write_file(output_name, output);
-		//compiler_info("'" + output_name + "' écrit");
+		visitor_visit(ast, variables_t, 0);
 	}
-	else
+	catch (w_variable *error)
 	{
-		variable_table variables_t = variable_table();
-		init_vars(variables_t.vars);
-		try
-		{
-			visitor_visit(ast, variables_t, 0);
-		}
-		catch (w_variable *error)
-		{
-			std::cout << throw_error(error) << std::endl;
-			exit(1);
-		}
+		std::cout << throw_error(error) << std::endl;
+		exit(1);
 	}
+	
 	delete ast;
 	return 0;
 }

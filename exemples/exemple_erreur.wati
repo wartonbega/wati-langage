@@ -8,7 +8,9 @@ inclue "std.wati";
 
 
 fonction gestion_erreur (erreur) fait 
-    !println("Erreur : " + erreur.erreur)
+    !println("--> Erreur : " + erreur.erreur)
+    !println("--> Référence : " + erreur.reference)
+    !println("--> Historique d'appel : " + erreur.appel)
 fin
 
 fonction probleme (x, y) fait 
