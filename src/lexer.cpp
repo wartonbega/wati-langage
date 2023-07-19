@@ -17,7 +17,9 @@ bool lexer_is_operator(std::string expr)
         expr == "/" ||
         expr == "<" ||
         expr == ">" ||
-        expr == "&"
+        expr == "&" /*||
+        expr == "et" ||
+        expr == "ou"*/
         )
     {
         return true;

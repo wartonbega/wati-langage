@@ -31,7 +31,8 @@ bool is_digit(std::string expr)
 }
 
 bool is_explicit(std::string expr)
-{
+{   // Renvoie true si l'expression est explicite,
+    // C'est-à-dire que c'est une expression directe, du type int ou char
     if (is_char(expr) or is_digit(expr))
     {
         return true;

@@ -718,6 +718,15 @@ w_variable *visitor_use_inbuild_int(int64_t a, int64_t b, std::string opera, int
     {
         return int_ne(a, b);
     }
+    /*if (opera == "et")
+    {
+        return int_et(a, b);
+    }
+    if (opera == "ou")
+    {
+        return int_ou(a, b);
+    }*/
+
     std::string err = "operateur inconnu : '" + opera + "'";
     error(err, ref_pop(thread_id), thread_id);
     // Throw an error, unknown operator

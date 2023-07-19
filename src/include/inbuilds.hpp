@@ -26,6 +26,8 @@ w_variable *int_le(int64_t a, int64_t b);
 w_variable *int_mod(int64_t a, int64_t b);
 w_variable *int_power(int64_t a, int64_t b);
 w_variable *int_ne(int64_t a, int64_t b);
+w_variable *int_et(int64_t a, int64_t b);
+w_variable *int_ou(int64_t a, int64_t b);
 
 std::string convert_to_string(w_variable *content, std::map<std::string, w_variable *> variables_t, int thread_id);
 void print(w_variable *content, std::map<std::string, w_variable *> variables_t);

@@ -145,6 +145,19 @@ w_variable *int_ne(int64_t a, int64_t b)
     return r;
 }
 
+w_variable *int_ou(int64_t a, int64_t b)
+{ // returns a variable as a int 
+    w_variable *r = new w_variable(a and b);
+    return r;
+}
+
+w_variable *int_et(int64_t a, int64_t b)
+{ // returns a variable as a int 
+    w_variable *r = new w_variable(a or b);
+    return r;
+}
+
+
 std::string convert_to_string(w_variable *content, std::map<std::string, w_variable *> variables_t, int thread_id)
 {
     std::string type = content->get_type();
