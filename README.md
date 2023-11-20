@@ -4,23 +4,17 @@ Le wati langage est un langage de programmation entièrement (presque, et lachez
 
 ## Installation
 
-### Macos
-Désipez le fichier téléchargé dans un répertoire.
-Acceder à ce fichier dans un terminal avec la commande :
-`cd chemin/au/dossier`.
+Pour installer le wati langage :
 
-Prérequis : 
- - home brew : [installation](https://docs.brew.sh/Installation)
- - gcc : dans un terminal : `brew install gcc`
- - SDL2 : dans un terminal
-    - `brew install sld2`
-    - `brew install sld2_image`
-    - `brew install sld2_ttf`
- - Makefile : `brew install make`
+- Pour Macos : executer le fichier `install_macos.sh`
 
-Installation : 
- - utiliser la commande `sudo chmod u+x install_macos.sh` pour rendre le fichier 'install_macos.sh' executable
- - executer `./install_macos.sh`
+Pour le moment, les autres systèmes d'exploitation ne sont pas supportés.
 
-Finalement, exécuter les fichier en wati avec la commande
-`wati nom_du_fichier.wati`.
+Sur Linux il est possible d'installer le langage, mais plusieurs fontionnalitées ne sont pas implémentées, ni supportées.
+
+Pour Windows, seul wsl permet l'installation et l'utilisation du wati-langage : [WSL](https://docs.microsoft.com/fr-fr/windows/wsl/install).
+La compilation (entre autre des bibliothèques c++) n'est pas tout à fait possible, puisqu'elles necessitent l'utilisation de headers précompilés (qui n'est pas implémenté sous windows).
+> __Note__ : Pour windows,
+> l'utilisation du langage seul est en soit possible.
+
+Si les fichiers ne s'executent pas, donnez les droits d'executions au fichier : `sudo chmod u+x [nom_fichier]`.
