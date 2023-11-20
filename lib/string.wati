@@ -12,6 +12,8 @@ classe string contient
         self.content = tableau();
         self.taille = 0;
         self._iterable = 1;
+        self.current = 0;
+        self.conflits = 0; // On n'initialise pas la liste des conflits maintenant
         si !type(char) == "char" alors
             pour i dans [0, !c_len(char)] fait
                 self.content = self.content + char[i];
@@ -77,6 +79,35 @@ classe string contient
         fin
         !self.content.modifie(index, char)
         renvoie self;
+    fin
+
+    methode debut () fait 
+        si self.conflits == 0 alors 
+            self.conflits = tableau();
+        fin
+        !self.conflits.plus(self.current);
+        self.current = 0;
+    fin
+
+    methode suivant () fait 
+        si self.current == self.taille alors
+            !erreur("string : ne peut pas plus itérer, est déjà arrivé à la fin")
+        fin
+        r = self.content[self.current];
+        self.current = self.current + 1;
+        renvoie r;
+    fin
+
+    methode a_la_fin () fait 
+        renvoie self.taille == self.current;
+    fin
+
+    methode dernier_etat () fait 
+        si self.conflits.taille != 0 alors 
+            self.current = !self.conflits.pop(self.conflits.taille - 1);
+        sinon
+            self.current = 0;
+        fin
     fin
 
     methode times (int) fait
