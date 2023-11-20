@@ -1,20 +1,25 @@
-
-
 inclue "fonctions.wati";
 inclue "list.wati";
-inclue "t_list.wati";
-inclue "dictionnaire.wati";
+//inclue "dictionnaire.wati";
+inclue "iterables.wati";
+inclue "tableaux.wati";
+inclue "plage.wati";
 inclue "inout.wati";
 inclue "maths.wati";
 inclue "random.wati";
 inclue "string.wati";
 inclue "float.wati";
-inclue "thread.wati";
 inclue "temps.wati";
 inclue "types.wati";
 inclue "w_erreurs/w_erreurs.wati";
+!classe_defaut_liste("tableau"); // On définit la classe de base de support à la création de listes
 
-vrai = 1;
-faux = 0;
-true = 1;
-false = 0;
+// On définit aussi des fonctions !et et !ou qui vont envoyer des erreurs à chaques utilisations
+// C'est pour détécter les erreurs laissées lors du passage de version
+fonction et (a, b) fait 
+    !erreur("La fonction !et ne devrait pas être utilisée")
+fin
+
+fonction ou (a, b) fait 
+    !erreur("La fonction !ou ne devrait pas être utilisée")
+fin

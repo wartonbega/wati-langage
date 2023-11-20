@@ -13,7 +13,7 @@ classe texture contient
     methode tourne_origine (angle) fait 
         self.diff = self.rotation - angle % 360;
         si diff != 0 alors 
-            !rotate_texture ()
+            !rotate_texture()
         fin
     fin
 

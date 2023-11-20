@@ -10,7 +10,8 @@ extern std::string base_dir;
 
 extern std::string main_filename; 
 extern bool show_tree;
-
+extern bool short_error;
+extern std::string list_creation_class_name;
 int main(int argc, char *argv[]);
 std::string separate_base_dir(std::string expr);
 std::string open_file(const char *name);

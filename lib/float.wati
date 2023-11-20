@@ -17,7 +17,7 @@ fonction puissance_de_dix (int) fait
         fin
         renvoie pd - 1;
     fin
-    si (int = 0) alors
+    si (int == 0) alors
         renvoie 0;
     fin
 fin
@@ -56,16 +56,26 @@ classe float contient
         fin
     fin
 
+    methode copie(self) fait
+        renvoie float(self);
+    fin
+
+    methode argument(func, self) fait 
+        si func == !self.constructeur || func == !type || func == !print || func == !println alors 
+            renvoie self;
+        fin
+        renvoie float(self);
+    fin
+
     methode en_string () fait
         p = self.content;
         corps = "";
-
-        si (self.content < 0) fait
+        si self.content < 0 fait
             p = 0 - self.content;
         fin
         
         i = 0;
-        si (!et(self.ten_pow == 0, self.content == 0)) alors
+        si (self.ten_pow == 0 && self.content == 0) alors
             renvoie "0";
         fin
         si (self.ten_pow >= 0) alors
@@ -212,11 +222,11 @@ classe float contient
     fin
 
     methode le (num) fait
-        renvoie !ou(!self.lt(num), !self.equals(num));
+        renvoie (!self.lt(num) || !self.equals(num));
     fin
 
     methode ge (num) fait
-        renvoie !ou(!self.gt(num), !self.equals(num));
+        renvoie (!self.gt(num) || !self.equals(num));
     fin
 
     methode ne (num) fait

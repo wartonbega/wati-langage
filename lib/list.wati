@@ -1,14 +1,6 @@
 // Anton Appel le 15 avril 2023
 // Un liste en wati est doublement chainée
-// Elle peut utiliser deux algorithmes d'accéssion : 
-// 1. par méthode directe, c'est-à-dire que on part du début pour arriver à l'index demandé
-// 2. par la méthode doublement chainée, on pars du point le plus près (début ou fin) pour arriver a l'élement demandé.
-// Cette optimisation est possible en modifiant la liste (on utilisera donc la méthode 'optimise')
-//
-// Attention : des performances peuvent être perdues en utilisant la seconde méthode puisqu'il y a plus de comparaisons
-//
-// Les listes ne sont pas typées donc il appartient à l'utilisateur de faire attention aux types utilisés
-// Une liste avec type (Tlist) existe dans la biliothèque standard
+// algorithme : par méthode directe, c'est-à-dire que on part du début pour arriver à l'index demandé
 // 
 // La taille de la liste n'est pas recomptée à chaques demande de la taille, 
 // mais elle est gardée comme attribut et incrémentée/décrémentée à chaques modification.
@@ -26,30 +18,27 @@ classe list contient
         self.head.next = self.tail;
         self.tail.prev = self.head;
 
-        self.taille = 0; // La taille qui vas être incrémentée
-        self.accession = !self.accede; // La methode d'accès à un element
-    fin
+        self.current = self.head;
 
-    methode optimise () fait
-        "Optimise cette liste pour avoir un algorithme 'doublement chaîné'. Peut affecter les performances selon le langage."
-        // Ne modifie que la manière dont la liste est accédée
-        // Les performances gagnées par la complexité de l'algorithme peuvent être perdues en termes de comparaison et de calcules
-        self.accession = !self.accede_opti;
+        self.taille = 0; // La taille qui vas être incrémentée
+        self.conflits = 0; // Le tableau n'est pas initialisé ici
+        self._iterable = 1;
     fin
 
     methode plus(content) fait
-        "Ajoute une élément à la fin de liste"
-
+        "Ajoute une élément à la fin de liste";
         // On fabrique un nouveau noeud à partir de content
         n = node(content);
 
         // L'élément d'après est la fin de la liste tandisque 
-        // l'élément d'avant est celui qui précédais la liste
         n.next = self.tail;
+        
+        // l'élément d'avant est celui qui précédais la liste
         prev = self.tail.prev;
         n.prev = prev;
+        
 
-        // On glisse modifie finalement les elements avant et après pour 
+        // On modifie finalement les elements avant et après pour 
         // compléter le double chaînage
         prev.next = n;
         self.tail.prev = n;
@@ -57,95 +46,43 @@ classe list contient
         // Incrémente la taille pour ne pas à avoir à la recalcuer systématiquement
         self.taille = self.taille + 1;
 
-        // Permet la synttaxe du type
-        // !list.plus(1).!plus(2)
         renvoie self;
-    fin
-
-    methode debut(content) fait
-        "Insert un élément au début de la liste"
-
-        // Crée un nouveau noeud
-        n = node(content);
-
-        // Place le noeud dans la liste
-        r = self.head.next;
-        r.prev = n;
-        n.next = r;
-        self.head.next = n;
-        n.prev = self.head;
-
-        // Incrémente la taille
-        self.taille = self.taille + 1;
-        renvoie self;
-    fin
-
-    methode accede_opti(index) fait 
-        "Accession à un élément donné (par l'index), en utilisant l'algorithme de double chaînage"
-        // Algorithme simplifié :
-        // On compare la distance à l'index donné du début et de la fin.
-        // Si le point est plus près de la fin, alors on vient à rebours, 'remonter' la liste
-        // sinon on part du début et on déroule la liste.
-        // On utilise dans les deux cas la récursion vis à vis de la méthode 'chaine' de node. (Potentielle perte de mémoire à ce niveau)
-
-        // On utilise comme référence les deux points p1 (début) et p2 (fin)
-        p1 = 0;
-        p2 = self.taille;
-        
-        // On vérifie que l'index est valide
-        si !ou(index >= p2, -index >= p2) alors
-            !erreur("!list : l'index est plus grand que la taille de la liste")
-        fin
-
-        // De toute façon, accéder à un index négatif reviens à acceder a l'index positif en partant de la fin
-        si index < 0 alors
-            index = self.taille + index;
-        fin
-        
-        // On utilise bien le point le plus proche
-        si index < (self.taille - index) alors
-            m = !self.head.chaine(0, index + 1);
-        sinon
-            m = !self.tail.chaine(p2, index);
-        fin
-
-        renvoie m; // On renvoi le node et pas son contenu
     fin
 
     methode accede (index) fait
-        "On accède à un élément de la liste (donné par index)" 
+        "On accède à un élément de la liste (donné par index)" ;
         // Algorithme basique, itératif et sans optimisation de l'algorithme
         m = self.head;
-        pour i allant de 0 a (index + 1) fait
+        pour i dans [0, index + 1] fait
             m = m.next;
         fin
         renvoie m;
     fin
 
     methode modifie (index, content) fait
-        "Modifie le contenue de l'élément à l'endroit demandé. Compatible avec la syntaxe 'list[index] = content'"
-        n = !self.accession(index);
+        "Modifie le contenue de l'élément à l'endroit demandé. Compatible avec la syntaxe 'list[index] = content'";
+        si index > self.taille fait 
+            !erreur("L'index demandée est plus grande que la taille de la liste")
+        fin
+        n = !self.accede(index);
         n.content = content;
     fin
 
     methode en_string() fait
-        "Renvoie la liste sous forme de chaîne de caractère : [e1, e2, ..., en]"
-        // Méthode itérative et un peut bourinne
+        "Renvoie la liste sous forme de chaîne de caractère : [e1, e2, ..., en]";
         si self.taille == 0 alors
-            renvoie "[ ]";
+            renvoie "[]";
         fin
 
-        // On construit la chaîne élément par élément, en le mettant en string.
-        // Si l'élément est de type char, alors on rajoute des apostrophes autours
-        // Sinon on rajoute juste une virgule jusqu'à l'avant dernier element
-        // peut être recursif si sous liste
-
-        r = "[ ";
+        r = "[";
         n = self.head.next;
-
-        tant que (n.next.content != self.tail.content) fait
+        tant que self.tail.content != n.next.content fait
             si !type(n.content) == "char" alors
-                r = r + "'" + n.content + "'" + ", ";
+                r = r + "\"" + n.content + "\"" + ", ";
+            sinonsi !type(n.content) == "string" alors
+                r = r + "\"" + !char(n.content) + "\"" + ", ";
+            sinonsi n.content == self alors 
+                r = r + "[...], ";
             sinon
                 r = r + !char(n.content) + ", ";
             fin
@@ -153,17 +90,21 @@ classe list contient
         fin
         
         si !type(n.content) == "char" alors
-            r = r + "'" + n.content + "' ]";
+            r = r + "\"" + n.content + "\"]";
+        sinonsi !type(n.content) == "string" alors
+            r = r + "\"" + !char(n.content) + "\"" + "]";
+        sinonsi n.content == self alors 
+            r = r + "[...]]";
         sinon
-            r = r + !char(n.content) + " ]";
+            r = r + !char(n.content) + "]";
         fin
         
         renvoie r;
     fin
 
     methode en (x) fait
-        "Methode pour la syntaxe : 'liste[index]'"
-        si (!type(x) != "int") alors
+        "Methode pour la syntaxe : 'liste[index]'";
+        si !type(x) != "int" alors
             !erreur("list : le type 'list' n'accepte d'indexation que avec le type 'int', pas '"+!type(x)+"'")
         fin
         
@@ -171,16 +112,45 @@ classe list contient
             !erreur("list : l'index est plus grand que la taille de la liste");
         fin
         // La méthode utilisé pour acceder au noeud requis est celle qui a été spécifé
-        renvoie (!self.accession(x)).content;
+        renvoie (!self.accede(x)).content;
+    fin
+
+    methode debut() fait 
+        "Met l'itérateur sur le premier élément";
+        si self.conflits == 0 alors 
+            self.conflits = tableau();
+        fin
+        !self.conflits.plus(self.current);
+        self.current = self.head;
+    fin
+
+    methode a_la_fin() fait 
+        "Renvoie 1 si l'itérateur est sur le dernier élément";
+        renvoie self.current.next == self.tail;
+    fin
+
+    methode suivant () fait
+        self.current = self.current.next;
+        si self.current == self.tail alors 
+            !erreur("On est déjà arrivé à la fin de la liste")
+        fin
+        renvoie self.current.content;
+    fin
+
+    methode dernier_etat() fait 
+        si self.conflits.taille != 0 alors 
+            self.current = !self.conflits.pop(self.conflits.taille - 1);
+        sinon
+            self.current = self.head;
+        fin
     fin
 
     methode index (x) fait
-        // Inutile ?
         renvoie !self.en(x);
     fin
     
     methode pop (x) fait
-        "Enlève le n-ième élément de la liste et le renvoie"
+        "Enlève le n-ième élément de la liste et le renvoie";
 
         si (self.taille <= 0) alors
             !erreur("list : ne peut pas pop depuis une liste vide")
@@ -191,7 +161,7 @@ classe list contient
         fin
 
         // On accede a l'element demandé avec la méthode spécifé
-        n = !self.accession(x);
+        n = !self.en(x);
 
         // On raccorde les différents noeuds
         p = n.prev;
@@ -200,72 +170,38 @@ classe list contient
         next.prev = p;
         self.taille = self.taille - 1;
         u = n.content;
-        libere n;
         renvoie u;
     fin
 
-    methode envers () fait
-        "Renvoie une liste à l'envers. Ne modifie pas la liste de départ."
-        // On retourne la liste : une liste type 
-        // [1, 2, 3, 4] devient [4, 3, 2, 1]
-        // Cependant : requiers la construction d'une nouvelle liste
-        l = list();
-        pour i allant de 0 a self.taille fait
-            !l.debut(!self.en(i))
-        fin
-        renvoie l;
-    fin
-
-    methode destructeur () fait
-        // Libère la mémoire allouée pour chaques nodes utilisées dans la liste
-        // Attention, peut créer des erreurs de déalocation liée au cpp
-        to_d = self.head.next;
-
-        // Deux cas possibles :
-        // La liste est vide ou non
-        si (to_d.content == "fin-de-liste") fait
-            libere self.head;
-            libere self.tail;
-            renvoie;
-        fin
-
-        // Si la liste n'est pas vide, alors on ne se contente pas de libérer le début et la fin
-        tant que to_d.next.content != self.tail.content fait
-            p = to_d;
-            to_d = to_d.next;
-            libere p;
-        fin
-        // Le seul qui n'a pas été libéré
-        libere self.head;
-    fin
-
     methode ne (x) fait
-        "Support de la syntaxe 'list != list'"
+        "Support de la syntaxe 'list != list'";
         // On utilise juste la syntaxe prédéfinie dans equals
-        renvoie !pas(!self.equals(x));
+        renvoie !abs(!self.equals(x) - 1);
     fin
 
     methode equals (x) fait
-        "Support de la syntaxe 'list == list'"
-        si !type(x) != "list" alors
-            renvoie 0;
-        fin
-        // Doivent être évidemment de la même taille
-        si x.taille != self.taille alors 
-            renvoie 0;
-        fin
+        "Support de la syntaxe 'list == list'";
 
-        // On cheque noeuds après noeuds si le contenu est le même
-        // Peut être récursif si il y a des sous listes
-        m = self.head;
-        n = x.head;
-        pour i allant de 0 a self.taille fait
-            m = m.next;
-            n = n.next;
-            si m.content != n.content alors 
-                renvoie 0;
-            fin
+        // La fonction de comparaison est écrite en c++
+        // dans le fichier 'list.cpp'
+        si !type(x) != "list" fait 
+            renvoie 0;
         fin
-        renvoie 1;
+        renvoie !list_comp_equal(self, x);
     fin
+fin
+
+fonction comparaison_iterative(self, x) fait 
+    // Compare les elements de deux liste de manière itérative
+    // Fonction qui fait le lien avec du code c++
+    m = self.head;
+    n = x.head;
+    pour i dans [0, self.taille] fait
+        m = m.next;
+        n = n.next;
+        si m.content != n.content alors 
+            renvoie 0;
+        fin
+    fin
+    renvoie 1;
 fin

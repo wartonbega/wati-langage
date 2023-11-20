@@ -1,17 +1,15 @@
-inclue "std.wati";
-
 PISCINE_THREAD = list();
 
 classe future contient
     methode constructeur () fait
         self.est_finis = 0;
         self.resultat = 0;
-        !PISCINE_THREAD.plus(self)
+        !PISCINE_THREAD.plus(self);
         self.id = PISCINE_THREAD.taille;
     fin
 
     methode destructeur () fait
-        pour i allant de self.id a PISCINE_THREAD.taille fait
+        pour i dans [self.id, PISCINE_THREAD.taille] fait
             t = PISCINE_THREAD[i];
             t.id = t.id - 1;
         fin
@@ -24,7 +22,7 @@ classe future contient
     fin
 
     methode join () fait
-        tant que !pas(self.est_finis) fait fin
+        tant que !pas(self.est_finis) fait continue; fin
         renvoie self;
     fin
 

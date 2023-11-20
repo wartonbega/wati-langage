@@ -23,7 +23,7 @@ extern "C" w_variable *float_times(std::vector<w_variable *> args, variable_tabl
         error(err, reference, thread_id);
     }
 
-    w_object *self_b = new w_object(*(w_object *)(self->content));
+    w_object *self_b = (w_object *)(self->content);
     
     float res = create_float(self_b);
 
@@ -40,7 +40,7 @@ extern "C" w_variable *float_times(std::vector<w_variable *> args, variable_tabl
     }
     else 
     {
-        int other = arg->convert_to_int();
+        int other = int(arg->convert_to_int());
         res = res * other;
         int64_t tp = give_ten_power(res);
         w_variable *ret = new w_variable(res * pow(10, tp));
@@ -49,24 +49,20 @@ extern "C" w_variable *float_times(std::vector<w_variable *> args, variable_tabl
         self_b->attribute_attribution("ten_pow", ntp);
     }
 
-    self = new w_variable();
-    self->type = T_OBJECT;
-    self->content = (void *)self_b;
-    return visitor_new_object("float", ((new node("()"))->push_child((new node("*"))->set_prevalue(self))), variables_t, thread_id);
+    return self;
 }
 
 extern "C" w_variable *float_div(std::vector<w_variable *> args, variable_table variables_t, std::string reference, int thread_id)
 {   // 2 args : self, and X
-    w_variable *self = args[0];
+        w_variable *self = args[0];
     w_variable *arg = args[1];
     if (arg->get_type() != "float" && arg->get_type() != "int")
     {
-        std::string err = "la fonction !float.div n'accepte que un argument du type 'int' ou 'float'";
+        std::string err = "la fonction !float.times n'accepte que un argument du type 'int' ou 'float'";
         error(err, reference, thread_id);
     }
 
-    w_object *self_b = new w_object(*(w_object *)(self->content));
-
+    w_object *self_b = (w_object *)(self->content);
     
     float res = create_float(self_b);
 
@@ -74,7 +70,7 @@ extern "C" w_variable *float_div(std::vector<w_variable *> args, variable_table 
     {
         w_object *X = (w_object *)(arg->content);
         float other = create_float(X);
-        res = res / other; // Here is the computation
+        res = res / other;
         int64_t tp = give_ten_power(res);
         w_variable *ret = new w_variable(res * pow(10, tp));
         w_variable *ntp = new w_variable(-tp);
@@ -83,31 +79,29 @@ extern "C" w_variable *float_div(std::vector<w_variable *> args, variable_table 
     }
     else 
     {
-        int other = arg->convert_to_int();
-        res = res / other; // Here is the computation
+        int other = int(arg->convert_to_int());
+        res = res / other;
         int64_t tp = give_ten_power(res);
         w_variable *ret = new w_variable(res * pow(10, tp));
         w_variable *ntp = new w_variable(-tp);
         self_b->attribute_attribution("content", ret);
         self_b->attribute_attribution("ten_pow", ntp);
     }
-    self = new w_variable();
-    self->type = T_OBJECT;
-    self->content = (void *)self_b;
-    return visitor_new_object("float", ((new node("()"))->push_child((new node("*"))->set_prevalue(self))), variables_t, thread_id);
+
+    return self;
 }
 
 extern "C" w_variable *float_plus(std::vector<w_variable *> args, variable_table variables_t, std::string reference, int thread_id)
 {   // 2 args : self, and X
-    w_variable *self = args[0];
+        w_variable *self = args[0];
     w_variable *arg = args[1];
     if (arg->get_type() != "float" && arg->get_type() != "int")
     {
-        std::string err = "la fonction !float.plus n'accepte que un argument du type 'int' ou 'float'";
+        std::string err = "la fonction !float.times n'accepte que un argument du type 'int' ou 'float'";
         error(err, reference, thread_id);
     }
 
-    w_object *self_b = new w_object(*(w_object *)(self->content));
+    w_object *self_b = (w_object *)(self->content);
     
     float res = create_float(self_b);
 
@@ -115,7 +109,7 @@ extern "C" w_variable *float_plus(std::vector<w_variable *> args, variable_table
     {
         w_object *X = (w_object *)(arg->content);
         float other = create_float(X);
-        res = res + other; // Here is the computation
+        res = res + other;
         int64_t tp = give_ten_power(res);
         w_variable *ret = new w_variable(res * pow(10, tp));
         w_variable *ntp = new w_variable(-tp);
@@ -124,18 +118,16 @@ extern "C" w_variable *float_plus(std::vector<w_variable *> args, variable_table
     }
     else 
     {
-        int other = arg->convert_to_int();
-        res = res + other; // Here is the computation
+        int other = int(arg->convert_to_int());
+        res = res + other;
         int64_t tp = give_ten_power(res);
         w_variable *ret = new w_variable(res * pow(10, tp));
         w_variable *ntp = new w_variable(-tp);
         self_b->attribute_attribution("content", ret);
         self_b->attribute_attribution("ten_pow", ntp);
     }
-    self = new w_variable();
-    self->type = T_OBJECT;
-    self->content = (void *)self_b;
-    return visitor_new_object("float", ((new node("()"))->push_child((new node("*"))->set_prevalue(self))), variables_t, thread_id);
+
+    return self;
 }
 
 extern "C" w_variable *float_minus(std::vector<w_variable *> args, variable_table variables_t, std::string reference, int thread_id)
@@ -148,7 +140,7 @@ extern "C" w_variable *float_minus(std::vector<w_variable *> args, variable_tabl
         error(err, reference, thread_id);
     }
 
-    w_object *self_b = new w_object(*(w_object *)(self->content));
+    w_object *self_b = (w_object *)(self->content);
     
     float res = create_float(self_b);
 
@@ -156,7 +148,7 @@ extern "C" w_variable *float_minus(std::vector<w_variable *> args, variable_tabl
     {
         w_object *X = (w_object *)(arg->content);
         float other = create_float(X);
-        res = res - other; // Here is the computation
+        res = res - other;
         int64_t tp = give_ten_power(res);
         w_variable *ret = new w_variable(res * pow(10, tp));
         w_variable *ntp = new w_variable(-tp);
@@ -165,18 +157,16 @@ extern "C" w_variable *float_minus(std::vector<w_variable *> args, variable_tabl
     }
     else 
     {
-        int other = arg->convert_to_int();
-        res = res - other; // Here is the computation
+        int other = int(arg->convert_to_int());
+        res = res - other;
         int64_t tp = give_ten_power(res);
         w_variable *ret = new w_variable(res * pow(10, tp));
         w_variable *ntp = new w_variable(-tp);
         self_b->attribute_attribution("content", ret);
         self_b->attribute_attribution("ten_pow", ntp);
     }
-    self = new w_variable();
-    self->type = T_OBJECT;
-    self->content = (void *)self_b;
-    return visitor_new_object("float", ((new node("()"))->push_child((new node("*"))->set_prevalue(self))), variables_t, thread_id);
+
+    return self;
 }
 
 extern "C" w_variable *float_mod(std::vector<w_variable *> args, variable_table variables_t, std::string reference, int thread_id)
@@ -189,7 +179,8 @@ extern "C" w_variable *float_mod(std::vector<w_variable *> args, variable_table 
         error(err, reference, thread_id);
     }
 
-    w_object *self_b = new w_object(*(w_object *)(self->content));
+    
+    w_object *self_b = (w_object *)(self->content);
     
     float res = create_float(self_b);
 
@@ -197,7 +188,7 @@ extern "C" w_variable *float_mod(std::vector<w_variable *> args, variable_table 
     {
         w_object *X = (w_object *)(arg->content);
         float other = create_float(X);
-        res = fmod(res, other); // Here is the computation
+        res = fmod(res, other);
         int64_t tp = give_ten_power(res);
         w_variable *ret = new w_variable(res * pow(10, tp));
         w_variable *ntp = new w_variable(-tp);
@@ -206,18 +197,16 @@ extern "C" w_variable *float_mod(std::vector<w_variable *> args, variable_table 
     }
     else 
     {
-        int other = arg->convert_to_int();
-        res = fmod(res, other); // Here is the computation
+        int other = int(arg->convert_to_int());
+        res = fmod(res, other);
         int64_t tp = give_ten_power(res);
         w_variable *ret = new w_variable(res * pow(10, tp));
         w_variable *ntp = new w_variable(-tp);
         self_b->attribute_attribution("content", ret);
         self_b->attribute_attribution("ten_pow", ntp);
     }
-    self = new w_variable();
-    self->type = T_OBJECT;
-    self->content = (void *)self_b;
-    return visitor_new_object("float", ((new node("()"))->push_child((new node("*"))->set_prevalue(self))), variables_t, thread_id);
+
+    return self;
 }
 
 extern "C" w_variable *float_power(std::vector<w_variable *> args, variable_table variables_t, std::string reference, int thread_id)
@@ -230,15 +219,16 @@ extern "C" w_variable *float_power(std::vector<w_variable *> args, variable_tabl
         error(err, reference, thread_id);
     }
 
-    w_object *self_b = new w_object(*(w_object *)(self->content));
-
+    
+    w_object *self_b = (w_object *)(self->content);
+    
     float res = create_float(self_b);
 
     if (arg->get_type() == "float")
     {
         w_object *X = (w_object *)(arg->content);
         float other = create_float(X);
-        res = pow(res, other); // Here is the computation
+        res = pow(res, other);
         int64_t tp = give_ten_power(res);
         w_variable *ret = new w_variable(res * pow(10, tp));
         w_variable *ntp = new w_variable(-tp);
@@ -247,18 +237,16 @@ extern "C" w_variable *float_power(std::vector<w_variable *> args, variable_tabl
     }
     else 
     {
-        int other = arg->convert_to_int();
-        res = pow(res, other); // Here is the computation
+        int other = int(arg->convert_to_int());
+        res = pow(res, other);
         int64_t tp = give_ten_power(res);
         w_variable *ret = new w_variable(res * pow(10, tp));
         w_variable *ntp = new w_variable(-tp);
         self_b->attribute_attribution("content", ret);
         self_b->attribute_attribution("ten_pow", ntp);
     }
-    self = new w_variable();
-    self->type = T_OBJECT;
-    self->content = (void *)self_b;
-    return visitor_new_object("float", ((new node("()"))->push_child((new node("*"))->set_prevalue(self))), variables_t, thread_id);
+
+    return self;
 }
 
 extern "C" w_variable *w_sqrt(std::vector<w_variable *> args, variable_table variables_t, std::string reference, int thread_id)
@@ -270,7 +258,7 @@ extern "C" w_variable *w_sqrt(std::vector<w_variable *> args, variable_table var
         error(err, reference, thread_id);
     }
 
-    w_object *self_b = new w_object(*(w_object *)(fl->content));
+    w_object *self_b = (w_object *)(fl->content);
 
     float res = create_float(self_b);
 
@@ -283,7 +271,7 @@ extern "C" w_variable *w_sqrt(std::vector<w_variable *> args, variable_table var
         w_variable *self = new w_variable();
         self->type = T_OBJECT;
         self->content = (void *)self_b;
-        return visitor_new_object("float", ((new node("()"))->push_child((new node("*"))->set_prevalue(self))), variables_t, thread_id);
+        return self;
     }
 
     res = sqrt(res); // Here is the computation
@@ -293,8 +281,5 @@ extern "C" w_variable *w_sqrt(std::vector<w_variable *> args, variable_table var
     self_b->attribute_attribution("content", ret);
     self_b->attribute_attribution("ten_pow", ntp);
 
-    w_variable *self = new w_variable();
-    self->type = T_OBJECT;
-    self->content = (void *)self_b;
-    return visitor_new_object("float", ((new node("()"))->push_child((new node("*"))->set_prevalue(self))), variables_t, thread_id);
+    return fl;
 }

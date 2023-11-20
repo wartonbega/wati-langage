@@ -8,9 +8,9 @@ inclue "std.wati";
 
 
 fonction gestion_erreur (erreur) fait 
-    !println("--> Erreur : " + erreur.erreur)
-    !println("--> Référence : " + erreur.reference)
-    !println("--> Historique d'appel : " + erreur.appel)
+    !println("--> Erreur : " + erreur.erreur);
+    !println("--> Référence : " + erreur.reference);
+    //!println("--> Historique d'appel : " + erreur.appel);
 fin
 
 fonction probleme (x, y) fait 
@@ -22,7 +22,7 @@ fonction probleme (x, y) fait
 fin
 
 // Ici il ne devrait pas y avoir de problème lors de l'execution, et la fonction devrait renvoyer 1 + 2 = 3
-!essaie(!probleme, (1, 2), !gestion_erreur) // On passe en argument la fonction à appeler, ses arguments (sous forme de liste) et le gestionnaire d'erreur
+!essaie(!probleme, (1, 2), !gestion_erreur); // On passe en argument la fonction à appeler, ses arguments (sous forme de liste) et le gestionnaire d'erreur
 
 // Ici une erreur est soulevée et le gestionnaire d'erreur devrait prendre le relai
-!essaie(!probleme, (1, 1), !gestion_erreur) 
+!essaie(!probleme, (1, 1), !gestion_erreur);

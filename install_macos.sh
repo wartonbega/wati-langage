@@ -1,10 +1,3 @@
-
-if [ ! command -v python3.10 &> /dev/null ]; then
-    echo "<python3.10> n'as pas été installé. Installez python3.10 pour pouvoir compiler les programmes"
-    exit 1
-fi
-
-python3.10 depedences.py
 if [ $? -eq 1 ]; then
     exit 1
 fi
@@ -28,15 +21,15 @@ else
     fi
 fi
 
-user=$(whoami)
+#user=$(whoami)
 echo "copie dans /usr/local/bin"
-sudo cp ./bin/wati /usr/local/bin
+sudo cp ./bin/wati1.2 /usr/local/bin
 
 echo "création des répertoires à librairies"
 
-FILE=/usr/local/lib/wati
+FILE=/usr/local/lib/wati1.2
 if [ ! -d "$FILE" ]; then
-    sudo mkdir /usr/local/lib/wati
+    sudo mkdir /usr/local/lib/wati1.2
 fi
 
 LIBS=./lib
@@ -51,10 +44,10 @@ if [ ! -d "$CPP_LIBS" ]; then
     exit 1
 fi
 
-sudo cp -R $LIBS /usr/local/lib/wati/
-sudo cp -R $CPP_LIBS /usr/local/lib/wati/
+sudo cp -R $LIBS /usr/local/lib/wati1.2/
+sudo cp -R $CPP_LIBS /usr/local/lib/wati1.2/
 
 echo ""
 echo "wati-langage installé !"
 echo "pour exécuter un programme : "
-echo "  wati nom_du_programme.wati"
+echo "  wati1.2 nom_du_programme.wati"

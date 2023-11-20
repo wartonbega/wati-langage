@@ -4,10 +4,15 @@
 #include "include/parser.hpp"
 #include "include/visitor.hpp"
 #include "include/compiler.hpp"
+#include "include/variables.hpp"
+
+extern variable_table *GLOBAL_VARIABLE;
 
 std::string base_dir;
 std::string main_filename; 
+std::string list_creation_class_name;
 bool show_tree;
+bool short_error;
 
 void write_file(std::string name, std::string content)
 {
@@ -63,104 +68,73 @@ std::string throw_error(w_variable *err_)
     std::string complete_error = "\n";
     std::string err_s = TERMINAL_BOLDRED + ref + TERMINAL_BOLDBLACK + " erreur : " + TERMINAL_BOLDRED + err;
 
-    complete_error += err_s + "\n";
-	complete_error += comp_ref;
+    complete_error += err_s + TERMINAL_RESET;
+	
+	if (!short_error)
+		complete_error += "\n" + comp_ref + TERMINAL_RESET;
+
     return complete_error;
 }
 
-void init_vars(std::map<std::string, w_variable *> &variables_t)
+void init_vars(variable_table &variables_t)
 {
 	std::string *c;
 	w_variable *var;
 
-	var = new w_variable();
-	c = new std::string(TERMINAL_BLACK);
-	var->type = 1; // char
-	var->content = (void *)c;
-	variables_t["terminal_black"] = var;
-
-	var = new w_variable();
-	c = new std::string(TERMINAL_RED);
-	var->type = 1; // char
-	var->content = (void *)c;
-	variables_t["terminal_red"] = var;
-
-	var = new w_variable();
-	c = new std::string(TERMINAL_GREEN);
-	var->type = 1; // char
-	var->content = (void *)c;
-	variables_t["terminal_green"] = var;
-
-	var = new w_variable();
-	c = new std::string(TERMINAL_YELLOW);
-	var->type = 1; // char
-	var->content = (void *)c;
-	variables_t["terminal_yellow"] = var;
+	var = new w_variable(TERMINAL_BLACK);
+	variables_t.assign("terminal_black", var, 0);
 	
-	var = new w_variable();
-	c = new std::string(TERMINAL_BLUE);
-	var->type = 1; // char
-	var->content = (void *)c;
-	variables_t["terminal_blue"] = var;
+	var = new w_variable(TERMINAL_ITALIC);
+	variables_t.assign("terminal_italic", var, 0);
 
-	var = new w_variable();
-	c = new std::string(TERMINAL_MAGENTA);
-	var->type = 1; // char
-	var->content = (void *)c;
-	variables_t["terminal_magenta"] = var;
+	var = new w_variable(TERMINAL_RED);
+	variables_t.assign("terminal_red", var, 0);
 
-	var = new w_variable();
-	c = new std::string(TERMINAL_CYAN);
-	var->type = 1; // char
-	var->content = (void *)c;
-	variables_t["terminal_cyan"] = var;
+	var = new w_variable(TERMINAL_GREEN);
+	variables_t.assign("terminal_green", var, 0);
 
-	var = new w_variable();
-	c = new std::string(TERMINAL_WHITE);
-	var->type = 1; // char
-	var->content = (void *)c;
-	variables_t["terminal_white"] = var;
-
-	var = new w_variable();
-	c = new std::string(TERMINAL_RESET);
-	var->type = 1; // char
-	var->content = (void *)c;
-	variables_t["terminal_reset"] = var;
-
-	var = new w_variable();
-	c = new std::string(TERMINAL_BOLD);
-	var->type = 1; // char
-	var->content = (void *)c;
-	variables_t["terminal_bold"] = var;
+	var = new w_variable(TERMINAL_YELLOW);
+	variables_t.assign("terminal_yellow", var, 0);
 	
-	var = new w_variable();
-	c = new std::string(TERMINAL_UNDERLINE);
-	var->type = 1; // char
-	var->content = (void *)c;
-	variables_t["terminal_underline"] = var;
+	var = new w_variable(TERMINAL_BLUE);
+	variables_t.assign("terminal_blue", var, 0);
 
-	var = new w_variable();
-	c = new std::string(TERMINAL_REVERSE);
-	var->type = 1; // char
-	var->content = (void *)c;
-	variables_t["terminal_reverse"] = var;
+	var = new w_variable(TERMINAL_MAGENTA);
+	variables_t.assign("terminal_magenta", var, 0);
 
-	var = new w_variable();
-	c = new std::string(TERMINAL_BLINK);
-	var->type = 1; // char
-	var->content = (void *)c;
-	variables_t["terminal_blink"] = var;
+	var = new w_variable(TERMINAL_CYAN);
+	variables_t.assign("terminal_cyan", var, 0);
+
+	var = new w_variable(TERMINAL_WHITE);
+	variables_t.assign("terminal_white", var, 0);
+
+	var = new w_variable(TERMINAL_RESET);
+	variables_t.assign("terminal_reset", var, 0);
+
+	var = new w_variable(TERMINAL_BOLD);
+	variables_t.assign("terminal_bold", var, 0);
+	
+	var = new w_variable(TERMINAL_UNDERLINE);
+	variables_t.assign("terminal_underline", var, 0);
+
+	var = new w_variable(TERMINAL_REVERSE);
+	variables_t.assign("terminal_reverse", var, 0);
+
+	var = new w_variable(TERMINAL_BLINK);
+	variables_t.assign("terminal_blink", var, 0);
+
+	list_creation_class_name = "tableau";
 }
 
 
 int main(int argc, char *argv[])
 {
 	system("stty -icanon");
-	system("export PATH=/usr/local/lib/wati/:$PATH");
+	system("export PATH=/usr/local/lib/wati1.2/:$PATH");
 	std::string filename;
 	if (argc < 2) // the command wich was typed is just 'wati'
 	{
-		filename += "/usr/local/lib/wati/lib/console.wati"; // therefore we lunch the standard console
+		filename += "/usr/local/lib/wati1.2/lib/console.wati"; // therefore we lunch the standard console
 	}
 	else 
 	{
@@ -169,6 +143,8 @@ int main(int argc, char *argv[])
 
 	bool compile = 0;
 	bool show_ast = 0;
+	bool include_std = 1;
+	short_error = 1;
 	std::string output_name = "output.wati";
 	for (int i = 2; i < argc; ++i)
 	{
@@ -189,9 +165,14 @@ int main(int argc, char *argv[])
 			show_ast = 1;
 			show_tree = true;
 		}
+		else if (std::string(argv[i]) == "--no-std" || std::string(argv[i]) == "-s")
+		{
+			include_std = 0;
+		}
+		else if (std::string(argv[i]) == "--short-error" || std::string(argv[i]) == "-S")
+			short_error = false;
 	}
 	
-
 	base_dir = separate_base_dir(filename);
 	std::string r = open_file(filename.c_str());
 	if (r == "file_not_found") 
@@ -202,8 +183,9 @@ int main(int argc, char *argv[])
 	// We absolutly need to include the standard library in ordre for the error
 	// system to work.
 	main_filename = filename;
-	r = "inclue \"std.wati\";\n" + r;
-
+	if (include_std)
+		r = "inclue \"std.wati\";\n" + r;
+ 
 
 	std::vector<std::string> ref;
 	std::vector<std::string> lexemes = lexer(r, ref, filename);
@@ -218,7 +200,8 @@ int main(int argc, char *argv[])
 	references.push_back(new std::stack<std::string>);
 	
 	variable_table variables_t = variable_table();
-	init_vars(variables_t.vars);
+	init_vars(variables_t);
+
 	try
 	{
 		visitor_visit(ast, variables_t, 0);

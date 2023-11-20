@@ -1,5 +1,3 @@
-inclue "list.wati";
-
 classe dictionnaire contient
     methode constructeur () fait
         self.keys = list();
@@ -12,21 +10,12 @@ classe dictionnaire contient
     fin
 
     methode trouve (clef) fait
-        pour i allant de 0 a (self.keys.taille) fait
-            si (!self.keys.en(i) == clef) alors
+        pour i dans [0, self.keys.taille] fait
+            si !self.keys.en(i) == clef alors
                 renvoie !self.value.en(i);
             fin
         fin
-        !erreur("clef introuvable '"+clef+"'")
-    fin
-
-    methode trouve_sans_erreur (clef) fait
-        pour i allant de 0 a (self.keys.taille) fait
-            si (!self.keys.en(i) == clef) alors
-                renvoie !self.value.en(i);
-            fin
-        fin
-        renvoie "clef_non_trouve";
+        !erreur("clef introuvable '" + clef + "'")
     fin
 
     methode index (clef) fait

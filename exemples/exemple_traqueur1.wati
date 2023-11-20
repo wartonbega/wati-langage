@@ -1,28 +1,26 @@
 inclue "std.wati";
 
-fonction change (t) fait 
-    *t = 69;
+fonction change (q) fait 
+    *q = 69;
 fin
 
-fonction cap100(num) fait 
+fonction cap100(num) fait
     // Cape à 100 le maximum de num, avec num un tracker
-    !println(num)
-    r = (*num) > 100;
-    !println(r)
-    si r fait 
-        !print("True")
+    si *num > 100 fait 
         *num = 100;
     fin
-    !println(num)
 fin
 
 i = 420;
 t = &i;
 
-!println("Avant changement : ")
-!println(i)
+!println("Avant changement : ");
+!println(i);
 
-!cap100(&i)
+p = !cap100(t);
+!println("Après changement : ");
+!println(i);
 
-!println("Après changement : ")
-!println(i)
+!println("Dernier changement changement pour 't' : ");
+!change(t);
+!print("t = ", t, "\n")

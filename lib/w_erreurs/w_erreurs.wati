@@ -1,3 +1,7 @@
+// Par Anton Appel le 25 aout 2023
+// Permet la manipulation d'erreurs
+// Est nécessaire pour le bon fonctionnement du langage
+
 inclue "std.wati";
 
 // La classe w_erreur ne fait que contenir les différentes parties de l'erreur

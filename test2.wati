@@ -1,3 +1,4 @@
-
-a = 1 + 2;
-!println(a)
+a = "abc";
+pour i dans a fait
+    !println(i)
+fin

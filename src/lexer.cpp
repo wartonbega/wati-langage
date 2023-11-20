@@ -17,9 +17,9 @@ bool lexer_is_operator(std::string expr)
         expr == "/" ||
         expr == "<" ||
         expr == ">" ||
-        expr == "&" /*||
-        expr == "et" ||
-        expr == "ou"*/
+        expr == "&" ||
+        expr == "&&" ||
+        expr == "||"
         )
     {
         return true;
@@ -47,51 +47,45 @@ bool lexer_is_withespace(std::string expr)
 bool lexer_is_opening_char(std::string expr)
 {
     if (expr == "(")
-    {
         return true;
-    }
     if (expr == "[")
-    {
         return true;
-    }
+    if (expr == "{")
+        return true;
     return false;
 }
 
 bool lexer_is_closing_char(std::string expr)
 {
     if (expr == ")")
-    {
         return true;
-    }
     if (expr == "]")
-    {
         return true;
-    }
+    if (expr == "}")
+        return true;
     return false;
 }
 
 bool lexer_is_breaking_expr(std::string expr)
 {
     if (lexer_is_operator(expr))
-    {
         return true;
-    }
     if (expr == "=")
         return true;
-    if (expr == ";" or expr == ",")
-    {
+    if (expr == ";" or expr == "," or expr == "!") 
         return true;
-    }
     if (lexer_is_withespace(expr))
-    {
         return true;
-    }
     if (lexer_is_opening_char(expr))
-    {
         return true;
-    }
     if (lexer_is_closing_char(expr))
-    {
+        return true;
+    return false;
+}
+
+bool lexer_is_stoping_expr(std::string expr)
+{
+    if (expr == ".") {
         return true;
     }
     return false;
@@ -159,6 +153,12 @@ std::vector<std::string> lexer(std::string content, std::vector<std::string> &re
                         column++;
                         between += '\b';
                     }
+                    else if (content[index + 1] == '"')
+                    {
+                        index++;
+                        column++;
+                        between += '"';
+                    }
                 }
                 else
                     between += content[index];
@@ -198,6 +198,17 @@ std::vector<std::string> lexer(std::string content, std::vector<std::string> &re
                 lexemes.push_back(ws);
                 reference.push_back(filename + ":" + std::to_string(lines) + ":" + std::to_string(column));
             }
+        }
+        else if (lexer_is_stoping_expr(std::string(1, content[index])))
+        {
+            if (word != "")
+            {
+                lexemes.push_back(word);
+                reference.push_back(filename + ":" + std::to_string(r_lines) + ":" + std::to_string(r_column));
+                word = ".";
+            }
+            else
+                word = ".";
         }
         else
         {

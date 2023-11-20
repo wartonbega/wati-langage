@@ -1,53 +1,54 @@
-inclue "list.wati";
-
-fonction println(x) fait
-    (!print(x, "\n"))
+fonction println (x) fait
+    !print(x, "\n")
 fin
 
+fonction imprime (x) fait 
+    !print(x)
+fin
+
+fonction imprimeln (x) fait
+    // pour les adeptes du imprime
+    !print(x, "\n")
+fin
 
 fonction inputln(x) fait
     total = "";
     buffer = list();
-    !print(x)
+    !print(x);
     e = "";
-    tant que (e != "\n") fait
+    tant que e != "\n" fait
         si e == "\t" alors
-            !buffer.plus(" ")
-            !buffer.plus(" ")
-            !buffer.plus(" ")
-            !buffer.plus(" ")
-            !buffer.plus(" ")
-            !buffer.plus(" ")
-            !buffer.plus(" ")
-            !buffer.plus(" ")
+            !buffer.plus(" ");
+            !buffer.plus(" ");
+            !buffer.plus(" ");
+            !buffer.plus(" ");
         sinonsi (e != "") alors
             buffer = buffer + e;
         fin
         
         e = !input("");
-        si (e == "\b") alors
-            si (buffer.taille > 0) alors
+        si e == "\b" alors
+            si buffer.taille > 0 alors
                 !buffer.pop(buffer.taille - 1);
                 !print("\b   \b\b\b")
             fin
-            si (buffer.taille == 0) alors
+            si buffer.taille == 0 alors
                 !print("  \b\b")
             fin
             e = "";
         fin
     fin
-    pour i allant de 0 a buffer.taille fait
+    pour i dans [0, buffer.taille] fait
         total = total + !buffer.en(0);
         !buffer.pop(0)
     fin
-    libere buffer;
     renvoie total;
 fin
 
-fonction inputln_caché (x, cache) faits
+fonction inputln_caché (x, cache) fait
     total = "";
     buffer = list();
-    !print(x)
+    !print(x);
     e = "";
     tant que (e != "\n") fait
         si (e != "") alors
@@ -70,15 +71,14 @@ fonction inputln_caché (x, cache) faits
             e = "";
         fin
     fin
-    pour i allant de 0 a buffer.taille fait
+    pour i dans [0, buffer.taille] fait
         total = total + !buffer.en(0);
         !buffer.pop(0)
     fin
-    libere buffer;
     renvoie total; 
 fin
 
-fonction input_caché (x, cache) faits
+fonction input_caché (x, cache) fait
     total = !input(x);
     !print("\b \b", cache)
     renvoie total; 

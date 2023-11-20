@@ -10,6 +10,7 @@
 #include "include/lexer.hpp"
 #include "include/parser.hpp"
 #include "include/trackers.hpp"
+#include "include/computations.hpp"
 
 std::map<std::string, w_function *> functions;
 std::map<std::string, std::string> functions_documentation;
@@ -18,7 +19,7 @@ std::map<std::string, w_class_template *> classes;
 std::vector<std::string> inbuild_funcs;
 std::vector<std::string> inbuild_funcs_documentation;
 
-void *cpp_lib_handler = dlopen("/usr/local/lib/wati/cpp_lib/libs.so", RTLD_LAZY);
+void *cpp_lib_handler = dlopen("/usr/local/lib/wati1.2/cpp_lib/libs.so", RTLD_LAZY);
 
 bool is_initialized_inbuild = false;
 
@@ -28,11 +29,11 @@ std::vector<std::stack<std::string> *> references;
 std::vector<std::string> included;
 
 variable_table prepare_arguments(std::vector<w_variable *> vars, node *trunc, variable_table variables_t)
-{
-    variable_table var_bis = variable_table(variables_t);
-    for (int i = 0; i < trunc->children.size(); i++)
+{ // Prépare les arguments dans la table de variable
+    variable_table var_bis = variable_table();
+    for (int i = 0; i < vars.size(); i++)
     {
-        var_bis.assign(trunc->children[i]->children[0]->value, vars[i], 0);
+        var_bis.assign(trunc->children[i]->children[0]->children[0]->value, vars[i], 0);
     }
     return var_bis;
 }
@@ -44,14 +45,17 @@ std::stack<std::string> *what_reference(int thread_id)
 
 std::string ref_pop(int thread_id)
 {
-    std::string s = references[thread_id]->top();
-    references.pop_back();
-    return s;
+    if (references[thread_id]->size() != 0)
+    {
+        std::string s = references[thread_id]->top();
+        references[thread_id]->pop();
+        return s;
+    }
+    return "";
 }
 
-
 bool parentethis_is_listed(node *trunc)
-{
+{ // Renvoie True si il y a des virgules (au moins une)
     for (auto i : trunc->children)
     {
         if (i->value == ",")
@@ -165,10 +169,11 @@ void error(std::string err, std::string ref, int thread_id)
 
     if (!class_exist("w_erreur", classes))
     {
-        warning("La classe w_erreur n'a pas été correctement importée. L'utilisation du wati en dépend", ref);
-        exit(1);
+        warning("La classe w_erreur n'a pas été correctement importée. L'utilisation du wati en dépend. Erreur original : '" + err + "'", ref);
+        std::cout.flush();
+        throw "Bad import error";
     }
-    
+
     std::vector<std::string> c_ref = cut_error_ref(ref);
     std::string filename = c_ref[0];
 
@@ -199,7 +204,7 @@ void error(std::string err, std::string ref, int thread_id)
         int s_lne;
         int s_col;
         int s_adder;
-        
+
         if (cut_error_ref(s_ref)[0] == main_filename)
             s_adder = 1;
         else
@@ -341,10 +346,11 @@ void visitor_init_inbuild_functions()
     int_ne->inbuild = true;
     functions["!int.ne"] = int_ne; // !=
 
-
     // we defines all the inbuild functions and include theirs documentation
     inbuild_funcs.push_back("!print");
     inbuild_funcs_documentation.push_back("Imprime sur la sortie standard les arguments. !print(var1, var2, ...) -> 0");
+    inbuild_funcs.push_back("!execute");
+    inbuild_funcs_documentation.push_back("Execute l'argument comme du wati. !execute( arg(char) ) -> (?)");
     inbuild_funcs.push_back("!type");
     inbuild_funcs_documentation.push_back("Renvoie le type de la variable en 'char'. !type( var ) -> 'char'");
     inbuild_funcs.push_back("!system");
@@ -361,11 +367,11 @@ void visitor_init_inbuild_functions()
     inbuild_funcs_documentation.push_back("Finis le programme avec le code indiqué. !sortie( var(int) ) -> int");
     inbuild_funcs.push_back("!c_en");
     inbuild_funcs_documentation.push_back("Accède au caractère X d'une variable 'char'. !c_en( var(char) ) -> char");
-    
-    std::string fs = open_file("/usr/local/lib/wati/cpp_lib/functions");
+
+    std::string fs = open_file("/usr/local/lib/wati1.2/cpp_lib/functions");
     if (fs == "file_not_found")
     { // very, very bad
-        std::string err = "interne : ne trouve pas '/usr/local/lib/wati/cpp_lib/functions' pour les fonctions près-fabriquée";
+        std::string err = "Interne : ne trouve pas '/usr/local/lib/wati1.2/cpp_lib/functions' pour les fonctions près-compilées";
         error(err, what_reference(0)->top(), 0);
     }
     std::string patent;
@@ -394,25 +400,46 @@ void visitor_init_inbuild_functions()
             documentation += i;
         }
     }
-    if (! patent.empty())
+    if (!patent.empty())
     {
         inbuild_funcs.push_back(patent);
         inbuild_funcs_documentation.push_back(documentation);
     }
 }
 
+std::vector<w_variable *> visitor_separate_listed_computed(node *parent, variable_table *variables_t, int thread_id)
+{ // On prend les arguments, et on les transforme en une liste de variables qui sont après attribuables en arguemt
+    std::vector<w_variable *> l;
+    w_variable *comp = nullptr;
+    for (auto n : parent->children)
+    {
+        if (n->value == ",")
+        {
+            l.push_back(comp);
+            comp = nullptr;
+        }
+        else if (!(n->value == COMP_KEYWORD && n->children.size() == 0))
+        {
+            comp = visitor_compute(n, variables_t, thread_id);
+        }
+    }
+    if (comp != nullptr)
+        l.push_back(comp);
+    return l;
+}
+
 node *visitor_separate_listed(node *parent)
 { // parent = ()
     node *total = new node("()");
-    node *a = new node("*");
+    node *a = new node(COMP_KEYWORD);
     for (auto n : parent->children)
     {
         if (n->value == ",")
         {
             total->push_child(a);
-            a = new node("*");
+            a = new node(COMP_KEYWORD);
         }
-        else
+        else if (!(n->value == COMP_KEYWORD && n->children.size() == 0))
         {
             a->push_child(n);
         }
@@ -436,147 +463,137 @@ bool visitor_is_inbuild(std::string name)
     return false;
 }
 
-w_variable *visitor_function_inbuild(std::string name, node *args, variable_table variables_t, int thread_id)
+w_variable *visitor_function_inbuild(std::string name, std::vector<w_variable *> args, variable_table *variables_t, int thread_id)
 {
     if (name == "!print")
     {
-        for (auto arg_t : args->children)
+        for (auto arg_t : args)
         {
-            w_variable *arg = visitor_compute(arg_t, &variables_t, thread_id);
-            print(arg, variables_t.vars);
+            print(arg_t, *variables_t);
         }
         w_variable *r = new w_variable(0);
 
         return r;
     }
+    if (name == "!execute")
+    {
+        if (args.size() != 1)
+        {
+            std::string err = "la fonction !execute necessite un argument";
+            error(err, ref_pop(thread_id), thread_id);
+        }
+        return execute(args[0], variables_t, ref_pop(thread_id), thread_id);
+    }
     if (name == "!type")
     {
-        if (args->children.size() != 1)
+        if (args.size() != 1)
         {
             std::string err = "la fonction !type necessite un argument";
             error(err, ref_pop(thread_id), thread_id);
         }
-        w_variable *arg = visitor_compute(args->children[0], &variables_t, thread_id);
-        return type(arg);
+        return type(args[0]);
     }
     if (name == "!input")
     {
-        if (args->children.size() != 1)
+        if (args.size() != 1)
         {
             std::string err = "la fonction !input necessite un argument";
             error(err, ref_pop(thread_id), thread_id);
         }
-        w_variable *arg = visitor_compute(args->children[0], &variables_t, thread_id);
-        return input(arg, variables_t.vars);
+        return input(args[0], *variables_t);
     }
     if (name == "!system")
     {
-        if (args->children.size() != 1)
+        if (args.size() != 1)
         {
             std::string err = "la fonction !system necessite un argument";
             error(err, ref_pop(thread_id), thread_id);
         }
-        w_variable *arg = visitor_compute(args->children[0], &variables_t, thread_id);
-        return w_system(arg, variables_t.vars);
+        return w_system(args[0], *variables_t);
     }
     if (name == "!char")
     {
-        if (args->children.size() != 1)
+        if (args.size() != 1)
         {
             std::string err = "la fonction !char necessite un argument";
             error(err, ref_pop(thread_id), thread_id);
         }
-        w_variable *arg = visitor_compute(args->children[0], &variables_t, thread_id);
-        return w_char(arg, variables_t.vars, thread_id);
+
+        return w_char(args[0], *variables_t, thread_id);
     }
     if (name == "!c_en")
     {
-        if (args->children.size() != 2)
+        if (args.size() != 2)
         {
-            std::string err = "la fonction !c_en necessite un argument";
+            std::string err = "la fonction !c_en necessite deux argument";
             error(err, ref_pop(thread_id), thread_id);
         }
-        std::vector<w_variable *> arg_c;
-        for (auto arg_t : args->children)
-        {
-            arg_c.push_back(visitor_compute(arg_t, &variables_t, thread_id));
-        }
-        if (arg_c[0]->get_type() != "char")
+        if (args[0]->get_type() != "char")
         {
             std::string err = "le premier argument de !c_en doit etre de type char";
             error(err, ref_pop(thread_id), thread_id);
         }
-
-        if (arg_c[1]->get_type() != "int")
+        if (args[1]->get_type() != "int")
         {
             std::string err = "le deuxième argument de !c_en doit etre de type int";
             error(err, ref_pop(thread_id), thread_id);
         }
-        return w_en(arg_c, variables_t.vars);
+        return w_en(args, *variables_t);
     }
     if (name == "!c_len")
     {
-        if (args->children.size() != 1)
+        if (args.size() != 1)
         {
             std::string err = "la fonction !c_len necessite un argument";
             error(err, ref_pop(thread_id), thread_id);
         }
-        w_variable *arg = visitor_compute(args->children[0], &variables_t, thread_id);
-        if (arg->get_type() != "char")
+        if (args[0]->get_type() != "char")
         {
             std::string err = "l'argument de !c_len doit etre de type char";
             error(err, ref_pop(thread_id), thread_id);
         }
-        return c_len(arg);
+        return c_len(args[0]);
     }
     if (name == "!erreur")
     {
-        if (args->children.size() != 1)
+        if (args.size() != 1)
         {
             std::string err = "la fonction !erreur necessite un argument";
             error(err, ref_pop(thread_id), thread_id);
         }
-        w_variable *arg = visitor_compute(args->children[0], &variables_t, thread_id);
-        w_error(arg, variables_t.vars, thread_id);
+        w_error(args[0], *variables_t, thread_id);
     }
     if (name == "!sortie")
     {
-        if (args->children.size() != 1)
+        if (args.size() != 1)
         {
             std::string err = "la fonction !sortie necessite un argument";
             error(err, ref_pop(thread_id), thread_id);
         }
-        w_variable *arg = visitor_compute(args->children[0], &variables_t, thread_id);
-        if (arg->get_type() != "int")
+        if (args[0]->get_type() != "int")
         {
             std::string err = "l'argument de !sortie doit etre de type int";
             error(err, ref_pop(thread_id), thread_id);
         }
-        w_exit(arg);
+        w_exit(args[0]);
     }
-    
+
     // that means we are looking for a shared header
-    std::string real_name = remove_function_call_prefix(name);
-    w_variable * (*fonction)(std::vector<w_variable *>, variable_table, std::string, int);
-    fonction = (w_variable* (*) (std::vector<w_variable *>, variable_table, std::string, int))dlsym(cpp_lib_handler, real_name.c_str());
-    std::vector<w_variable *> args_c;
+    std::string real_name = remove_prefix(name);
+    w_variable *(*fonction)(std::vector<w_variable *>, variable_table, std::string, int);
+    fonction = (w_variable * (*)(std::vector<w_variable *>, variable_table, std::string, int)) dlsym(cpp_lib_handler, real_name.c_str());
 
-    for (auto arg_t : args->children)
-    {
-        w_variable *arg = visitor_compute(arg_t, &variables_t, thread_id);
-        args_c.push_back(arg);
-    }
-
+    variable_table local_var_table = variable_table();
     if (fonction == NULL)
     {
-        std::string err = "ne peux pas charger la fonction '" + name + "', elle n'existe pas dans les fichiers compilés";
+        std::string err = "ne peut pas charger la fonction '" + name + "', elle n'existe pas dans les fichiers compilés";
         error(err, what_reference(thread_id)->top(), thread_id);
     }
 
-    return fonction(args_c, variables_t, what_reference(thread_id)->top(), thread_id);
+    return fonction(args, local_var_table, what_reference(thread_id)->top(), thread_id);
 }
 
-std::string remove_function_call_prefix(std::string name)
+std::string remove_prefix(std::string name)
 {
     std::string r = "";
     for (int i = 1; i < name.size(); i++)
@@ -586,84 +603,124 @@ std::string remove_function_call_prefix(std::string name)
     return r;
 }
 
+w_variable *visitor_prepare_variable_for_argument(w_variable *var, variable_table variables_t, int thread_id, std::string original_f_name)
+{
+    // renvoie le bon argument, à savoir, si la variable est appelée en arguement, et si oui, si elle se modifie
+    std::string type = var->get_type();
+    std::string f_name = "!" + type + ".argument";
+    if (!function_exist(f_name, functions))
+        return var;
+
+    w_function *func = functions[f_name];
+    variables_t.assign_no_copy("self", var, thread_id);
+
+    w_variable *f = new w_variable(original_f_name);
+    f->type = T_FONCTION;
+    variables_t.assign_no_copy(func->get_arg_name(0), f, thread_id);
+
+    w_variable *n = visitor_visit(func->trunc, variables_t, thread_id);
+    if (n != var) // on vérifie que la variable a changé, et si non on essaie de supprimer l'inutile
+        var->check_garbage();
+
+    return n;
+}
+
+w_variable *visitor_prepare_variable_for_copy(w_variable *var, variable_table variables_t, int thread_id)
+{
+    std::string type = var->get_type();
+    std::string f_name = "!" + type + ".copie";
+    if (!function_exist(f_name, functions))
+        return var;
+
+    w_function *func = functions[f_name];
+    variables_t.assign_no_copy("self", var, thread_id);
+
+    w_variable *n = visitor_visit(func->trunc, variables_t, thread_id);
+    if (n != var)
+        var->check_garbage();
+    return n;
+}
+
 w_variable *visitor_funcall(std::string name, node *args, variable_table variables_t, variable_table *variables_t_parent, int thread_id)
 {
     // La table de variable parente sert à calculer les arguements, pour entre autre
     // que les pointeurs soient référencés au bon endroit
     w_function *func;
-    std::string var_name = remove_function_call_prefix(name);
-    if (variables_t.exist(var_name))
-    {
-        w_variable *func_var = variables_t.get(var_name);
-        if (func_var->get_type() != "fonction")
-        {
-            std::string err = "le type '" + func_var->get_type() + "' ne peut pas être appelé";
-            error(err, ref_pop(thread_id), thread_id);
-        }
-
-        name = *(std::string *)(func_var->content);
-        if (!function_exist(name, functions))
-        {
-            std::string err = "la fonction " + name + " n'existe pas";
-            error(err, ref_pop(thread_id), thread_id);
-        }
-    }
-    if (!function_exist(name, functions))
+    std::string var_name = remove_prefix(name);
+    std::map<std::string, w_function *> funcs = functions;
+    if (!function_exist(std::string(name), funcs))
     {
         std::string err = "la fonction '" + name + "' n'existe pas";
         error(err, what_reference(thread_id)->top(), thread_id);
     }
+
     func = functions[name];
-    args = visitor_separate_listed(args);
+    std::vector<w_variable *> args_c = visitor_separate_listed_computed(args, variables_t_parent, thread_id);
+
     if (visitor_is_inbuild(name))
     {
-        return visitor_function_inbuild(name, args, variables_t, thread_id);
+        return visitor_function_inbuild(name, args_c, variables_t_parent, thread_id);
     }
     else
     {
-        if (func->arguments->children.size() != args->children.size())
+        if (func->arguments->children.size() != args_c.size())
         {
-            std::string err = "la fonction " + name + " requiers " + std::to_string(func->arguments->children.size()) + " argument(s), " + std::to_string(args->children.size()) + " argument(s) as(ont) été indiqué(s)";
+            std::string err = "la fonction " + name + " requiers " + std::to_string(func->arguments->children.size()) + " argument(s), " + std::to_string(args_c.size()) + " argument(s) as(ont) été indiqué(s)";
             error(err, ref_pop(thread_id), thread_id);
         }
-        for (int i = 0; i < args->children.size(); i++)
+        for (int i = 0; i < args_c.size(); i++)
         {
-            std::string arg_n = func->arguments->children[i]->children[0]->value;
-            w_variable *arg_v = visitor_compute(args->children[i], variables_t_parent, thread_id);
-            // variables_t[arg_n] = arg_v; we use the variable asignement
-            variables_t.assign(arg_n, arg_v, thread_id);
+            std::string arg_n = func->get_arg_name(i);
+            args_c[i] = visitor_prepare_variable_for_argument(args_c[i], variables_t, thread_id, name);
+            variables_t.assign_no_copy(arg_n, args_c[i], thread_id);
         }
         w_variable *res = visitor_visit(func->trunc, variables_t, thread_id);
+
+        if (res != nullptr && res->use != 0)
+            res->use--;
+
+        for (auto i : args_c)
+        {
+            // i->use --; //[JSP]
+            i->check_garbage();
+        }
+
         return res;
     }
 }
 
 w_variable *visitor_funcall_methode(std::string name, node *args, variable_table variables_t, variable_table *variables_t_parent, w_variable *self, int thread_id)
 {
-
     if (!function_exist(name, functions))
     {
         std::string err = "la fonction " + name + " n'existe pas";
         error(err, ref_pop(thread_id), thread_id);
     }
     w_function *func = functions[name];
-    args = visitor_separate_listed(args);
+    std::vector<w_variable *> args_c = visitor_separate_listed_computed(args, variables_t_parent, thread_id);
     if (visitor_is_inbuild(name))
     {
-        return visitor_function_inbuild(name, args, variables_t, thread_id);
+        return visitor_function_inbuild(name, args_c, variables_t_parent, thread_id);
     }
     else
     {
-        for (int i = 0; i < args->children.size(); i++)
+        for (int i = 0; i < args_c.size(); i++)
         {
-            std::string arg_n = func->arguments->children[i]->children[0]->value;
-            w_variable *arg_v = visitor_compute(args->children[i], variables_t_parent, thread_id);
-            variables_t.assign(arg_n, arg_v, thread_id);
-            // variables_t[arg_n] = arg_v;
+            std::string arg_n = func->get_arg_name(i);
+            args_c[i] = visitor_prepare_variable_for_argument(args_c[i], variables_t, thread_id, name);
+            variables_t.assign_no_copy(arg_n, args_c[i], thread_id);
         }
         variables_t.assign("self", self, thread_id);
-        // variables_t["self"] = self;
         w_variable *res = visitor_visit(func->trunc, variables_t, thread_id);
+
+        if (res != nullptr)
+            res->use--;
+
+        for (auto i : args_c)
+        {
+            // i->use --; // [JSP]
+            i->check_garbage();
+        }
         return res;
     }
 }
@@ -767,11 +824,13 @@ w_variable *visitor_use_inbuild(w_variable *a, w_variable *b, std::string opera,
             w_variable *r = new w_variable(1);
             return r;
         }
-        else
+        else if (opera == "==")
         {
             w_variable *r = new w_variable(0);
             return r;
         }
+        else
+            error("Ne peut pas utiliser l'opérateur '" + opera + "' avec les types '" + a->get_type() + "' et '" + b->get_type() + "'", ref_pop(thread_id), thread_id);
     }
     if (a->get_type() == "int")
     {
@@ -786,11 +845,11 @@ w_variable *visitor_use_inbuild(w_variable *a, w_variable *b, std::string opera,
 
 w_variable *visitor_link_operator(w_variable *a, w_variable *b, std::string opera, int thread_id)
 {
-    variable_table *variables_t = new variable_table();
     w_function *func;
+    std::string f_name;
     if (opera == "+")
     {
-        std::string f_name = "!" + a->get_type() + ".plus";
+        f_name = "!" + a->get_type() + ".plus";
         if (!function_exist(f_name, functions))
         {
             std::string err = "il n'existe pas de fonction " + f_name;
@@ -800,7 +859,7 @@ w_variable *visitor_link_operator(w_variable *a, w_variable *b, std::string oper
     }
     else if (opera == "-")
     {
-        std::string f_name = "!" + a->get_type() + ".minus";
+        f_name = "!" + a->get_type() + ".minus";
         if (!function_exist(f_name, functions))
         {
             std::string err = "il n'existe pas de fonction " + f_name;
@@ -810,7 +869,7 @@ w_variable *visitor_link_operator(w_variable *a, w_variable *b, std::string oper
     }
     else if (opera == "==")
     {
-        std::string f_name = "!" + a->get_type() + ".equals";
+        f_name = "!" + a->get_type() + ".equals";
         if (!function_exist(f_name, functions))
         {
             std::string err = "il n'existe pas de fonction " + f_name;
@@ -820,7 +879,7 @@ w_variable *visitor_link_operator(w_variable *a, w_variable *b, std::string oper
     }
     else if (opera == "<")
     {
-        std::string f_name = "!" + a->get_type() + ".lt";
+        f_name = "!" + a->get_type() + ".lt";
         if (!function_exist(f_name, functions))
         {
             std::string err = "il n'existe pas de fonction " + f_name;
@@ -830,7 +889,7 @@ w_variable *visitor_link_operator(w_variable *a, w_variable *b, std::string oper
     }
     else if (opera == ">")
     {
-        std::string f_name = "!" + a->get_type() + ".gt";
+        f_name = "!" + a->get_type() + ".gt";
         if (!function_exist(f_name, functions))
         {
             std::string err = "il n'existe pas de fonction " + f_name;
@@ -840,7 +899,7 @@ w_variable *visitor_link_operator(w_variable *a, w_variable *b, std::string oper
     }
     else if (opera == "<=")
     {
-        std::string f_name = "!" + a->get_type() + ".le";
+        f_name = "!" + a->get_type() + ".le";
         if (!function_exist(f_name, functions))
         {
             std::string err = "il n'existe pas de fonction " + f_name;
@@ -850,7 +909,7 @@ w_variable *visitor_link_operator(w_variable *a, w_variable *b, std::string oper
     }
     else if (opera == ">=")
     {
-        std::string f_name = "!" + a->get_type() + ".ge";
+        f_name = "!" + a->get_type() + ".ge";
         if (!function_exist(f_name, functions))
         {
             std::string err = "il n'existe pas de fonction " + f_name;
@@ -860,7 +919,7 @@ w_variable *visitor_link_operator(w_variable *a, w_variable *b, std::string oper
     }
     else if (opera == "%")
     {
-        std::string f_name = "!" + a->get_type() + ".mod";
+        f_name = "!" + a->get_type() + ".mod";
         if (!function_exist(f_name, functions))
         {
             std::string err = "il n'existe pas de fonction " + f_name;
@@ -870,7 +929,7 @@ w_variable *visitor_link_operator(w_variable *a, w_variable *b, std::string oper
     }
     else if (opera == "/")
     {
-        std::string f_name = "!" + a->get_type() + ".div";
+        f_name = "!" + a->get_type() + ".div";
         if (!function_exist(f_name, functions))
         {
             std::string err = "il n'existe pas de fonction " + f_name;
@@ -880,7 +939,7 @@ w_variable *visitor_link_operator(w_variable *a, w_variable *b, std::string oper
     }
     else if (opera == "^")
     {
-        std::string f_name = "!" + a->get_type() + ".power";
+        f_name = "!" + a->get_type() + ".power";
         if (!function_exist(f_name, functions))
         {
             std::string err = "il n'existe pas de fonction " + f_name;
@@ -890,7 +949,7 @@ w_variable *visitor_link_operator(w_variable *a, w_variable *b, std::string oper
     }
     else if (opera == "!=")
     {
-        std::string f_name = "!" + a->get_type() + ".ne";
+        f_name = "!" + a->get_type() + ".ne";
         if (!function_exist(f_name, functions))
         {
             std::string err = "il n'existe pas de fonction " + f_name;
@@ -900,7 +959,7 @@ w_variable *visitor_link_operator(w_variable *a, w_variable *b, std::string oper
     }
     else if (opera == "*")
     {
-        std::string f_name = "!" + a->get_type() + ".times";
+        f_name = "!" + a->get_type() + ".times";
         if (!function_exist(f_name, functions))
         {
             std::string err = "il n'existe pas de fonction " + f_name;
@@ -913,11 +972,17 @@ w_variable *visitor_link_operator(w_variable *a, w_variable *b, std::string oper
     { // This is an inbuild function
         return visitor_use_inbuild(a, b, opera, thread_id);
     }
-
-    variables_t->assign("self", a, thread_id);
-    variables_t->assign(func->arguments->children[0]->children[0]->value, b, thread_id);
-
-    return visitor_visit(func->trunc, *variables_t, thread_id);
+    w_variable *r;
+    {
+        variable_table v = variable_table();
+        a = visitor_prepare_variable_for_argument(a, v, thread_id, f_name);
+        v.assign("self", a, thread_id);
+        b = visitor_prepare_variable_for_argument(b, v, thread_id, f_name);
+        v.assign(func->arguments->children[0]->children[0]->children[0]->value, b, thread_id);
+        r = visitor_visit(func->trunc, v, thread_id);
+    }
+    r->use--;
+    return r;
 }
 
 w_variable *visitor_new_object(std::string name, node *args, variable_table variables_t, int thread_id)
@@ -930,21 +995,14 @@ w_variable *visitor_new_object(std::string name, node *args, variable_table vari
     w_class_template *temp = classes[name];
     w_object *r = new w_object();
     for (auto attr : temp->trunc->children[1]->children)
-    { // attibutes
-        std::string name = attr->children[0]->value;
-        node *comp = attr->children[1];
-        w_variable *computed = visitor_compute(comp, &variables_t, thread_id);
-        r->attribute_attribution(name, computed);
+    { // attibuts de base
+        visitor_vardef(attr, r->attributes, thread_id);
     }
-    for (auto meth : temp->trunc->children[2]->children)
-    { // methods
-        r->methods.push_back(meth->value);
-    }
+    r->attributes->assign("iterable", new w_variable(0), thread_id);
     r->name = temp->trunc->children[0]->value;
     w_variable *var = new w_variable();
     var->type = T_OBJECT; // an object
     var->content = (void *)r;
-
     visitor_funcall_methode("!" + name + ".constructeur", args, variables_t, &variables_t, var, thread_id);
     return var;
 }
@@ -957,381 +1015,13 @@ w_variable *generate_function_variable(std::string name, int thread_id)
         error(err, what_reference(thread_id)->top(), thread_id);
     }
     w_variable *r = new w_variable();
-    r->type = T_FONCTION;                                  // this is a function
+    r->type = T_FONCTION;                         // this is a function
     r->content = (void *)(new std::string(name)); // the content is just the name of the variable
     return r;
 }
 
-w_variable *visitor_compute(node *c, variable_table *variables_t, int thread_id)
-{
-    w_variable *last_value = new w_variable(0);
-    bool unused = true;
-    for (int i = 0; i < c->children.size(); i++)
-    {
-        (what_reference(thread_id))->push(c->children[i]->reference);
-        std::string expr = c->children[i]->value;
-        if (c->children[i]->pre_value != nullptr)
-        {
-            last_value = c->children[i]->pre_value;
-            unused = false;
-        }
-        else if (is_explicit(expr))
-        {
-            if (is_char(expr))
-            {
-                last_value = new w_variable(del_string(expr));
-            }
-            else if (is_digit(expr))
-            {
-                
-                last_value = new w_variable(atoi(expr.c_str()));
-            }
-            unused = false;
-        }
-        else if (is_attributed(expr)) // Contains '.'
-        {
-            if (expr[0] == '!') // Is a funccall
-            {
-                std::string first_var_n;
-                int index = 1;
-                while (expr[index] != '.')
-                {
-                    first_var_n += expr[index];
-                    index++;
-                }
-                w_variable *first_var;
-
-                if (first_var_n == "")
-                {
-                    
-                    first_var = last_value;
-                }
-                else
-                {
-                    if (!variables_t->exist(first_var_n))
-                    {
-                        std::string err = "la variable '" + first_var_n + "' n'existe pas";
-                        error(err, c->children[i]->reference, thread_id);
-                    }
-                    first_var = variables_t->get(first_var_n);
-                }
-
-                if (!first_var->is_object())
-                {
-                    std::string err = "la variable '" + first_var_n + "' (" + *(std::string *)(w_char(first_var, variables_t->vars, thread_id)->content) + ") doit être un objet";
-                    error(err, c->children[i]->reference, thread_id);
-                }
-
-                w_object *last_o;
-                if (first_var->content != NULL)
-                {
-                    last_o = (w_object *)first_var->content;
-                }
-                else
-                {
-                    std::string err = "tentative d'accès à une partie de la mémoire interdite";
-                    error(err, c->children[i]->reference, thread_id);
-                }
-
-                w_variable *last_var = first_var;
-                std::string patent;
-                for (int y = index; y < expr.size(); y++)
-                {
-                    if (expr[y] == '.')
-                    {
-                        if (!patent.empty())
-                        {
-                            if (!last_o->attribute_exist(patent))
-                            {
-                                std::string err = "'" + last_o->name + "' n'as pas d'attribut '" + patent + "'";
-                                error(err, c->children[i]->reference, thread_id);
-                            }
-
-                            last_var = last_o->get_attribute(patent);
-                            if (!last_var->is_object())
-                            {
-                                std::string err = "la variable doit être un objet, pas du type " + last_var->get_type();
-                                error(err, c->children[i]->reference, thread_id);
-                            }
-                            if (last_var->content != NULL)
-                                last_o = (w_object *)last_var->content;
-                            else
-                            {
-                                std::string err = "tentative d'accès à une partie de la mémoire interdite";
-                                error(err, c->children[i]->reference, thread_id);
-                            }
-                            patent.clear();
-                        }
-                    }
-                    else
-                        patent += expr[y];
-                }
-
-                if (i + 1 >= c->children.size())
-                {
-                    std::string name = last_var->get_type();
-                    std::string f_name = "!" + name + "." + patent;
-                    
-                    last_value = generate_function_variable(f_name, thread_id);
-                    unused = false;
-                    // we generate a function variable
-                }
-                else if (!patent.empty())
-                {
-                    std::string name = last_var->get_type();
-                    std::string f_name = "!" + name + "." + patent;
-                    if (!function_exist(f_name, functions))
-                    {
-                        if (last_o->attribute_exist(patent))
-                        {
-                            w_variable *f_var = last_o->get_attribute(patent);
-                            if (f_var->get_type() == "fonction")
-                            {
-                                f_name = *(std::string *)(f_var->content);
-                            }
-                        }
-                    }
-                    variable_table variables_t_bis = variable_table(*variables_t);
-                    
-                    last_value = visitor_funcall_methode(f_name, c->children[i + 1], variables_t_bis, variables_t, last_var, thread_id);
-                    unused = false;
-                    i++; // we increment by one because they are parenthesis
-                }
-            }
-            else // No funcall
-            {
-                std::string first_var_n;
-                int index = 0;
-                while (expr[index] != '.')
-                {
-                    first_var_n += expr[index];
-                    index++;
-                }
-                w_variable *first_var;
-                if (first_var_n == "")
-                {
-                    first_var = last_value;
-                }
-                else
-                {
-                    if (!variables_t->exist(first_var_n))
-                    {
-                        std::string err = "la variable '" + first_var_n + "' n'existe pas";
-                        error(err, c->children[i]->reference, thread_id);
-                    }
-                    first_var = variables_t->get(first_var_n);
-                }   
-                if (!first_var->is_object())
-                {
-                    std::string err = "la variable '" + first_var_n + "' (" + *(std::string *)(w_char(first_var, variables_t->vars, thread_id)->content) + ") doit être un objet";
-                    error(err, c->children[i]->reference, thread_id);
-                }
-
-                w_object *last_o;
-                if (first_var->content != NULL)
-                    last_o = (w_object *)first_var->content;
-                else
-                {
-                    std::string err = "tentative d'accès à une partie de la mémoire interdite";
-                    error(err, c->children[i]->reference, thread_id);
-                }
-
-                std::string patent;
-                for (int y = index; y < expr.size(); y++)
-                {
-                    if (expr[y] == '.')
-                    {
-                        if (!patent.empty())
-                        {
-                            if (!last_o->attribute_exist(patent))
-                            {
-                                std::string err = "'" + last_o->name + " n'as pas d'attribut '" + patent + "'";
-                                error(err, c->children[i]->reference, thread_id);
-                            }
-                            w_variable *last_var = last_o->get_attribute(patent);
-                            if (!last_var->is_object())
-                            {
-                                std::string err = "la variable '" + last_o->name + "." + patent + " doit être un objet";
-                                error(err, c->children[i]->reference, thread_id);
-                            }
-                            if (last_var->content != NULL)
-                                last_o = (w_object *)last_var->content;
-                            else
-                            {
-                                std::string err = "tentative d'accès à une partie de la mémoire interdite";
-                                error(err, c->children[i]->reference, thread_id);
-                            }
-                            patent.clear();
-                        }
-                    }
-                    else
-                        patent += expr[y];
-                }
-                if (!patent.empty())
-                {
-                    if (!last_o->attribute_exist(patent))
-                    {
-                        std::string err = "'" + last_o->name + "' n'as pas d'attribut '" + patent + "'";
-                        error(err, c->children[i]->reference, thread_id);
-                    }
-                    
-                    last_value = last_o->get_attribute(patent);
-                    unused = false;
-                }
-            }
-        }
-        else if (expr == "&")
-        { // we create a tracker
-            w_variable *track = new w_variable();
-            track->type = T_TRACKER;
-            if (i + 1 >= c->children.size())
-            {
-                std::string err = "l'operateur '&' (creation de traqueur) ne peux être utilisé que devant une variable";
-                error(err, c->children[i]->reference, thread_id);
-            }
-            std::string e = c->children[i + 1]->value;
-            i ++; // we increment by one 
-            tracker *t = new tracker(e, variables_t);
-
-            track->content = (void *)t;
-            
-            last_value = track;
-            unused = false;
-        }
-        else if (expr == "*" && unused)
-        { // this is the opposit of & : we get the value of the tracker
-            node *p = new node("*");
-            node *next = c->children[i + 1];
-            while (i + 1 < c->children.size() and !is_operator(c->children[i + 1]->value))
-            { // we look forward to either the next operator or the end of the calculation
-                i++;
-                next = c->children[i];
-                p->push_child(next);
-            }
-            w_variable *val = visitor_compute(p, variables_t, thread_id);
-            if (val->get_type() != "traqueur")
-            {
-                std::string err = "ne peux pas récupérer le contenu du traquage du type '" + val->get_type() + "'";
-                error(err, c->children[i]->reference, thread_id);
-            }
-            tracker *t = (tracker *)val->content;
-            
-            last_value = t->value(thread_id);
-            unused = false;
-        }
-        else if (is_operator(expr))
-        {
-            // we look up to the next value
-            node *p = new node("*");
-            node *next = c->children[i + 1];
-            while (i + 1 < c->children.size() and !is_operator(c->children[i + 1]->value))
-            { // we look forward to either the next operator or the end of the calculation
-                i++;
-                next = c->children[i];
-                p->push_child(next);
-            }
-            w_variable *next_val = visitor_compute(p, variables_t, thread_id);
-            last_value = visitor_link_operator(last_value, next_val, expr, thread_id);
-            unused = false;
-        }
-        else if (expr[0] == '!')
-        {// call a function
-            if (i + 1 >= c->children.size() || c->children[i + 1]->value != "()") // does not call
-            {
-                
-                last_value = generate_function_variable(c->children[i]->value, thread_id);
-                unused = false;
-            }
-            else
-            {
-                
-                last_value = visitor_funcall(expr, c->children[i + 1], *variables_t, variables_t, thread_id);
-                unused = false;
-                i++; // we need to increment by one, because of the parenthesis
-            }
-        }
-        else if (variables_t->exist(expr)) // variable_exist(expr, variables_t))
-        {
-            // we just take the value inside the variables table
-            
-            last_value = variables_t->get(expr);
-            unused = false;
-        }
-        else if (i + 1 < c->children.size() && c->children[i + 1]->value == "()") // create a new object
-        {                                                                         // just avoid segfaults ...
-            // call a new object
-            
-            last_value = visitor_new_object(expr, c->children[i + 1], *variables_t, thread_id);
-            unused = false;
-            i++;
-        }
-        else if (expr == "()")
-        {
-            if (parentethis_is_listed(c->children[i]))
-            { // then we try to create a new list classe
-                if (!class_exist("list", classes))
-                {
-                    std::string err = "la classe 'list' n'existe pas, on ne peux donc pas initialiser de nouvelles listes à partir de parenthèses.\nPeut être avez-vous oublié d'inclure la librairie standard (std.wati)";
-                    error(err, c->children[i]->reference, thread_id);
-                }
-
-                w_variable *r = visitor_new_object("list", new node("()"), *variables_t, thread_id);
-
-                std::string funcname = "!list.plus"; // the function to add elements to a list
-
-                node *elements = visitor_separate_listed(c->children[i]); // it will be used as arguments
-
-                for (auto parts : elements->children)
-                {
-                    visitor_funcall_methode(funcname, parts, *variables_t, variables_t, r, thread_id);
-                }
-                
-                last_value = r; // we finally put the list as the last value
-                unused = false;
-            }
-            else
-            { // just compute what is in the parentethis
-                node *parenthis = c->children[i];
-                
-                last_value = visitor_compute(parenthis, variables_t, thread_id);
-                unused = false;
-            }
-        }
-        else if (expr == "[]")
-        {
-            node *brack = c->children[i];
-            w_variable *b_value = visitor_compute(brack, variables_t, thread_id);
-
-            std::string name = "!" + last_value->get_type() + ".index";
-
-            if (!function_exist(name, functions))
-            {
-                std::string err = "la fonction '" + name + "' n'existe pas";
-                error(err, c->children[i]->reference, thread_id);
-            }
-            w_function *f = functions[name];
-
-            variable_table variables_t_bis = variable_table(*variables_t);
-            variables_t_bis.assign("self", last_value, thread_id);
-            variables_t_bis.assign(f->arguments->children[0]->children[0]->value, b_value, thread_id);
-            
-            last_value = visitor_visit(f->trunc, variables_t_bis, thread_id);
-            unused = false;
-        }
-        else
-        {
-            std::string err = "expression ou variable inconnue '" + expr + "'";
-            error(err, c->children[i]->reference, thread_id);
-        }
-        if (!(what_reference(thread_id))->empty())
-            (what_reference(thread_id))->pop();
-    }
-    return last_value;
-}
-
 w_variable *visitor_keyword_return(node *trunc, variable_table variables_t, int thread_id)
 {
-    (what_reference(thread_id))->push(trunc->reference);
     if (trunc->children.size() < 1)
     {
         std::string err = "le mot-clé 'renvoie' doit avoir au moins un argument";
@@ -1339,58 +1029,73 @@ w_variable *visitor_keyword_return(node *trunc, variable_table variables_t, int 
     }
     node *arg = trunc->children[0];
     w_variable *result = visitor_compute(arg, &variables_t, thread_id);
-    if (!(what_reference(thread_id))->empty())
-        (what_reference(thread_id))->pop();
+
+    result->use++;
     return result;
 }
 
 void visitor_keyword_free(node *trunc, variable_table *variables_t, int thread_id)
 {
-    (what_reference(thread_id))->push(trunc->reference);
     if (trunc->children.size() < 1)
     {
         std::string err = "le mot-clé 'libere' doit avoir au moins un argument";
         error(err, trunc->reference, thread_id);
     }
-    node *arg = trunc->children[0];
-    w_variable *result = visitor_compute(arg, variables_t, thread_id);
-    if (result->is_object())
+    node *arg = trunc->children[0]->children[0];
+
+    std::string varName;
+    w_variable *self;
+    variable_table *t = variables_t;
+
+    w_variable *b_value = get_name_for_vardef(arg, variables_t, varName, self, thread_id); // vas être l'index si on a une indexation
+
+    if (varName[0] == '!') // Dans ce cas, c'est une assignation dans un itérable "!type.modifie"
     {
-        for (auto i : variables_t->vars)
+        varName = "!" + self->get_type() + ".pop"; // On modifie legerement la fonction car on ne veux pas modifier
+                                                   // la liste mais bien supprimer un élément
+        if (!function_exist(varName, functions))
+            error("La fonction '" + varName + "' n'existe pas pour la destruction de la variable de variable", trunc->reference, thread_id);
+
+        w_function *f = functions[varName]; // arguments : (index, valeur)
+
+        // On récupère le nom de l'argument de la fonction !type.pop(arg)
+        std::string n1 = f->arguments->children[0]->children[0]->children[0]->value;
+        w_variable *a_detruire;
+
         {
-            std::string key = std::get<0>(i);
-            if (std::get<1>(i) == result)
+            variable_table bis = variable_table();
+            bis.assign(n1, b_value, thread_id);
+            bis.assign("self", self, thread_id);
+            a_detruire = visitor_visit(f->trunc, bis, thread_id);
+        }
+        // Maintenant que on a récupéré la variable est qu'elle est sensée ne plus être dans la liste
+        // on doit détruire la valeur
+        a_detruire->use--;
+        bool check = a_detruire->check_garbage();
+        // if (!check)
+        //     error("La variable qui est entrain d'être détruite n'a pas été correctement enlevé des tables de variables (usage = " + std::to_string(a_detruire->use) + ")", trunc->reference, thread_id);
+    }
+    else
+    {
+        if (!t->exist(varName))
+            error("La variable '" + varName + "' n'existe pas", trunc->reference, thread_id);
+
+        auto var = t->get(varName);
+
+        if (var->is_object())
+        {
+            w_variable *r;
+            if (function_exist("!" + var->get_type() + ".destructeur", functions))
             {
-                variables_t->vars.erase(key);
-                break;
+                w_function *f = functions["!" + var->get_type() + ".destructeur"];
+                variable_table local_table = variable_table();
+                local_table.assign_no_copy("self", var, thread_id);
+                r = visitor_visit(f->trunc, local_table, thread_id);
+                // r->use --;
             }
         }
-        w_object *t;
-        if (result->content != NULL)
-            t = (w_object *)result->content;
-        else
-        {
-            std::string err = "tentative d'accès à une partie de la mémoire interdite";
-            error(err, trunc->reference, thread_id);
-        }
-
-        std::string name = "!" + t->name + ".destructeur"; // we call the desctructor
-        if (function_exist(name, functions))
-            visitor_funcall_methode(name, new node("*"), *variables_t, variables_t, result, thread_id);
+        t->delete_var(varName);
     }
-
-    std::map<std::string, w_variable *>::iterator it;
-    for (it = variables_t->vars.begin(); it != variables_t->vars.end(); ++it)
-    {
-        if (it->second == result)
-        {
-            variables_t->vars.erase(it->first);
-        }
-    }
-
-    delete result; // seems to cause problems with the multithreading
-    if (!(what_reference(thread_id))->empty())
-        (what_reference(thread_id))->pop();
 }
 
 void visitor_keyword_tache(node *trunc, variable_table variables_t, int thread_id)
@@ -1419,8 +1124,8 @@ void visitor_keyword_tache(node *trunc, variable_table variables_t, int thread_i
     {
         // The list must be orderd like this :
         // (!funcname, arg1, arg2, ...)
-        node *arg = new node("*");
-        arg->push_child(new node("0"));
+        node *arg = new node(COMP_KEYWORD);
+        arg->push_child((new node("0"))->set_prevalue(new w_variable(0)));
         w_variable *potential_function = visitor_funcall_methode("!list.en", arg, variables_t, &variables_t, result, thread_id);
 
         w_object *o;
@@ -1438,8 +1143,8 @@ void visitor_keyword_tache(node *trunc, variable_table variables_t, int thread_i
 
         for (int i = 1; i < len; i++)
         {
-            node *arg_bis = new node("*");
-            arg_bis->push_child(new node(std::to_string(i)));
+            node *arg_bis = new node(COMP_KEYWORD);
+            arg_bis->push_child(((new node(std::to_string(i))))->set_prevalue(new w_variable(i)));
             arguments.push_back(visitor_funcall_methode("!list.en", arg_bis, variables_t, &variables_t, result, thread_id));
             free((void *)arg_bis);
         }
@@ -1459,7 +1164,9 @@ void visitor_keyword_tache(node *trunc, variable_table variables_t, int thread_i
 
         w_function *func = functions[name];
         variable_table variables_bis = prepare_arguments(arguments, func->arguments, variables_t);
-        visitor_visit(func->trunc, variables_bis, thread_id);
+        w_variable *potentiel_destru = visitor_visit(func->trunc, variables_bis, thread_id);
+        potentiel_destru->use--;
+        potentiel_destru->check_garbage(); // [JSP]
     }
 
     if (!(what_reference(thread_id))->empty())
@@ -1501,12 +1208,12 @@ void visitor_keyword_include(node *trunc, variable_table *variables_t, int threa
     if (!visitor_is_included(filename2))
     {
         std::string r = open_file(filename2.c_str());
-        if (r == "file_not_found") 
+        if (r == "file_not_found")
         { // if we don't find the file, then it is maybe in the lib dir
-            filename2 = "/usr/local/lib/wati/lib/" + filename;
+            filename2 = "/usr/local/lib/wati1.2/lib/" + filename;
             if (visitor_is_included(filename2))
             { // meaning we already included it
-                what_reference(thread_id)->pop();
+                ref_pop(thread_id);
                 return;
             }
             r = open_file(filename2.c_str());
@@ -1538,11 +1245,12 @@ void visitor_funcdef(node *trunc)
     what_reference(0)->push(trunc->reference);
     w_function *func = new w_function();
     std::string name = "!" + trunc->children[0]->value;
+    // Qu'il y ai des arguments ou non, le parser aura mis un COMP_KEYWORD dans la parenthèse pour éviter le plantage
     func->set_arguments(visitor_separate_listed(trunc->children[1]));
-    if (is_char(trunc->children[2]->children[0]->value))
+    if (is_char(trunc->children[2]->children[0]->children[0]->value))
     { // it is the description of the function, we can store it and remove it from the trunc
-        // we remove the '"' 
-        std::string description = del_string(trunc->children[2]->children[0]->value);
+        // we remove the '"'
+        std::string description = del_string(trunc->children[2]->children[0]->children[0]->value);
         trunc->children[2]->children.erase(trunc->children[2]->children.begin()); // we delete the first value of the function code
         functions_documentation[name] = description;
     }
@@ -1555,140 +1263,43 @@ void visitor_funcdef(node *trunc)
 void visitor_vardef(node *trunc, variable_table *variables_t, int thread_id)
 {
     // We pass the variables table by reference, so we can modify it
+    std::string var_name;
+    w_variable *self = nullptr;
 
-    std::string expr = trunc->children[0]->value;
+    variable_table *v = variables_t;
+    w_variable *b_value = get_name_for_vardef(trunc->children[0], v, var_name, self, thread_id); // vas être l'index si on a une indexation
+
     node *compute = trunc->children[1];
     bool tracker_assignation = false;
-    if (expr == "*")
-    {
-        if (trunc->children.size() != 3)
-        {
-            std::string err = "'*' ne peux pas être appliqué seul";
-            error(err, trunc->children[0]->value, thread_id);
-        }
-        expr = trunc->children[1]->value;
-        compute = trunc->children[2];
-        tracker_assignation = true;
-    }
-
     w_variable *result = visitor_compute(compute, variables_t, thread_id);
-    if (is_attributed(expr)) // contains "."
+    check_value_integrity(result, trunc->reference, thread_id); // Nécessaire pour vérifier que la valeur est 'valide'
+    result = visitor_prepare_variable_for_copy(result, variable_table(), thread_id);
+    if (var_name[0] == '!') // Dans ce cas, c'est une assignation dans un itérable "!type.modifie"
     {
-        std::string first_var_n;
-        int index = 0;
-        while (expr[index] != '.')
-        {
-            first_var_n += expr[index];
-            index++;
-        }
-        if (!variables_t->exist(first_var_n))
-        {
-            std::string err = "la variable " + first_var_n + " n'existe pas";
-            error(err, trunc->children[0]->reference, thread_id);
-        }
-        w_variable *first_var = variables_t->get(first_var_n);
+        if (!function_exist(var_name, functions))
+            error("La fonction '" + var_name + "' n'existe pas pour cette définition de variable", trunc->reference, thread_id);
 
-        if (!first_var->is_object())
-        {
-            std::string err = "la variable " + first_var_n + " doit être un objet";
-            error(err, trunc->children[0]->reference, thread_id);
-        }
-        w_object *last_o;
-        if (first_var->content != NULL)
-            last_o = (w_object *)first_var->content;
-        else
-        {
-            std::string err = "tentative d'accès à une partie de la mémoire interdite";
-            error(err, trunc->children[0]->reference, thread_id);
-        }
+        w_function *f = functions[var_name]; // arguments : (index, valeur)
 
-        w_variable *last_var = first_var;
-        std::string patent;
-        for (int y = index; y < expr.size(); y++)
-        {
-            if (expr[y] == '.')
-            {
-                if (!patent.empty())
-                {
-                    if (!last_o->attribute_exist(patent))
-                    {
-                        std::string err = "'" + last_o->name + "' n'as pas d'attribut '" + patent + "'";
-                        error(err, trunc->children[0]->reference, thread_id);
-                    }
-                    last_var = last_o->get_attribute(patent);
-                    if (!last_var->is_object())
-                    {
-                        std::string err = "la variable " + last_o->name + "." + patent + " doit être un objet";
-                        error(err, trunc->children[0]->reference, thread_id);
-                    }
-                    if (last_var->content != NULL)
-                        last_o = (w_object *)last_var->content;
-                    else
-                    {
-                        std::string err = "tentative d'accès à une partie de la mémoire interdite";
-                        error(err, trunc->children[0]->reference, thread_id);
-                    }
-                    patent.clear();
-                }
-            }
-            else
-                patent += expr[y];
-        }
-        if (!patent.empty())
-        {
-            if (!last_var->is_object())
-            {
-                std::string err = "la variable " + patent + " doit être un objet";
-                error(err, trunc->children[0]->reference, thread_id);
-            }
-            last_o = (w_object *)last_var->content;
-            if (tracker_assignation)
-            {
-                if (!last_o->attribute_exist(patent))
-                {
-                    std::string err = "la variable '" + patent + "' n'existe pas";
-                    error(err, trunc->children[1]->reference, thread_id);
-                }
+        // On récupère le nom des arguments de la fonction
+        std::string n1 = f->arguments->children[0]->children[0]->children[0]->value;
+        std::string n2 = f->arguments->children[1]->children[0]->children[0]->value;
 
-                w_variable *tra = last_o->get_attribute(patent);
-                if (tra->get_type() != "traqueur")
-                {
-                    std::string err = "doit être du type 'traqueur', pas '" + tra->get_type() + "'";
-                    error(err, trunc->children[1]->reference, thread_id);
-                }
-                tracker *t = (tracker *)tra->content;
-                t->set_value(result, thread_id);
-            }
-            else
-                last_o->attribute_attribution(patent, result);
-        }
-        else 
+        variable_table bis = variable_table();
+        bis.assign(n1, b_value, thread_id);
+        bis.assign(n2, result, thread_id);
+        bis.assign("self", self, thread_id);
+        w_variable *potentiel_destru = visitor_visit(f->trunc, bis, thread_id);
+        if (potentiel_destru != nullptr)
         {
-            std::string err = "pas de suite donnée au '.'";
-            error(err, trunc->reference, thread_id);
+            potentiel_destru->use--;
+            potentiel_destru->check_garbage(); // [JSP]}
         }
     }
     else
-    {
-        if (tracker_assignation)
-        {
-            if (!variables_t->exist(expr))
-            {
-                std::string err = "la variable '" + expr + "' n'existe pas";
-                error(err, trunc->children[1]->reference, thread_id);
-            }
-            w_variable *tra = variables_t->get(expr);
-            if (tra->get_type() != "traqueur")
-            {
-                std::string err = "doit être du type 'traqueur', pas '" + tra->get_type() + "'";
-                error(err, trunc->children[1]->reference, thread_id);
-            }
-            tracker *t = (tracker *)tra->content;
-            t->set_value(result, thread_id);
-        }
-        else
-            variables_t->assign(expr, result, thread_id);
-    }
+        v->assign(var_name, result, thread_id);
+
+    // return result;
 }
 
 void visitor_classdef(node *trunc)
@@ -1716,7 +1327,7 @@ std::tuple<std::string, w_variable *> visitor_if_declaration(node *trunc, variab
     //          *
     //      {}
     //          ...
-    node *condition = trunc->children[0];
+    node *condition = trunc->children[0]->children[0];
     w_variable *result = visitor_compute(condition, variables_t, thread_id);
 
     if (is_int_true(result))
@@ -1742,7 +1353,7 @@ std::tuple<std::string, w_variable *> visitor_if_declaration(node *trunc, variab
         for (int i = 0; i < elseifs->children.size(); i++)
         {
             node *elif = elseifs->children[i];
-            w_variable *cond = visitor_compute(elif->children[0], variables_t, thread_id);
+            w_variable *cond = visitor_compute(elif->children[0]->children[0], variables_t, thread_id);
             if (is_int_true(cond))
             {
                 e = true;
@@ -1792,48 +1403,38 @@ std::tuple<std::string, w_variable *> visitor_forloop(node *trunc, variable_tabl
     // the for loop
     // pour
     //      i
-    //      bornes
-    //          x
-    //          y
+    //      COMP_KEYWORD
+    //          ...
     //      {}
     //          ...
     std::string var_name = trunc->children[0]->value;
     node *code = trunc->children[2];
+    w_variable *iter = std::get<1>(visitor_visit_incode(trunc->children[1], variables_t, thread_id));
 
-    node *conde = new node("*");
-    conde->push_child(trunc->children[1]->children[0]);
-    w_variable *first_b = visitor_compute(conde, variables_t, thread_id);
-    if (first_b->get_type() != "int")
-    {
-        std::string err = "les bornes de la boucle doivent être de type int";
-        error(err, conde->children[0]->reference, thread_id);
-    }
-    int borne1 = first_b->convert_to_int();
+    if (!function_exist("!initialise_boucle", functions))
+        error("La fonction !initialise_boucle n'existe pas. La bibliothèque standard n'a pas été correctement importée", trunc->reference, thread_id);
 
-    conde->children.clear();
-    conde->push_child(trunc->children[1]->children[1]);
-    w_variable *second_b = visitor_compute(conde, variables_t, thread_id);
-    if (second_b->get_type() != "int")
-    {
-        std::string err = "les bornes de la boucle doivent être de type int";
-        error(err, conde->children[0]->reference, thread_id);
-    }
-    int borne2 = second_b->convert_to_int();
+    w_function *init_boucle = functions["!initialise_boucle"];
+    variable_table v = variable_table();
+    v.assign_no_copy(init_boucle->arguments->children[0]->children[0]->children[0]->value, iter, thread_id); // on ne veux pas que l'itérable soit copié
+    visitor_visit(init_boucle->trunc, v, thread_id);
+
+    w_function *suivant = functions["!" + iter->get_type() + ".suivant"];
+    w_function *a_la_fin = functions["!" + iter->get_type() + ".a_la_fin"];
+    w_function *debut = functions["!" + iter->get_type() + ".debut"];
+    v.assign_no_copy("self", iter, thread_id);
 
     w_variable *var;
 
-    int *var_cont = new int();
-    for (int index = borne1; index < borne2; index++)
+    while(!is_int_true(visitor_visit(a_la_fin->trunc, v, thread_id)))
     {
-        // free(var_cont); // avoid memory leaks
-        var = new w_variable(index);
+        var = visitor_visit(suivant->trunc, v, thread_id);
         variables_t->assign(var_name, var, thread_id);
-        // variables_t[var_name] = var;
         std::tuple<std::string, w_variable *> ret = visitor_visit_incode(code, variables_t, thread_id);
         if (std::get<0>(ret) == "break")
         {
             return std::tuple<std::string, w_variable *>{"", nullptr};
-        };
+        }
         if (std::get<0>(ret) == "return")
         {
             return ret;
@@ -1843,6 +1444,11 @@ std::tuple<std::string, w_variable *> visitor_forloop(node *trunc, variable_tabl
             continue;
         }
     }
+    if (!function_exist("!termine_boucle", functions))
+        error("La fonction !termine_boucle n'existe pas. La bibliothèque standard n'a pas été correctement importée", trunc->reference, thread_id);
+    w_function *term_boucle = functions["!termine_boucle"];
+    visitor_visit(term_boucle->trunc, v, thread_id);
+    iter->check_garbage();
     return std::tuple<std::string, w_variable *>{"", nullptr};
 }
 
@@ -1857,7 +1463,7 @@ std::tuple<std::string, w_variable *> visitor_whileloop(node *trunc, variable_ta
     node *condition = trunc->children[0];
     node *code = trunc->children[1];
 
-    w_variable *cond = visitor_compute(condition, variables_t, thread_id);
+    w_variable *cond = std::get<1>(visitor_visit_incode(condition, variables_t, thread_id));
     while (is_int_true(cond))
     {
         std::tuple<std::string, w_variable *> ret = visitor_visit_incode(code, variables_t, thread_id);
@@ -1871,7 +1477,8 @@ std::tuple<std::string, w_variable *> visitor_whileloop(node *trunc, variable_ta
         }
         if (std::get<0>(ret) == "continue")
             continue;
-        cond = visitor_compute(condition, variables_t, thread_id);
+        cond->check_garbage(); // On a surement plus besoin de cette variable à ce stade
+        cond = std::get<1>(visitor_visit_incode(condition, variables_t, thread_id));
     }
     return std::tuple<std::string, w_variable *>{"", nullptr};
 }
@@ -1884,6 +1491,7 @@ std::tuple<std::string, w_variable *> visitor_visit_incode(node *trunc, variable
     for (int i = 0; i < trunc->children.size(); i++)
     {
         node *instruction = trunc->children[i];
+        what_reference(thread_id)->push(instruction->reference);
         if (instruction->value == "funcdef")
         {
             visitor_funcdef(instruction);
@@ -1901,14 +1509,17 @@ std::tuple<std::string, w_variable *> visitor_visit_incode(node *trunc, variable
             std::tuple<std::string, w_variable *> ret = visitor_if_declaration(instruction, variables_t, thread_id);
             if (std::get<0>(ret) == "return")
             {
+                ref_pop(thread_id);
                 return ret;
             }
             if (std::get<0>(ret) == "continue")
             {
+                ref_pop(thread_id);
                 return ret;
             }
             if (std::get<0>(ret) == "break")
             {
+                ref_pop(thread_id);
                 return ret;
             }
         }
@@ -1917,6 +1528,7 @@ std::tuple<std::string, w_variable *> visitor_visit_incode(node *trunc, variable
             std::tuple<std::string, w_variable *> ret = visitor_forloop(instruction, variables_t, thread_id);
             if (std::get<0>(ret) == "return")
             {
+                ref_pop(thread_id);
                 return ret;
             }
         }
@@ -1925,30 +1537,15 @@ std::tuple<std::string, w_variable *> visitor_visit_incode(node *trunc, variable
             std::tuple<std::string, w_variable *> ret = visitor_whileloop(instruction, variables_t, thread_id);
             if (std::get<0>(ret) == "return")
             {
+                ref_pop(thread_id);
                 return ret;
             }
-        }
-        else if (instruction->value == "()")
-        { // we just computes what is in parenthesis
-            visitor_compute(instruction, variables_t, thread_id);
-        }
-        else if (instruction->value[0] == '!')
-        { // we call the function
-
-            if (i + 1 < trunc->children.size() && trunc->children[i + 1]->value != "()")
-            {
-                std::string err = "l'appel d'une fonction doit etre suivie de ses arguments";
-                error(err, instruction->reference, thread_id);
-            }
-            node *r = new node("*");
-            r->push_child(instruction);
-            r->push_child(trunc->children[i + 1]);
-            visitor_compute(r, variables_t, thread_id);
-            i++; // we increment by one because of the parenthesis
         }
         else if (instruction->value == "renvoie")
         { // The renvoie keyword
             w_variable *res = visitor_keyword_return(instruction, *variables_t, thread_id);
+            // res->use ++; [JSP]
+            ref_pop(thread_id);
             return std::tuple<std::string, w_variable *>{"return", res};
         }
         else if (instruction->value == "libere")
@@ -1957,10 +1554,12 @@ std::tuple<std::string, w_variable *> visitor_visit_incode(node *trunc, variable
         }
         else if (instruction->value == "casse")
         {
+            ref_pop(thread_id);
             return std::tuple<std::string, w_variable *>{"break", nullptr};
         }
         else if (instruction->value == "continue") // just continue the loop for the next iteration
         {
+            ref_pop(thread_id);
             return std::tuple<std::string, w_variable *>{"continue", nullptr};
         }
         else if (instruction->value == "inclue")
@@ -1971,31 +1570,29 @@ std::tuple<std::string, w_variable *> visitor_visit_incode(node *trunc, variable
         { // The renvoie keyword
             visitor_keyword_free(instruction, variables_t, thread_id);
         }
-        else if (instruction->value != ";")
+        else
         {
-            std::string err = "instruction inconnue '" + instruction->value + "'. \nAttention, l'instruction est peut-être inconnue dans le contexte (boucle, appel de fonction ect...). \nSi ça fait partie d'un calcule, il faut utiliser des parenthèses.";
-            error(err, instruction->reference, thread_id);
+            to_return = std::tuple<std::string, w_variable *>{"", visitor_compute(instruction, variables_t, thread_id)};
         }
+        ref_pop(thread_id);
     }
- 
     return to_return;
 }
 
 w_variable *visitor_visit(node *trunc, variable_table variables_t, int thread_id)
 {
-    //variables_t.use(); // Incrémente de 1 les variables qui sont crées pour le garbage collector
-
     int thread_number = 0;
     std::thread thread_in_scope[100];
     if (!is_initialized_inbuild)
     {
         visitor_init_inbuild_functions();
     }
-    w_variable *to_return = new w_variable(0);
+    w_variable *to_return = nullptr;
 
     for (int i = 0; i < trunc->children.size(); i++)
     {
         node *instruction = trunc->children[i];
+        what_reference(thread_id)->push(instruction->reference);
         if (instruction->value == "funcdef")
         {
             visitor_funcdef(instruction);
@@ -2018,6 +1615,8 @@ w_variable *visitor_visit(node *trunc, variable_table variables_t, int thread_id
                     if (thread_in_scope[p].joinable())
                         thread_in_scope[p].join();
                 }
+                ref_pop(thread_id);
+                std::get<1>(ret)->use++;
                 return std::get<1>(ret);
             }
         }
@@ -2031,6 +1630,8 @@ w_variable *visitor_visit(node *trunc, variable_table variables_t, int thread_id
                     if (thread_in_scope[p].joinable())
                         thread_in_scope[p].join();
                 }
+                ref_pop(thread_id);
+                std::get<1>(ret)->use++;
                 return std::get<1>(ret);
             }
         }
@@ -2045,35 +1646,21 @@ w_variable *visitor_visit(node *trunc, variable_table variables_t, int thread_id
                     if (thread_in_scope[p].joinable())
                         thread_in_scope[p].join();
                 }
+                ref_pop(thread_id);
+                std::get<1>(ret)->use++;
                 return std::get<1>(ret);
             }
         }
-        else if (instruction->value == "()")
-        { // we just computes what is in parenthesis
-            visitor_compute(instruction, &variables_t, thread_id);
-        }
-        else if (instruction->value[0] == '!')
-        { // we call the function
-            if (i + 1 < trunc->children.size() && trunc->children[i + 1]->value != "()")
-            {
-                std::string err = "l'appel d'une fonction doit etre suivie de ses arguments";
-                error(err, instruction->reference, thread_id);
-            }
-            node *r = new node("*");
-            r->push_child(instruction);
-            r->push_child(trunc->children[i + 1]);
-            visitor_compute(r, &variables_t, thread_id);
-            i++; // we increment by one because of the parenthesis
-        }
         // we need to do a function for keywords
         else if (instruction->value == "renvoie")
-        { // The libere keyword
-            w_variable *res = visitor_keyword_return(instruction, variables_t, thread_id);
-            for (int p = 0; p < sizeof(thread_in_scope)/sizeof(thread_in_scope[0]); p++)
+        {                                                                                  // The libere keyword
+            w_variable *res = visitor_keyword_return(instruction, variables_t, thread_id); // Ici : res->use ++;
+            for (int p = 0; p < sizeof(thread_in_scope) / sizeof(thread_in_scope[0]); p++)
             {
                 if (thread_in_scope[p].joinable())
                     thread_in_scope[p].join();
             }
+            ref_pop(thread_id);
             return res;
         }
         else if (instruction->value == "libere")
@@ -2087,26 +1674,27 @@ w_variable *visitor_visit(node *trunc, variable_table variables_t, int thread_id
         else if (instruction->value == "tache")
         { // The tache keyword
             references.push_back(new std::stack<std::string>);
-            thread_in_scope[thread_number++] = std::thread(visitor_keyword_tache, instruction, variables_t, thread_utilized);
+            thread_in_scope[thread_number] = std::thread(visitor_keyword_tache, instruction, variables_t, thread_utilized);
             thread_utilized += 1;
+            thread_number++;
         }
-        else if (instruction->value != ";")
+        else
         {
-            std::string err = "instruction inconnue '" + instruction->value + "'. \nAttention, l'instruction est peut-être inconnue dans le contexte (boucle, appel de fonction ect...). \nSi ça fait partie d'un calcule, il faut utiliser des parenthèses.";
-            error(err, instruction->reference, thread_id);
+            to_return = visitor_compute(instruction, &variables_t, thread_id);
+            if (to_return != nullptr)
+                to_return->use ++;
         }
+        ref_pop(thread_id);
     }
+
     for (int p = 0; p < thread_number; p++)
     {
         if (thread_in_scope[p].joinable())
         {
             thread_in_scope[p].join();
         }
+        else
+            thread_in_scope[p].detach();
     }
-
-    // On supprime les variables supplémentaires
-    //variables_t.unuse();
-    //variables_t.garbage_collector();
-    
     return to_return;
 }

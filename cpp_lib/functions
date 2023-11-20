@@ -1,43 +1,38 @@
-!mainloop Démmare la boucle principale d'execution. !mainloop( fonction_execution(fonction) ) -> 0
-!init_window Initialise la fenêtre SDL. !init_window( largeur(int), longueur(int) ) -> 0
-!quit_window Ferme et quitte SLD (et donc la fenêtre crée). !quit_window( ) -> 0
-!fill_rect Remplis le contenue d'un rectange de la couleur actuelle. !fill_rect( x(int), y(int), longueur(int), largeur(int) ) -> 0
-!draw_line Trace une ligne entre les points indiqués. !fill_rect( x(int), y(int), x_prime(int), y_prime(int) ) -> 0
-!set_color Met la couleur indiquée (rvba) comme couleur actuelle. !set_color( rouge(int), vert(int), bleu(int), alpha(int) ) -> 0
-!get_mouse_pos Renvoie les coordonnées actuelles de la souris. !get_mouse_pos( ) -> list[ x(int), y(int) ]
-!set_delay
-!et
-!ou
-!pas
-!clear
-!render
-!get_key
-!set_window_title
-!load_texture_as
-!draw_texture
-!rotate_texture
-!draw_rotated_texture
-!draw_text
-!load_font_as
-!wsin
-!wcos 
+!pas Inverse un 0 en 1 et un 1 en 0. !pas( var(bool) ) -> bool
+!est_objet Renvoie si l'arguement est un objet ou non. !est_objet( var ) -> bool
 !ecrit Écrit le contenue dans un fichier indiqué. !ecrit( nom_de_fichier(char), contenu(char) ) -> 0
 !ouvre Ouvre le fichier indiqué et renvoie son contenu. !ouvre( nom_de_fichier(char) ) -> char
 !attributs Renvoie les attributs d'un objet. !attributs( objet ) -> list[char]
+!attribut_existe Renvoie si l'attribut indiquée existe. !attribut_existe( objet, nom(char) ) -> bool
 !methodes Renvoie les methodes d'un objet. !methodes( objet ) -> list[char]
+!methode_existe Renvoie si la methode indiquée existe. !methode_existe( objet, nom(char) ) -> bool
 !doc Renvoie la documentation d'une fonction. !doc( var(fonction) ) -> char
 !dirs Renvoie une liste des noms de variable dans le namespace courrant. !dirs( ) -> list[char]
 !temps Renvoie le temps écoulé depuis l'epoch (en millisecondes). !temps( ) -> int
-!float_times
-!float_div
-!float_plus
-!float_minus
-!float_mod
-!float_power
-!w_sqrt
+!float_times Fonction interne à la manipulation de flotants.
+!float_div Fonction interne à la manipulation de flotants.
+!float_plus Fonction interne à la manipulation de flotants.
+!float_minus Fonction interne à la manipulation de flotants.
+!float_mod Fonction interne à la manipulation de flotants.
+!float_power  Fonction interne à la manipulation de flotants.
 !terminal_taille Renvoie le nombre de colonnes et de lignes dans le terminal : (row, col). !terminal_taille( ) -> list[int]
 !terminal_curseur Place le curseur à une coordonnée du terminal : (row, col). !terminal_curseur( row(int), col(int) ) -> 0
 !terminal_curseur_pos Renvoie le couple de coordonnées du curseur dans le terminal : (row, col). !terminal_curseur_pos(  ) -> list[int]
-!execute Évalue et exécute du wati-code. !execute( code(char) ) -> 0
 !essaie Execute la fonction avec ses arguements, et en cas d'erreur, execute la deuxième fonction. !essaie( func(fonction), args(list), f_erreur ) -> 0
 !avertissement Lance un avertissement. !avertissement( message(char) ) -> 0
+!list_comp_equal Fonction de comparaison entre deux listes. !list_comp_equal( list1, list2 ) -> bool
+!w_random Renvoie un nombre aléatoire r : a < r < b. !w_random( a(int), b(int) ) -> int
+!fonction_equals Fait l'égalité entre deux variables de type 'fonction' !fonction_equals( f1(fonction), f2(fonction)) -> bool
+!init_random Initie random. !init_random( ) -> nullprt;
+!traqueur_nom Renvoie le nom de la variable que le traqueur est entrain de traquer. !traqueur_nom( t(traqueur) ) -> char;
+!constructeur_tableau Construit un tableau
+!tableau_plus
+!tableau_index
+!tableau_modifie 
+!tableau_pop
+!tab_comp_equal
+!est_constante Renvoie 1 si la variable est constante. !est_constante( var ) -> bool
+!deconstante Modifie la constance de la variable. !deconstante( var(constante) ) -> 0
+!nombre_usage Renvoie le nombre d'usage d'une variable. !nombre_usage( var () ) -> int
+!CLI Lance l'interpreteur de lignes de commandes. !CLI( ) -> 0
+!classe_defaut_liste Modifie le nom de base de création d'une liste avec la syntaxe '(a, b, c)'. !classe_defaut_liste( nom(char) ) -> 0

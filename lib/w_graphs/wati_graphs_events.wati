@@ -5,7 +5,7 @@ classe Event contient
     fin
 fin
 
-fonction Event.equals (x) fait
+fonction "Event.equals" (x) fait
     si !type(x) == "char" alors 
         si self.val == x alors
             renvoie 1;
@@ -23,11 +23,11 @@ fonction Event.equals (x) fait
     renvoie 0;
 fin
 
-fonction Event.ne (x) fait
+fonction "Event.ne" (x) fait
     renvoie !pas(!self.equals(x));
 fin
 
-fonction Event.en_string () fait
+fonction "Event.en_string" () fait
     
     si self.val != "" alors
         renvoie "<Event type=" + self.type + " val=" + self.val + ">";

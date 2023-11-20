@@ -2,9 +2,9 @@
 
 echo "installation des librairies"
 
-FILE=/usr/local/lib/wati
+FILE=/usr/local/lib/wati1.2
 if [ ! -d "$FILE" ]; then
-    sudo mkdir /usr/local/lib/wati
+    sudo mkdir /usr/local/lib/wati1.2
 fi
 
 LIBS=./lib
@@ -19,5 +19,5 @@ if [ ! -d "$CPP_LIBS" ]; then
     exit 1
 fi
 
-sudo cp -R $LIBS /usr/local/lib/wati/
-sudo cp -R $CPP_LIBS /usr/local/lib/wati/
+sudo cp -R $LIBS /usr/local/lib/wati1.2/
+sudo cp -R $CPP_LIBS /usr/local/lib/wati1.2/

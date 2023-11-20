@@ -1,8 +1,21 @@
-fonction cap100(num) fait 
-    // Cape à 100 le maximum de num, avec num de type tracker
-    r = (*num) > 100;
-    si (*num) > 100 fait 
-        *num = 100;
-    fin
+
+fonction "tableau.plus" (x) fait 
+	!tableau_plus(self, 1);
+	self.taille = 1;
+	!tableau_plus(self, 2);
+	self.taille = 2;
+	!tableau_plus(self, 3);
+	self.taille = 3;
+	!tableau_plus(self, 4);
+	self.taille = 4;
+	!tableau_plus(self, 5);
+	self.taille = 5;
+	renvoie "gotcha";
 fin
 
+l = (1, 2, 3);
+pour i dans l fait
+	pour j dans l fait
+		!print(i, " fois ", j, " fait ", i*j, "\n")
+	fin
+fin

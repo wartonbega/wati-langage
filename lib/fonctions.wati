@@ -5,10 +5,10 @@
 
 // La comparaison entre deux fonctions doît toujours démontrer l'inégalité
 // entre les deux fonctions
-fonction fonction.ne (x) fait
-    renvoie 1;
+fonction "fonction.ne" (x) fait
+    renvoie !abs((self == x) - 1);
 fin
 
-fonction fonction.eq (x) fait 
-    renvoie 0;
+fonction "fonction.equals" (x) fait 
+    renvoie !fonction_equals(self, x);
 fin

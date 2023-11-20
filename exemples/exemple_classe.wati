@@ -33,9 +33,9 @@ fin
 personne1 = Personne("Marie", 21);
 personne2 = Personne("Jeanne", 47);
 
-!println(personne1) // Vas appeler !Personne.en_string 
-!personne1.anniversaire()
-!println(personne1) 
+!println(personne1); // Vas appeler !Personne.en_string 
+!personne1.anniversaire();
+!println(personne1);
 
 personne1 = personne1 + personne2; // On appel la méthode 'caché' !personne1.plus(personne2)
 // La variable personne2 reste inchangé

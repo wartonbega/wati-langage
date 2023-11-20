@@ -1,48 +1,52 @@
-inclue "list.wati";
+// Anton Appel le 13 août 2023
+// La classe de string en wati a une utilité limitée par rapport aux chars.
+// Outre le fait que l'accession aux différents caractères est plus simple,
+// et que certaines méthodes ont été simplifiés, les strings n'ont pas d'autre
+// utilité que de ralentire déséspérément le programme.
+//
+// Les strings sont des itérables, avec une taille qui augmente au fur a mesure
+// que des éléments sont rajoutés
 
 classe string contient
     methode constructeur (char) fait
-        self.content = list();
+        self.content = tableau();
         self.taille = 0;
-        si (!type(char) == "char") alors
-            pour i allant de 0 a (!c_len(char)) fait
-                self.content = self.content + !c_en(char, i);
-                self.taille = self.taille + 1;
+        self._iterable = 1;
+        si !type(char) == "char" alors
+            pour i dans [0, !c_len(char)] fait
+                self.content = self.content + char[i];
             fin
+            self.taille = !c_len(char);
         fin
-        si (!type(char) == "string") alors
-            pour i allant de 0 a char.taille alors
-                self.content = self.content + !char.en(i);
+        si !type(char) == "string" alors
+            pour i dans [0, char.taille] alors
+                self.content = self.content + char[i];
             fin
             self.taille = char.taille;
         fin
     fin
 
-    methode destructeur () fait
-        libere self.content;
-    fin
-
     methode en_string () fait
         total = "";
-        pour i allant de 0 a self.taille fait
-            total = total + !self.content.en(i);
+        pour i dans [0, self.taille] fait
+            total = total + !self.content[i];
         fin
         renvoie total;
     fin
 
     methode plus (char) fait
-        si (!type(char) == "char") alors
-            si (!c_len(char) != 0) alors
-                pour i allant de 0 a (!c_len(char)) fait
+        si !type(char) == "char" alors
+            si !c_len(char) != 0 alors
+                pour i dans [0, !c_len(char)] fait
                     self.content = self.content + !c_en(char, i);
                     self.taille = self.taille + 1;
                 fin
             fin
             renvoie self;
         fin
-        si (!type(char) == "string") alors
-            pour i allant de 0 a char.taille alors
-                self.content = self.content + !char.en(i);
+        si !type(char) == "string" alors
+            pour i dans [0, char.taille] alors
+                self.content = self.content + !char[i];
                 self.taille = self.taille + 1;
             fin 
             renvoie self;
@@ -51,47 +55,142 @@ classe string contient
         renvoie self;
     fin
 
-    methode en (int) fait
-        si (!type(int) != "int") alors
+    methode index (int) fait
+        si !type(int) != "int" alors
             !erreur("le type 'list' n'accepte d'indexation que avec le type 'int', pas '"+!type(int)+"'")
         fin
-        renvoie !self.content.en(int);
+        renvoie !self.content[int];
     fin
 
     methode pop (int) fait
-        c = !self.content.en(int);
-        self.content = !self.content.pop(int);
+        c = !self.content.pop(int);
         self.taille = self.taille - 1;
         renvoie c;
     fin
 
+    methode modifie (index, char) fait 
+        si !type(char) != "char" || !c_len(char) != 1 alors 
+            !erreur("!string.modifie : le type de la valeur doit être de type 'char' et de longueur 1")
+        fin
+        si index >= self.taille fait 
+            !erreur("!string.modifie : l'index demandé est plus grand que la taille du string")
+        fin
+        !self.content.modifie(index, char)
+        renvoie self;
+    fin
+
     methode times (int) fait
-        si (!type(int) != "int") alors
+        si !type(int) != "int" alors
             !erreur("type 'string' ne peut pas supporter l'opération '*' avec le type " + !type(int))
         fin
 
-        si (int < 0) alors
+        si int < 0 alors
             !erreur("la valeur de 'times' doit être positive")
         fin
 
         bis = string("");
         
-        pour i allant de 0 a int fait
+        pour i dans [0, int] fait
             bis = bis + self;
         fin
         
-        libere self.content;
-
         self.content = bis.content;
         renvoie bis;
     fin
 
-    methode index (int) fait
-        renvoie !self.en(int);
+    methode argument (func) fait 
+        si func == !self.constructeur || func == !type || func == !print || func == !println alors 
+            renvoie self;
+        fin
+        renvoie string(self);
+    fin
+
+    methode copie () fait 
+        renvoie string(self);
+    fin
+
+    methode split (char) fait 
+        "Sépare le texte par l'arguement spécifié (1 caractère de long). Renvoie un tableau";
+        si !c_len(char) != 1 fait 
+            !erreur("La taille du caractère de séparation doit être de 1");
+        fin
+        total = tableau();
+        patient = string("");
+        pour i dans [0, self.taille] fait 
+            q = self.content[i];
+            si q == char alors 
+                !total.plus(patient);
+                patient = string("");
+            sinon 
+                patient = patient + q;
+            fin
+        fin
+        si patient != "" alors 
+            !total.plus(patient)
+        fin
+        renvoie total;
+    fin
+
+    methode remplace (anc, nouv) fait 
+        "Remplace toutes les occurences de 'anc' par 'nouv'";
+        si !type(anc) != "char" || !c_len(anc) != 1 || !type(nouv) != "char" || !c_len(nouv) != 1 alors 
+            !erreur("!string.remplace : le type des valeurs doivent être de type 'char' et de longueur 1")
+        fin
+
+        pour i dans [0, self.taille] fait 
+            si !self.content.index(i) == anc alors 
+                !self.content.modifie(i, nouv)
+            fin
+        fin
+        renvoie self;
+    fin
+
+    methode ne (x) fait 
+        renvoie !abs(!self.equals(x) - 1);
+    fin
+
+    methode equals (x) fait 
+        t = !type(x);
+        si t == "string" alors
+            renvoie self.content == x.content;
+        sinonsi t == "char" alors 
+            si !c_len(x) != self.taille alors
+                renvoie 0;
+            fin
+            
+            pour i dans [0, self.taille] fait 
+                si !self.index(i) != x[i] alors 
+                    renvoie 0;
+                fin
+            fin
+            renvoie 1;
+        fin
+        renvoie 0;
+    fin
+
+    methode est_nombre() fait 
+        "Renvoie '1' si la chaîne de caractère est uniquement constituée de nombres. '0' sinon";
+        pour i dans [0, self.taille] fait 
+            q = self.content[i];
+            si q != "0" && q != "1" && q != "2" && q != "3" && q != "4" && q != "5" && q != "6" && q != "7" && q != "8" && q != "9" alors 
+                renvoie 0;
+            fin
+        fin
+        renvoie 1;
+    fin
+
+    methode en_int() fait 
+        "Convertis le nombre contenu dans le string en entier";
+        // convertis le nombre en entier
+        n = 0;
+        pour i dans [0, self.taille] fait 
+            n = n*10 + !int(self.content[i]);
+        fin
+        renvoie n;
     fin
 fin
 
-fonction char.index(int) fait
+fonction "char.index"(int) fait
     renvoie !c_en(self, int);
 fin
 
@@ -134,7 +233,7 @@ fonction en_int(c) fait
         s = 1;
     fin
     
-    pour i allant de s a q fait 
+    pour i dans [s, q] fait 
         n = n*10 + !int(nb[i]);
     fin
     

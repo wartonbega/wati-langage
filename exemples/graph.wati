@@ -1,14 +1,13 @@
 inclue "./lib/std.wati";
 
-lists = list();
-!println(lists)
+tableaux = tableau();
 
 pour i allant de 0 a 100 fait
-    n = list();
+    n = tableau();
     pour j allant de 0 a 100 fait
         n = n + " ";
     fin
-    lists = lists + n;
+    !tableaux.plus(n);
 fin
 
 fonction f(x) fait
@@ -20,27 +19,26 @@ decal = 20;
 pour i allant de (0 - decal) a 70 fait
     y = !f(i);
 
-    si (!et(0 < y, y < 99)) alors
-        !println(y)
-        l = !lists.en(y);
+    si 0 < y && y < 99 alors
+        l = tableaux[y];
         !l.modifie(i + decal, "#")
     fin
 fin
 
-lists = !lists.envers();
+tableaux = !tableaux.envers();
 
 pour i allant de 0 a 100 fait
-    l = !lists.en(i);
-    !print(100-i-1, "\t")
+    l = tableaux[i];
+    !print(100-i-1, "\t");
     pour j allant de 0 a 45 fait
-        !print(!l.en(j), "\t")
+        !print(l[j], "\t")
     fin
     !print("\n")
 fin
 
-!print("\t")
+!print("\t");
 
 pour i allant de 0 a 45 fait
-    !print(i-decal, "\t")
+    !print(i - decal, "\t")
 fin
 !print("f(x) = x ^ 2 + 10\n")
