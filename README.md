@@ -13,8 +13,17 @@ Les types de base :
  - `chr` : les caractères, codés sur 1 octet
  - `*type` : les pointeur vers un type, codés sur 8 octets
  - `liste[type]` : les listes d'un type, codés sur 8 octets (les listes de base sont des pointeurs vers un bloc contigue de mémoire).
+ - `rien` : rien (comme du void)
 
 Les types s'utilisent entre chevrons `<ent> x = 1;`...
+
+Exemple :
+ - `<ent>` : un entier
+ - `<[_]chr>` : le type général d'une liste de caractères (peut être utilisée comme chaîne de caractères)
+ - `<*rien>` : un pointeur non typé
+ - `<*chr>` : un pointeur vers un caractère
+ - `<*<chr>>` : même chose
+
 
 Mais avec l'ajout des types vient la modification de la syntaxe d'appel des fonctions.
 ## Les fonctions
