@@ -103,22 +103,3 @@ classe <type> liste contient
         renvoie !deb.pop(index + 1);
     fin
 fin
-
-fait
-    l = <ent>liste();
-    !l.println()
-    !l.ajoute(1)
-    !l.ajoute(2)
-    !l.ajoute(3)
-    !l.println()
-    !println(!l.index(2))
-fin
-
-fait
-    l = <chr>liste();
-    !l.ajoute('1')
-    !l.ajoute('2')
-    !l.ajoute('3')
-    !l.pop(2);
-    !l.println()
-fin
