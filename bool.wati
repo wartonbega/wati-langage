@@ -1,0 +1,28 @@
+inclue "listes.wati";
+
+fonction <bool> "bool._egal" (<bool> soit, <ent> x) fait 
+    renvoie <ent>(soit) == x;
+fin
+
+fonction <rien> println(<bool> x) fait 
+    si x fait 
+        !println("Vrai")
+    fin sinon fait
+        !println("Faux")
+    fin
+fin
+
+fonction <rien> print(<bool> x) fait 
+    si x fait 
+        !print("Vrai")
+    fin sinon fait
+        !print("Faux")
+    fin
+fin
+
+fonction <bool> "bool._pas" (<bool> x) fait 
+    si x fait 
+        renvoie Faux;
+    fin
+    renvoie Vrai;
+fin

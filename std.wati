@@ -1,0 +1,8 @@
+inclue "syscall.wati";
+inclue "mallom.wati";
+inclue "io.wati";
+inclue "entiers.wati";
+inclue "listes.wati";
+inclue "char.wati";
+inclue "bool.wati";
+inclue "erreur.wati";

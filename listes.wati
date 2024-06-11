@@ -1,0 +1,51 @@
+inclue "entiers.wati";
+inclue "io.wati";
+
+fonction <chr> "chr._plus" (<chr> soit, <ent> x) fait 
+    renvoie <chr>(<ent>(soit) + x);
+fin
+
+fonction <[_]chr> init_liste (<ent> longueure) fait
+    i = 0;
+    <[longueure]chr> g;
+    tant que i < longueure fait 
+        g[i] = <chr>(1);
+        i = i + 1;
+    fin
+    renvoie g;
+fin
+
+
+fonction <ent> long (<[_]chr> array) fait
+    l = 0;
+    tant que array[l] != '' fait 
+        l = l + 1;
+    fin
+    renvoie l;
+fin
+
+fonction <rien> print (<[_]chr> arr) fait
+    l = !long(arr);
+    i = 0;
+    tant que i < l fait 
+        !print(arr[i])
+        i = i + 1;
+    fin 
+fin
+
+fonction <rien> println (<[_]chr> arr) fait
+    !print(arr);
+    !print(<chr>(10))
+fin
+
+fonction <[_]chr> copie (<ent> index, <[_]chr> dest, <[_]chr> source) fait 
+    l = !long(dest);
+    d = !long(source);
+    i = 0;
+    tant que i < d fait 
+        dest[index] = source[i];
+        index = index + 1;
+        i = i + 1;
+    fin
+    renvoie dest;
+fin

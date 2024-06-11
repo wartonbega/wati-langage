@@ -1,0 +1,34 @@
+inclue "syscall.wati";
+inclue "listes.wati";
+inclue "entiers.wati";
+
+
+<ent> __stdin = 0;
+<ent> __stdout = 1;
+<ent> __icanon = 2;
+<ent> __echo = 8;
+
+<[1]chr> __chr_tampon;
+
+fonction <rien> print(<chr> x) fait 
+    __chr_tampon[0] = x;
+    !write(__stdout, __chr_tampon, 1);
+fin
+
+fonction <rien> println(<chr> x) fait 
+    !print(x)
+    !print('\n')
+fin
+
+fonction <rien> print(<[_]chr> x) fait 
+    !write(__stdout, x, !long(x))
+fin
+
+fonction <rien> input(<[_]chr> tamp, <ent> taille) fait 
+    !read(__stdin, tamp, taille)
+fin
+
+fonction <rien> exit(<ent> code) fait
+    !exit(<ent8>(code))
+fin
+

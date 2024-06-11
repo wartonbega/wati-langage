@@ -1,6 +1,0 @@
-
-l = string("abcdefg");
-
-pour i dans l fait
-	!println(i)
-fin

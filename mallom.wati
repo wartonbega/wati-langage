@@ -1,0 +1,180 @@
+inclue "entiers.wati";
+inclue "erreur.wati";
+inclue "bool.wati";
+
+externe <*rien> _malloc(<ent>); // Utile pour allouer de la mémoire grossièrement à 
+
+<ent> __taille_mem = 1024;
+
+classe memoire_tuple contient
+    <*rien> ptr;
+    <ent> taille;
+
+    methode <*memoire_tuple> constructeur(<*rien> ptr, <ent> taille) fait         
+        soit = <*memoire_tuple>(!_malloc(16)); // On alloue 16 octets (ptr & taille)
+        soit.ptr = ptr;
+        soit.taille = taille;
+        renvoie soit;
+    fin
+fin
+
+fonction <*rien> alloue_block_memoire () fait 
+    renvoie !_malloc(10000);
+fin
+
+<*rien> __memoire = !alloue_block_memoire();
+<*rien> __nul = <*rien> (0);
+<ent> __blocs_alloue = 0;
+<ent> __blocs_libres = 0;
+<[__taille_mem] <*memoire_tuple>> __section_mem;
+<[__taille_mem] <*memoire_tuple>> __section_libre;
+
+
+// En o(n)
+fonction <rien> pop (<[_]<*memoire_tuple>> liste, <ent> taille, <ent> index) fait 
+    i = index;
+    tant que i < taille - 1  fait 
+        liste[i] = liste[i + 1];
+        i = i + 1;
+    fin
+    liste[i] = <*memoire_tuple>(0);
+fin
+
+// En o(n)
+fonction <*memoire_tuple> trouve (<[_]<*memoire_tuple>> liste, <ent> taille, <*rien> cherche) fait 
+    i = 0;
+    tant que i < taille  fait 
+        bloc = liste[i];
+        si cherche == bloc.ptr fait 
+            renvoie bloc;
+        fin
+        i = i + 1;
+    fin
+    renvoie <*memoire_tuple>(__nul);
+fin
+
+// En o(n)
+fonction <*rien> mallom(<ent> taille) fait 
+    i = 0;
+    debut = 0;
+    tant que i < __blocs_libres fait
+        t = __section_libre[i];
+        si t.taille == taille fait  // On ne traîte pas le cas ou il y a une place plus grande en mémoire
+            !pop(__section_libre, __blocs_libres, i);
+            __blocs_libres = __blocs_libres - 1;
+            __section_mem[__blocs_alloue] = t;
+            __blocs_alloue = __blocs_alloue + 1;
+            renvoie t.ptr;
+        fin
+        i = i + 1;
+    fin
+    si __blocs_alloue >= __taille_mem fait  // Pas trop sûr ...
+        !erreur("Le nombre de blocs mémoire alloués est supérieur à la taille de mémoire disponible")
+    fin
+    si __blocs_alloue != 0 fait
+        dernier_block = __section_mem[__blocs_alloue - 1];
+        p = dernier_block.ptr;
+        t = dernier_block.taille;
+        <*rien> q = <*rien>(<ent>(p) + t);
+        r = memoire_tuple(q, taille);
+        __section_mem[__blocs_alloue] = r;
+        __blocs_alloue = __blocs_alloue + 1;
+        renvoie q;
+    fin sinon fait
+        <*rien> q = <*rien>(__memoire);
+        r = memoire_tuple(q, taille);
+        __section_mem[__blocs_alloue] = r;
+        __blocs_alloue = __blocs_alloue + 1;
+        renvoie q;
+    fin
+    renvoie __nul;
+fin
+
+// En o(n)
+fonction <ent> taille (<*rien> ptr) fait 
+    i = 0;
+    tant que i < __blocs_alloue fait 
+        bloc = __section_mem[i];
+        si bloc.ptr == ptr fait 
+            renvoie bloc.taille;
+        fin
+    fin
+    renvoie 0;
+fin
+
+fonction <rien> met_a_zero (<*rien> ptr, <ent> taille) fait 
+    j = 0;
+    a_reecrire = <[_]ent8>(ptr);
+    tant que j < taille fait 
+        a_reecrire[j] = <ent8>(0);
+        j = j + 1;
+    fin
+fin
+
+// En o(n)
+fonction <rien> libere(<*rien> ptr) fait 
+    // Dans le future, on pourra checker si l'objet libéré possède une fonction de dealloc
+    
+    i = 0;
+    tant que i < __blocs_alloue fait 
+        bloc = __section_mem[i];
+        si bloc.ptr == ptr fait 
+            !pop(__section_mem, __blocs_alloue, i);
+            __section_libre[__blocs_libres] = bloc;
+            __blocs_libres = __blocs_libres + 1;
+            __blocs_alloue = __blocs_alloue - 1;
+            !met_a_zero(bloc.ptr, bloc.taille);
+            renvoie;
+        fin
+        i = i + 1;
+    fin
+    !erreur("N'a pas trouvé le pointeur demandé")
+fin
+
+fonction <rien> copimem(<*rien> src, <*rien> dest) fait 
+    b1 = !trouve(__section_mem, __blocs_alloue, src);
+    b2 = !trouve(__section_mem, __blocs_alloue, src);
+    si b1 == 0 fait 
+        !erreur("!copimem : L'argument 1 (la source) n'a pas été allouée avec 'mallom'")
+    fin
+    si b2 == 0 fait 
+        !erreur("!copimem : L'argument 2 (la destination) n'a pas été allouée avec 'mallom'")
+    fin
+    taille = b1.taille;
+    taille2 = b2.taille;
+    si taille != taille2 fait 
+        !erreur("!copimem : Les tailles des deux pointeurs ne sont pas égales")
+    fin
+    i = 0;
+    tant que i < taille fait 
+        *dest = *src;
+        dest = <*rien>(<ent>(dest) + 1);
+        src = <*rien>(<ent>(src) + 1);
+        i = i + 1;
+    fin
+fin
+
+fonction <rien> affiche_memoire() fait 
+    i = 0;
+    !println("Blocs alloués : addresse, taille, <ent>contenu")
+    tant que i < __blocs_alloue fait 
+        bloc = __section_mem[i];
+        !print(!hex(<ent>(bloc.ptr)))
+        !print(", ")
+        !print(bloc.taille);
+        !print(", ")
+        !println(*<*ent>(bloc.ptr));
+        i = i + 1;
+    fin
+    i = 0;
+    !println("Blocs vides : addresse, taille, <ent>contenu")
+    tant que i < __blocs_libres fait 
+        bloc = __section_libre[i];
+        !print(!hex(<ent>(bloc.ptr)))
+        !print(", ")
+        !print(bloc.taille);
+        !print(", ")
+        !println(*<*ent>(bloc.ptr));
+        i = i + 1;
+    fin
+fin

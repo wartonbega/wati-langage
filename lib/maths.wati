@@ -1,7 +1,0 @@
-fonction abs(x) fait
-    r = x;
-    si x < 0 alors
-        r = -1 * x;
-    fin
-    renvoie r;
-fin

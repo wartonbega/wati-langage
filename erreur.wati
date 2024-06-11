@@ -1,0 +1,7 @@
+inclue "syscall.wati";
+inclue "listes.wati";
+
+fonction <rien> erreur (<[_]chr> x) fait 
+    !println(x);
+    !exit(0);
+fin

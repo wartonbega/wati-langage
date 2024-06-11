@@ -1,0 +1,124 @@
+inclue "mallom.wati";
+
+
+classe <type> noeud contient
+    <type> contenu;
+    <*noeud<type>> proch;
+
+    methode <*noeud <type>> constructeur(<type> x) fait
+        soit = <*noeud<type>>(!mallom(16));
+        soit.contenu = x;
+        soit.proch = soit;
+        renvoie soit;
+    fin
+
+    methode <rien> pousse(<type> x) fait 
+        si soit.proch == soit fait 
+            soit.proch = <type>noeud(x);
+        fin sinon fait 
+            p = soit.proch;
+            !p.pousse(x);
+        fin
+    fin
+
+    methode <rien> print() fait 
+        si soit.proch == soit fait 
+            !print(soit.contenu);
+        fin sinon fait 
+            !print(soit.contenu)
+            !print(", ");
+            p = soit.proch;
+            !p.print();
+        fin
+    fin
+    
+    methode <type> index(<ent> index) fait 
+        si index == 0 fait
+            renvoie soit.contenu;
+        fin
+        p = soit.proch;
+        renvoie !p.index(index - 1);
+    fin
+    
+    methode <type> pop(<ent> index) fait 
+        si index == 1 fait
+            p = soit.proch;
+            c = p.contenu;
+            si p.proch == p fait 
+                soit.proch = soit;
+            fin sinon fait 
+                soit.proch = p.proch;
+            fin
+            !libere(<*rien>p);
+            renvoie c;
+        fin
+        p = soit.proch;
+        renvoie !p.pop(index - 1);
+    fin
+fin
+
+classe <type> liste contient
+    <*noeud<type>> debut;
+    <ent> taille;
+
+    methode <*liste<type>> constructeur() fait 
+        soit = <*liste<type>>!mallom(16);
+        soit.debut = <type>noeud(<type>0);
+        soit.taille = 0;
+        renvoie soit;
+    fin
+
+    methode <rien> ajoute(<type> x) fait 
+        soit.taille = soit.taille + 1;
+        deb = soit.debut;
+        !deb.pousse(x)
+    fin
+
+    methode <rien> print() fait 
+        si soit.taille == 0 fait !print("[ ]"); renvoie; fin
+        !print("[ ")
+        p = soit.debut.proch;
+        !p.print();
+        !print(" ]")
+    fin
+
+    methode <rien> println() fait 
+        !soit.print()
+        !print('\n')
+    fin
+    
+    methode <type> index (<ent> index) fait 
+        si index >= soit.taille fait 
+            !erreur("!liste.index : L'index est plus grand que la taille de la liste")
+        fin
+        deb = soit.debut;
+        renvoie !deb.index(index + 1);
+    fin
+
+    methode <type> pop (<ent> index) fait 
+        si index >= soit.taille fait 
+            !erreur("!liste.pop : L'index est plus grand que la taille de la liste")
+        fin
+        deb = soit.debut;
+        renvoie !deb.pop(index + 1);
+    fin
+fin
+
+fait
+    l = <ent>liste();
+    !l.println()
+    !l.ajoute(1)
+    !l.ajoute(2)
+    !l.ajoute(3)
+    !l.println()
+    !println(!l.index(2))
+fin
+
+fait
+    l = <chr>liste();
+    !l.ajoute('1')
+    !l.ajoute('2')
+    !l.ajoute('3')
+    !l.pop(2);
+    !l.println()
+fin

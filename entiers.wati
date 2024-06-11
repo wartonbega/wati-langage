@@ -1,0 +1,230 @@
+inclue "listes.wati";
+
+deftype ent32 4;
+deftype ent16 2;
+deftype ent8 1;
+
+// Implémentation des opérateurs entre entiers
+
+fonction <ent32> "ent32._ou"             (<ent32> soit, <ent>x) fait renvoie <ent32>(<ent>(soit) || x)         ; fin
+fonction <ent32> "ent32._et"             (<ent32> soit, <ent>x) fait renvoie <ent32>(<ent>(soit) && x)         ; fin
+fonction <bool> "ent32._plus_petit_eg"  (<ent32> soit, <ent>x) fait renvoie <ent>(soit) <= x          ; fin
+fonction <bool> "ent32._plus_grand_eg"  (<ent32> soit, <ent>x) fait renvoie <ent>(soit) >= x          ; fin
+fonction <bool> "ent32._pas_eg"         (<ent32> soit, <ent>x) fait renvoie <ent>(soit) != x          ; fin
+fonction <bool> "ent32._egal"           (<ent32> soit, <ent>x) fait renvoie <ent>(soit) == x          ; fin
+fonction <bool> "ent32._plus_petit"     (<ent32> soit, <ent>x) fait renvoie <ent>(soit) < x           ; fin
+fonction <bool> "ent32._plus_grand"     (<ent32> soit, <ent>x) fait renvoie <ent>(soit) > x           ; fin
+fonction <ent32> "ent32._puissance"      (<ent32> soit, <ent>x) fait renvoie <ent32>(<ent>(soit) ^ x ); fin
+fonction <ent32> "ent32._fois"           (<ent32> soit, <ent>x) fait renvoie <ent32>(<ent>(soit) * x ); fin
+fonction <ent32> "ent32._div"            (<ent32> soit, <ent>x) fait renvoie <ent32>(<ent>(soit) / x ); fin
+fonction <ent32> "ent32._plus"           (<ent32> soit, <ent>x) fait renvoie <ent32>(<ent>(soit) + x ); fin
+fonction <ent32> "ent32._moins"          (<ent32> soit, <ent>x) fait renvoie <ent32>(<ent>(soit) - x ); fin
+fonction <ent32> "ent32._modulo"         (<ent32> soit, <ent>x) fait renvoie <ent32>(<ent>(soit) % x ); fin
+fonction <ent32> "ent32._negatif"         (<ent32> soit) fait renvoie <ent32>(0 - <ent>(soit)); fin
+
+fonction <ent16> "ent16._ou"             (<ent16> soit, <ent>x) fait renvoie <ent16>(<ent>(soit) || x)         ; fin
+fonction <ent16> "ent16._et"             (<ent16> soit, <ent>x) fait renvoie <ent16>(<ent>(soit) && x)         ; fin
+fonction <bool> "ent16._plus_petit_eg"  (<ent16> soit, <ent>x) fait renvoie <ent>(soit) <= x          ; fin
+fonction <bool> "ent16._plus_grand_eg"  (<ent16> soit, <ent>x) fait renvoie <ent>(soit) >= x          ; fin
+fonction <bool> "ent16._pas_eg"         (<ent16> soit, <ent>x) fait renvoie <ent>(soit) != x          ; fin
+fonction <bool> "ent16._egal"           (<ent16> soit, <ent>x) fait renvoie <ent>(soit) == x          ; fin
+fonction <bool> "ent16._plus_petit"     (<ent16> soit, <ent>x) fait renvoie <ent>(soit) < x           ; fin
+fonction <bool> "ent16._plus_grand"     (<ent16> soit, <ent>x) fait renvoie <ent>(soit) > x           ; fin
+fonction <ent16> "ent16._puissance"      (<ent16> soit, <ent>x) fait renvoie <ent16>(<ent>(soit) ^ x ); fin
+fonction <ent16> "ent16._fois"           (<ent16> soit, <ent>x) fait renvoie <ent16>(<ent>(soit) * x ); fin
+fonction <ent16> "ent16._div"            (<ent16> soit, <ent>x) fait renvoie <ent16>(<ent>(soit) / x ); fin
+fonction <ent16> "ent16._plus"           (<ent16> soit, <ent>x) fait renvoie <ent16>(<ent>(soit) + x ); fin
+fonction <ent16> "ent16._moins"          (<ent16> soit, <ent>x) fait renvoie <ent16>(<ent>(soit) - x ); fin
+fonction <ent16> "ent16._modulo"         (<ent16> soit, <ent>x) fait renvoie <ent16>(<ent>(soit) % x ); fin
+fonction <ent16> "ent16._negatif"         (<ent16> soit) fait renvoie <ent16>(0 - <ent>(soit)); fin
+
+fonction <ent8> "ent8._ou"            (<ent8> soit, <ent>x) fait renvoie <ent8>(<ent>(soit) || x)         ; fin
+fonction <ent8> "ent8._et"            (<ent8> soit, <ent>x) fait renvoie <ent8>(<ent>(soit) && x)         ; fin
+fonction <bool> "ent8._plus_petit_eg"  (<ent8> soit, <ent>x) fait renvoie <ent>(soit) <= x          ; fin
+fonction <bool> "ent8._plus_grand_eg"  (<ent8> soit, <ent>x) fait renvoie <ent>(soit) >= x          ; fin
+fonction <bool> "ent8._pas_eg"         (<ent8> soit, <ent>x) fait renvoie <ent>(soit) != x          ; fin
+fonction <bool> "ent8._egal"           (<ent8> soit, <ent>x) fait renvoie <ent>(soit) == x          ; fin
+fonction <bool> "ent8._plus_petit"     (<ent8> soit, <ent>x) fait renvoie <ent>(soit) < x           ; fin
+fonction <bool> "ent8._plus_grand"     (<ent8> soit, <ent>x) fait renvoie <ent>(soit) > x           ; fin
+fonction <ent8> "ent8._puissance"      (<ent8> soit, <ent>x) fait renvoie <ent8>(<ent>(soit) ^ x ); fin
+fonction <ent8> "ent8._fois"           (<ent8> soit, <ent>x) fait renvoie <ent8>(<ent>(soit) * x ); fin
+fonction <ent8> "ent8._div"            (<ent8> soit, <ent>x) fait renvoie <ent8>(<ent>(soit) / x ); fin
+fonction <ent8> "ent8._plus"           (<ent8> soit, <ent>x) fait renvoie <ent8>(<ent>(soit) + x ); fin
+fonction <ent8> "ent8._moins"          (<ent8> soit, <ent>x) fait renvoie <ent8>(<ent>(soit) - x ); fin
+fonction <ent8> "ent8._modulo"         (<ent8> soit, <ent>x) fait renvoie <ent8>(<ent>(soit) % x ); fin
+fonction <ent8> "ent8._negatif"         (<ent8> soit) fait renvoie <ent8>(0 - <ent>(soit)); fin
+
+fonction <ent> puissance_dix(<ent> x) fait 
+    <ent> l = 1;
+    <ent> c = 0;
+    tant que x / l > 0 fait 
+        l = l * 10;
+        c = c + 1;
+    fin
+    renvoie c;
+fin
+
+fonction <ent> puissance_seize(<ent> x) fait 
+    <ent> l = 1;
+    <ent> c = 0;
+    tant que x / l > 0 fait 
+        l = l * 16;
+        c = c + 1;
+    fin
+    renvoie c;
+fin
+
+fonction <ent> puissance_dix(<ent32> x) fait 
+    <ent> l = 1;
+    <ent> c = 0;
+    tant que x / l > 0 fait 
+        l = l * 10;
+        c = c + 1;
+    fin
+    renvoie c;
+fin
+
+fonction <ent> puissance_dix(<ent16> x) fait 
+    <ent> l = 1;
+    <ent> c = 0;
+    tant que x / l > 0 fait 
+        l = l * 10;
+        c = c + 1;
+    fin
+    renvoie c;
+fin
+
+fonction <ent> puissance_dix(<ent8> x) fait 
+    <ent> l = 1;
+    <ent> c = 0;
+    tant que x / l > 0 fait 
+        l = l * 10;
+        c = c + 1;
+    fin
+    renvoie c;
+fin
+
+fonction <[_]chr> ent_en_chaine(<ent> x) fait 
+    si x == 0 fait 
+        <[1] chr> g;
+        g[0] = '0';
+        renvoie g;
+    fin
+    puiss = !puissance_dix(x);
+    max_puiss = puiss;
+    
+    <[_]chr> g = !init_liste(puiss);
+    tant que puiss > 0 fait 
+        reste = x / 10;
+        prime = x % 10;
+        puiss = puiss - 1;
+        g[puiss] = <chr>(48 + prime);
+        x = reste;
+    fin
+    renvoie g;
+fin
+
+fonction <[_]chr> hex(<ent> x) fait 
+    si x == 0 fait 
+        renvoie "0x0";
+    fin
+    puiss = !puissance_seize(x);
+    max_puiss = puiss;
+    <[_]chr> g = !init_liste(puiss + 2);
+    g[0] = '0';
+    g[1] = 'x';
+    tant que puiss > 0 fait 
+        reste = x / 16;
+        prime = x % 16;
+        puiss = puiss - 1;
+        si prime >= 10 fait
+            g[puiss + 2] = <chr>(97 + prime - 10);
+        fin sinon fait
+            g[puiss + 2] = <chr>(48 + prime);
+        fin
+        x = reste;
+    fin
+    renvoie g;
+fin
+
+fonction <[_]chr> ent_en_chaine(<ent32> x) fait 
+    si x == 0 fait 
+        <[1] chr> g;
+        g[0] = '0';
+        renvoie g;
+    fin
+    puiss = !puissance_dix(x);
+    max_puiss = puiss;
+    
+    <[_]chr> g = !init_liste(puiss);
+    tant que puiss > 0 fait 
+        reste = x / 10;
+        prime = x % 10;
+        puiss = puiss - 1;
+        g[puiss] = <chr>(prime + 48);
+        x = reste;
+    fin
+    renvoie g;
+fin
+
+fonction <[_]chr> ent_en_chaine(<ent16> x) fait 
+    si x == 0 fait 
+        <[1] chr> g;
+        g[0] = '0';
+        renvoie g;
+    fin
+    puiss = !puissance_dix(x);
+    max_puiss = puiss;
+    
+    <[_]chr> g = !init_liste(puiss);
+    tant que puiss > 0 fait 
+        reste = x / 10;
+        prime = x % 10;
+        puiss = puiss - 1;
+        g[puiss] = <chr>(prime + 48);
+        x = reste;
+    fin
+    renvoie g;
+fin
+
+fonction <[_]chr> ent_en_chaine(<ent8> x) fait 
+    si x == 0 fait 
+        <[1] chr> g;
+        g[0] = '0';
+        renvoie g;
+    fin
+    puiss = !puissance_dix(x);
+    max_puiss = puiss;
+    <[_]chr> g = !init_liste(puiss);
+    tant que puiss > 0 fait 
+        reste = x / 10;
+        prime = x % 10;
+        puiss = puiss - 1;
+        g[puiss] = <chr>(prime + 48);
+        x = reste;
+    fin
+    renvoie g;
+fin
+
+fonction <rien> print(<ent> x) fait 
+    si x < 0 fait 
+        !print('-')
+        !print(!ent_en_chaine(0 - x))
+    fin sinon fait
+        !print(!ent_en_chaine(x))
+    fin
+fin
+
+fonction <rien> println(<ent> x) fait 
+    !print(x)
+    !print('\n')
+fin
+
+fonction <rien> print(<ent32> x) fait  !print(<ent>(x)) fin
+fonction <rien> print(<ent16> x) fait  !print(<ent>(x)) fin
+fonction <rien> print(<ent8> x) fait  !print(<ent>(x)) fin
+
+
+fonction <rien> println(<ent32> x) fait  !println(<ent>(x)) fin
+fonction <rien> println(<ent16> x) fait  !println(<ent>(x)) fin
+fonction <rien> println(<ent8> x) fait  !println(<ent>(x)) fin
