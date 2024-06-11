@@ -25,12 +25,14 @@ fonction <ent> carre (<ent> x) fait
 fin
 ```
 Le type de retour est indiqué avant le nom de la fonction, et les types des arguments avec le nom de arguments.
+
 Le type de retour de la fonction ne permet pas de la différentier, si bien que `fonction <ent> toto () ...` et `fonction <bool> toto () ...` vont se redéfinir si les arguments sont les mêmes.
 
 Pour appeler une fonction : `!fonction(args...)`
 
 ## Les variables
 Deux type d'implémentation d'une variable, si c'est une `liste` ou une variable simple que l'on définit : 
+
 Définition d'une liste de 10 éléments : 
 ```
 <[10] ent> liste; // Pas d'initialisation
@@ -59,6 +61,7 @@ fin
 
 ## La conversion de type
 On peut faire des castings en wati pour convertir une valeur d'un certain type en un autre tyoe, et en écrasant les données qui ne sont pas comprises dans la taille du type.
+
 Par exemple :
 ```
 <ent> x = 109349185;
@@ -69,4 +72,5 @@ Deux syntaxes possibles :
 
 # Erreurs fréquentes et incompréhensible si on a pas codé le wati-langage : 
 `pop from empty list` : J'ai pas implémenté encore
+
 `Not EOF and not rulled` : Y'a une erreur de syntaxe grossière dans ton code, si grossière que j'ai même pas envie de te dire où elle est.
