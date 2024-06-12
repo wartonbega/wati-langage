@@ -1,6 +1,16 @@
-def print_bar(perc, filename): 
+class settings:
+    last_perc = 0
+
+def reset_bar():
+    settings.last_perc = 0
+
+def print_bar(perc, filename):
     l = 50
     print("\r", end="")
+    if int(perc * 100) == settings.last_perc:
+        return
+    else:
+        settings.last_perc = int(perc * 100)
     p = str(int(perc*100)) + "%"
     print(filename, f" {p}: [ ", "#" * int(perc * l), " " * int((1 - perc)*l), f" ]", sep="", end="")
 

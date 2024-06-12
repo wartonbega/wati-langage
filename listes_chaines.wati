@@ -16,8 +16,7 @@ classe <type> noeud contient
         si soit.proch == soit fait 
             soit.proch = <type>noeud(x);
         fin sinon fait 
-            p = soit.proch;
-            !p.pousse(x);
+            !soit.proch.pousse(x);
         fin
     fin
 
@@ -27,8 +26,7 @@ classe <type> noeud contient
         fin sinon fait 
             !print(soit.contenu)
             !print(", ");
-            p = soit.proch;
-            !p.print();
+            !soit.proch.print();
         fin
     fin
     
@@ -36,8 +34,7 @@ classe <type> noeud contient
         si index == 0 fait
             renvoie soit.contenu;
         fin
-        p = soit.proch;
-        renvoie !p.index(index - 1);
+        renvoie !soit.proch.index(index - 1);
     fin
     
     methode <type> pop(<ent> index) fait 
@@ -52,8 +49,7 @@ classe <type> noeud contient
             !libere(<*rien>p);
             renvoie c;
         fin
-        p = soit.proch;
-        renvoie !p.pop(index - 1);
+        renvoie !soit.proch.pop(index - 1);
     fin
 fin
 
@@ -70,15 +66,13 @@ classe <type> liste contient
 
     methode <rien> ajoute(<type> x) fait 
         soit.taille = soit.taille + 1;
-        deb = soit.debut;
-        !deb.pousse(x)
+        !soit.debut.pousse(x)
     fin
 
     methode <rien> print() fait 
         si soit.taille == 0 fait !print("[ ]"); renvoie; fin
         !print("[ ")
-        p = soit.debut.proch;
-        !p.print();
+        !soit.debut.proch.print();
         !print(" ]")
     fin
 
@@ -91,16 +85,14 @@ classe <type> liste contient
         si index >= soit.taille fait 
             !erreur("!liste.index : L'index est plus grand que la taille de la liste")
         fin
-        deb = soit.debut;
-        renvoie !deb.index(index + 1);
+        renvoie !soit.debut.index(index + 1);
     fin
 
     methode <type> pop (<ent> index) fait 
         si index >= soit.taille fait 
             !erreur("!liste.pop : L'index est plus grand que la taille de la liste")
         fin
-        deb = soit.debut;
         soit.taille = soit.taille - 1;
-        renvoie !deb.pop(index + 1);
+        renvoie !soit.debut.pop(index + 1);
     fin
 fin

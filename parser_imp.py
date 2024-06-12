@@ -2,7 +2,7 @@
 from typing import Tuple
 import rules as rls
 import characters as ch
-from document import Document
+from document import *
 import tokens as tok
 
 def tokenise(rules:list[rls.Rule], document:Document, print_bar=False) -> list[tok.BasicToken]:
@@ -21,7 +21,7 @@ def tokenise(rules:list[rls.Rule], document:Document, print_bar=False) -> list[t
             print(document.peek(), document.counter)
             raise rls.RuleError("Not eof and not rulled", document)
             assert False, "Not eof and not rulled"
-    if print_bar:print()
+    if print_bar:print(); reset_bar()
     return toks
 
 def try_tokenise(rules:list[rls.Rule], document:Document, shift:int) -> Tuple[bool, int]:

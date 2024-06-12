@@ -244,7 +244,7 @@ def get_funcall_name(tok: tok.BasicToken, variables, functions, classes, global_
     name += args_type_name
     return name
 
-def get_methcall_name(tok: tok.BasicToken, variables, functions, classes, global_vars) -> str:
+def get_methcall_name_caca(tok: tok.BasicToken, variables, functions, classes, global_vars) -> str:
     name = type(tok.child[0].child[0], variables, functions, classes, global_vars)
     meth_name = tok.child[0].child[1].child[0].content # BUG GENERATOR
     name += "." + meth_name
@@ -261,6 +261,36 @@ def get_methcall_name(tok: tok.BasicToken, variables, functions, classes, global
     args_type_name += ")"
     name += args_type_name
     return name
+
+def get_methcall_name(tok: tok.BasicToken, variables, functions, classes, global_vars) -> str:
+    tok.print()
+    name_t = type(tok.child[0].child[0], variables, functions, classes, global_vars)
+    for c in tok.child[0].child[1:-1]:
+        att_name = c.child[0].content
+        if name_t[1:] not in classes:
+            error(f"Classe inconnue : {name_t}", c.reference)
+        r = classes[name_t[1:]]
+        if att_name not in r.att_name:
+            error(f"Attribut inconnu : {att_name}", c.reference)
+        i = r.att_name.index(att_name)
+        name_t = r.att_type[i]
+        ret = (i, r)
+    final = tok.child[0].child[-1].child[0].content
+    name = name_t + "." + final
+    args = tok.child[1]
+    if args.child[0].get_rule() != listed_value:
+        args = [args.child[0]]
+    else:
+        args = args.child[0].child
+    args_type_name = "("
+    for i, v in enumerate(args):
+        type_t = type(v, variables, functions, classes, global_vars)
+        args_type_name += f"{type_t}," if i + 1 != len(args) else f"{type_t}"
+    args_type_name += ")"
+    name += args_type_name
+    print(name)
+    return name
+
 
 def get_liste_type(type: str):
     t = type[len("liste["): -1]

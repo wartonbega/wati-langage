@@ -581,7 +581,6 @@ class Generator:
     
     def g_methcall(self, token: tok.BasicToken):
         footprint_name = get_methcall_name(token, self.variables_info, self.functions, self.classes, self.global_vars)
-        soit = token.child[0].child[0]
         args = token.child[1]
         if args.child[0].get_rule() != listed_value:
             args = [args.child[0]]
@@ -603,7 +602,10 @@ class Generator:
                 error(f"Mauvais type ('{type_t}') pour le {i}ème argument '{f_args_name[i]}', il devraît être '{f_args_type[i]}', pas '{type_t}")
             self.g_statement(v)
         
-        self.g_statement(soit)
+        soit = token.child[0]
+        soit_bis = copy.copy(soit)
+        soit_bis.child.pop()
+        self.g_statement(soit_bis)
         self.pop(arg_register[0])
         for i in range(len(args)):
             self.pop(arg_register[len(args) - i])

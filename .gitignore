@@ -3,3 +3,4 @@
 *.dSYM
 line_counter.py
 *.asm
+test*
