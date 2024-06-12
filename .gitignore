@@ -2,3 +2,4 @@
 .vscode/*
 *.dSYM
 line_counter.py
+*.asm

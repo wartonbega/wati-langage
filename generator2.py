@@ -8,7 +8,7 @@ from typing import Tuple
 from parser_imp import *
 import os, sys
 
-plateform = sys.platform()
+plateform = sys.platform
 macos = plateform == "darwin"
 
 basic = """

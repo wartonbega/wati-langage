@@ -100,6 +100,7 @@ classe <type> liste contient
             !erreur("!liste.pop : L'index est plus grand que la taille de la liste")
         fin
         deb = soit.debut;
+        soit.taille = soit.taille - 1;
         renvoie !deb.pop(index + 1);
     fin
 fin

@@ -31,4 +31,3 @@ fin
 fonction <rien> exit(<ent> code) fait
     !exit(<ent8>(code))
 fin
-

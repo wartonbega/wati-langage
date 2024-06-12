@@ -1,10 +1,5 @@
 inclue "std.wati";
-fonction <chr> "chr._plus" (<chr> soit, <ent> x) fait 
-    renvoie '1';
-fin
 
-externe <*rien>_malloc(<ent>);
-deftype ent8 4;
-a = 48;
-b = <chr>a + <chr>1;
-!println(b)
+<ent> x = 109349185;
+<chr> y = <chr>x;
+!println(y)
