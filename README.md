@@ -46,6 +46,11 @@ Définition d'une liste de 10 éléments :
 ```
 <[10] ent> liste; // Pas d'initialisation
 ```
+Le  type général d'une liste est `<[_]type>`. Par exemple : 
+```
+<[10] ent> liste;
+<[_]ent> dup = liste;
+```
 
 Définition d'une variable simple : 
 ```
@@ -54,6 +59,13 @@ Définition d'une variable simple :
 ou 
 ```
 x = 1; // le type peut être implicite car le type de retour pour l'assignation est connu
+```
+
+Pour définir un caractère : utiliser la syntaxe avec des guillemets simples : `'a'`.
+
+La syntaxe avec des guillemets doubles invoque une chaine de caractère de type `<[_]chr>` : 
+```
+<[_]chr> a = "chaine";
 ```
 
 ## Les tests conditionnels
@@ -83,3 +95,62 @@ Deux syntaxes possibles :
 `pop from empty list` : J'ai pas implémenté encore
 
 `Not EOF and not rulled` : Y'a une erreur de syntaxe grossière dans ton code, si grossière que j'ai même pas envie de te dire où elle est.
+
+# Bibliothèque standard
+On peut importer la bibiliothèque standard :
+```
+inclue "std.wati";
+```
+Attention, les chemins relatifs ne sont pas implémentés.
+
+La bibliothèque standard possède des fonctions de bases comme :
+ - `<rien>print(<...>)` : Affiche ce qui est demandé. (Attention les types exotiques ne sont pas implémentés).
+ - `<rien>println(<...>)` : Affiche ce qui est demandé avec un retour à la ligne.
+ - `<rien>exit(<ent> code)` : Sort de l'execution du programme.
+ - `<*rien>mallom(<ent> taille)` : Alloue un bloc de mémoire de taille `taille` (en octet).
+ - `<rien>libere(<*rien> ptr)` : Libère un bloc de mémoire alloué par `mallom`.
+ - `<rien>erreur(<[_]chr> message)` : Affiche le message d'erreur et sort du programme.
+
+
+La bibliothèque standard définit des types de bases comme :
+ - `<ent32>` : des entiers sur 32 bits (4 octets)
+ - `<ent16>` : des entiers sur 16 bits (2 octets)
+ - `<ent8>`  : des entiers sur 8 bits (1 octets)
+Les 3 types précédents n'acceptent des opérations qu'avec `<ent>`. Ainsi il faut caster le type du second opérateur vers `ent` pour effectuer le calcul.
+
+Exemple : 
+```
+<ent8> x = <ent8> 12;
+<ent8> y = <ent8> 10;
+z = x + <ent> y; // Le type de z est donc <ent8>
+```
+
+La bibliothèque standard définit des classes comme :
+ - `liste<type>` : une liste simplement chaînée, de taille dynamique. Ses méthodes : 
+   - `<rien>ajoute(<type> x)` : ajoute l'élément `x` à la fin de la liste.
+   - `<rien>print()>` : affiche la liste, si `print(<type>)` existe.
+   - `<rien>println()>` : affiche la liste et un retour à la ligne, si `print(<type>)` existe.
+   - `<type>index(<ent> i)` : renvoie la valeur à l'index `i`.
+   - `<type>pop(<ent> i)` : enlève l'élément à l'index `i` et renvoie son contenu
+   - Exemple :
+     ```
+     <liste<ent>>l = <ent>liste(); // Définit une liste d'entiers
+     !l.ajoute(1);
+     !l.ajoute(2);
+     !l.ajoute(3);
+     !l.println();
+     !println(!l.index(1)) // affiche '2'
+     ```
+
+ 
+
+
+
+
+
+
+
+
+
+
+
