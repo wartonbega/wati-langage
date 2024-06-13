@@ -16,10 +16,9 @@ if __name__ == "__main__":
     parser.add_argument("-o", "--output", required=False)
     parser.add_argument("-i", "--informations", choices=["o", "n"], required=False)
     args = parser.parse_args()
-    #print(args.filename, args.output, args.informations)
     if args.informations == None or args.informations == "n":
         generator2.INFORMATIONS = False
-    if args.informations == "o":
+    else:
         generator2.INFORMATIONS = True
     if args.output != None:
         output_name = args.output
@@ -34,4 +33,3 @@ if __name__ == "__main__":
     os.system(f"rm {output_name}.asm")
     os.system(f"rm {output_name}.o")
     print(f"Écrit : {output_name}.out")
-

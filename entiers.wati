@@ -54,6 +54,15 @@ fonction <ent8> "ent8._moins"          (<ent8> soit, <ent>x) fait renvoie <ent8>
 fonction <ent8> "ent8._modulo"         (<ent8> soit, <ent>x) fait renvoie <ent8>(<ent>(soit) % x ); fin
 fonction <ent8> "ent8._negatif"         (<ent8> soit) fait renvoie <ent8>(0 - <ent>(soit)); fin
 
+fonction <ent> "ent._puissance" (<ent> soit, <ent> exp) fait  
+    res = 1;
+    tant que exp > 0 fait 
+        res = res * soit;
+        exp = exp - 1;
+    fin
+    renvoie res;
+fin
+
 fonction <ent> puissance_dix(<ent> x) fait 
     <ent> l = 1;
     <ent> c = 0;
@@ -228,3 +237,4 @@ fonction <rien> print(<ent8> x) fait  !print(<ent>(x)) fin
 fonction <rien> println(<ent32> x) fait  !println(<ent>(x)) fin
 fonction <rien> println(<ent16> x) fait  !println(<ent>(x)) fin
 fonction <rien> println(<ent8> x) fait  !println(<ent>(x)) fin
+

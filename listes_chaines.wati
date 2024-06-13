@@ -1,6 +1,5 @@
 inclue "mallom.wati";
 
-
 classe <type> noeud contient
     <type> contenu;
     <*noeud<type>> proch;
@@ -30,9 +29,9 @@ classe <type> noeud contient
         fin
     fin
     
-    methode <type> index(<ent> index) fait 
+    methode <*noeud<type>> index(<ent> index) fait 
         si index == 0 fait
-            renvoie soit.contenu;
+            renvoie soit;
         fin
         renvoie !soit.proch.index(index - 1);
     fin
@@ -56,6 +55,8 @@ fin
 classe <type> liste contient
     <*noeud<type>> debut;
     <ent> taille;
+    <ent> dernier_index;
+    <*noeud<type>> dernier_noeud;
 
     methode <*liste<type>> constructeur() fait 
         soit = <*liste<type>>!mallom(16);
@@ -85,7 +86,16 @@ classe <type> liste contient
         si index >= soit.taille fait 
             !erreur("!liste.index : L'index est plus grand que la taille de la liste")
         fin
-        renvoie !soit.debut.index(index + 1);
+        si index >= soit.dernier_index fait 
+            p = !soit.dernier_noeud.index(index - soit.dernier_index);
+            dernier_index = index;
+            dernier_noeud = p;
+            renvoie p.contenu;
+        fin
+        <*noeud<type>> p = !soit.debut.index(index + 1);
+        dernier_index = index;
+        dernier_noeud = p;
+        renvoie p.contenu;
     fin
 
     methode <type> pop (<ent> index) fait 
@@ -96,3 +106,14 @@ classe <type> liste contient
         renvoie !soit.debut.pop(index + 1);
     fin
 fin
+
+l = <ent>liste();
+!l.ajoute(1);
+!l.ajoute(2);
+!l.ajoute(3);
+!l.ajoute(4);
+!println(!l.index(0))
+!println(!l.index(1))
+!println(!l.index(2))
+!println(!l.index(0))
+!println(!l.index(0))

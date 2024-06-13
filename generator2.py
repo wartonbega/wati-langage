@@ -20,7 +20,7 @@ section .text
 
 basic_end = f"""
   mov rax, {0x2000001 if macos else 1} ;; exit
-  mov rdi, 1
+  mov rdi, 0
   syscall
 """
 
@@ -922,6 +922,8 @@ class Generator:
                 self.g_operator_or()
             elif op == "&&":
                 self.g_operator_and()
+            #elif op == "^":
+            #    self.g_operator_pow()
             self.push_reg("rax")
             return False
         if lhs_type == "bool":
@@ -1078,6 +1080,20 @@ class Generator:
             self.gen(f"  mov {reg_size[size][1]}, {word_size[size]} [rax]")
             self.push_reg("rbx")
             return size
+        if token.get_rule() == dereferencement:
+            size = 8 # un pointeur
+            if token.child[0] != identifier:
+                error(f"La valeur passé à l'opérateur '&' doit être une variable", token.reference)
+            name = token.child[0].content
+            if name not in self.variables:
+                error(f"La variable '{name}' n'est pas définie", token.child[0].reference)
+            type_t, pos, free = self.variables_info[name]
+            shift = 0
+            for i in self.sim_stack[pos:]:
+                shift += i
+            self.gen(f"  lea rax, [rsp + {shift}]")
+            self.push_reg(f"rax")
+            return 8
         if token.get_rule() == negativ:
             type_t = type(token, self.variables_info, self.functions, self.classes, self.global_vars)
             self.g_statement(token.child[0])

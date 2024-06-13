@@ -7,7 +7,7 @@ NUMERICS = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
 # Operator // not put in because a lot of languages uses it as a comment
 OPERATORS = ["++", "**", "<=", ">=", "!=", "==", "&&", "||", "<", ">", "^", "*", "/", "+", "-", "%"]
 ONE_SYM_OPERATORS = ["<", ">", "^", "*", "/", "+", "-", "%"]
-TWO_SYM_OPERATORS = ["++", "**", "<=", ">=", "!=", "==", "&&", "||"]
+TWO_SYM_OPERATORS = ["++", "**", "<=", ">=", "!=", "==", "&&", "||", "<<", ">>"]
 
 class Character:
     def __init__(self):

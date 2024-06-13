@@ -3,7 +3,9 @@ import numpy as np
 
 python_type = type
 
+global INFORMATIONS
 INFORMATIONS = True
+
 
 def error(message, reference):
     print('\033[91m', '\033[1m', "Erreur : ", '\033[0m', '\033[1m', reference, '\033[0m', sep="")
@@ -11,7 +13,7 @@ def error(message, reference):
     exit(1)
 
 def information(message, reference):
-    if INFORMATIONS:
+    if False:
         print("\033[95m", "Info", "\033[0m : ",'\033[1m', reference, '\033[0m', sep="")
         print("\t\033[1m", message, "\033[0m")
 
@@ -263,7 +265,6 @@ def get_methcall_name_caca(tok: tok.BasicToken, variables, functions, classes, g
     return name
 
 def get_methcall_name(tok: tok.BasicToken, variables, functions, classes, global_vars) -> str:
-    tok.print()
     name_t = type(tok.child[0].child[0], variables, functions, classes, global_vars)
     for c in tok.child[0].child[1:-1]:
         att_name = c.child[0].content
@@ -288,7 +289,6 @@ def get_methcall_name(tok: tok.BasicToken, variables, functions, classes, global
         args_type_name += f"{type_t}," if i + 1 != len(args) else f"{type_t}"
     args_type_name += ")"
     name += args_type_name
-    print(name)
     return name
 
 
@@ -332,8 +332,8 @@ def type(expression: tok.BasicToken, variables:dict, functions:dict, classes:dic
     if expression.get_rule() == funcall:
         name = get_funcall_name(expression, variables, functions, classes, global_vars)
         if name not in functions:
-            for i in functions:
-                print(i)
+            #for i in functions:
+            #    print(i)
             error(f"Fonction inconnue {name}", expression.reference)
         return functions[name][2]
     if expression.get_rule() == methcall:

@@ -1,5 +1,6 @@
-
 inclue "entiers.wati";
+
+externe <*rien> _malloc(<ent>);
 
 //0	AUE_NULL	ALL	{ int nosys(void); }   { indirect syscall }
 
