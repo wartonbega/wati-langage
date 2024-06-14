@@ -1,0 +1,26 @@
+
+inclue "mallom.wati";
+
+classe <t1, t2> tuple contient
+    <t1> premier;
+    <t2> second ;
+
+    methode <*tuple<t1, t2>> constructeur(<t1> pre, <t2> sec) fait 
+        soit = <*tuple<t1, t2>>!mallom(16); // à modifier
+        soit.premier = pre;
+        soit.second  = sec;
+        renvoie soit;
+    fin
+
+    methode <rien> liberateur() fait 
+        !libere(<*rien>soit);
+    fin
+
+    methode <rien> println() fait 
+        !print("( ") ;
+        !print(soit.premier) ;
+        !print(", ") ;
+        !print(soit.second) ;
+        !println(" )");
+    fin
+fin
