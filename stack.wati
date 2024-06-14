@@ -1,0 +1,56 @@
+inclue "mallom.wati";
+inclue "io.wati";
+
+classe <type> noeud_stack contient
+    <type> contenu;
+    <*noeud_stack<type>> prec;
+
+    methode <*noeud_stack <type>> constructeur(<type> x) fait
+        soit = <*noeud_stack<type>>(!mallom(16));
+        soit.contenu = x;
+        soit.prec = soit;
+        renvoie soit;
+    fin
+fin
+
+classe <type> stack contient
+    <*noeud_stack<type>> debut;
+    <ent> taille;
+    <ent> dernier_index;
+
+    methode <*stack<type>> constructeur() fait 
+        soit = <*stack<type>>!mallom(16);
+        soit.taille = 0;
+        renvoie soit;
+    fin
+
+    methode <rien> ajoute(<type> x) fait 
+        soit.taille = soit.taille + 1;
+        n = <type>noeud_stack(x);
+        si soit.debut != 0 fait
+            n.prec = soit.debut;
+        fin
+        soit.debut = n;
+    fin
+
+    methode <type> pop () fait 
+        si soit.taille <= 0 fait 
+            !erreur("!stack.pop : Ne peut pas popper d'un stack vide");
+        fin
+        soit.taille = soit.taille - 1;
+        d = soit.debut;
+        soit.debut = d.prec;
+        c = d.contenu;
+        !libere(<*rien>d);
+        renvoie c;
+    fin
+fin
+
+s = <ent>stack();
+!s.ajoute(1);
+!s.ajoute(2);
+!s.ajoute(3);
+!s.ajoute(4);
+tant que s.taille != 0 fait 
+    !println(!s.pop());
+fin

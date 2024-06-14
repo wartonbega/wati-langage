@@ -23,7 +23,7 @@ classe <type> noeud contient
         si soit.proch == soit fait 
             !print(soit.contenu);
         fin sinon fait 
-            !print(soit.contenu)
+            !print(soit.contenu);
             !print(", ");
             !soit.proch.print();
         fin
@@ -67,24 +67,24 @@ classe <type> liste contient
 
     methode <rien> ajoute(<type> x) fait 
         soit.taille = soit.taille + 1;
-        !soit.debut.pousse(x)
+        !soit.debut.pousse(x);
     fin
 
     methode <rien> print() fait 
         si soit.taille == 0 fait !print("[ ]"); renvoie; fin
-        !print("[ ")
+        !print("[ ");
         !soit.debut.proch.print();
-        !print(" ]")
+        !print(" ]");
     fin
 
     methode <rien> println() fait 
-        !soit.print()
-        !print('\n')
+        !soit.print();
+        !print('\n');
     fin
     
     methode <type> index (<ent> index) fait 
         si index >= soit.taille fait 
-            !erreur("!liste.index : L'index est plus grand que la taille de la liste")
+            !erreur("!liste.index : L'index est plus grand que la taille de la liste");
         fin
         si index >= soit.dernier_index fait 
             p = !soit.dernier_noeud.index(index - soit.dernier_index);
@@ -100,20 +100,9 @@ classe <type> liste contient
 
     methode <type> pop (<ent> index) fait 
         si index >= soit.taille fait 
-            !erreur("!liste.pop : L'index est plus grand que la taille de la liste")
+            !erreur("!liste.pop : L'index est plus grand que la taille de la liste");
         fin
         soit.taille = soit.taille - 1;
         renvoie !soit.debut.pop(index + 1);
     fin
 fin
-
-l = <ent>liste();
-!l.ajoute(1);
-!l.ajoute(2);
-!l.ajoute(3);
-!l.ajoute(4);
-!println(!l.index(0))
-!println(!l.index(1))
-!println(!l.index(2))
-!println(!l.index(0))
-!println(!l.index(0))
