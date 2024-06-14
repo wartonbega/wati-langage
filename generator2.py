@@ -20,7 +20,7 @@ section .text
 
 basic_end = f"""
   mov rax, {0x2000001 if macos else 1} ;; exit
-  mov rdi, 0
+  mov rdi, 0 ;; exit success
   syscall
 """
 
@@ -194,6 +194,7 @@ class Generator:
             register_ind = reg_size[size].index(register)
             register = reg_size[8][register_ind]
         self.gen(f"  pop {register}")
+        assert len(self.sim_stack) != 0, f"Le stack est vide {self.reference}, {self.name}, {self.sim_stack}"
         self.sim_stack.pop()
     
     def push_reg(self, register: str):
@@ -270,9 +271,18 @@ class Generator:
             self.g_extern(tok)
         elif tok.get_rule() == classdef:
             self.g_classdef(tok)
+        elif tok.get_rule() == outside_expected_value:
+            t = type(tok.child[0], self.variables_info, self.functions, self.classes, self.global_vars)
+            self.g_statement(tok.child[0])
+            if t != "rien":
+                self.gen(";; pop dans rax car innutile")
+                self.pop("rax")
         elif tok.get_rule() == operator or tok.get_rule() == attended_expression:
+            t = type(tok, self.variables_info, self.functions, self.classes, self.global_vars)
             self.g_statement(tok)
-            self.pop("rax ;; inutile")
+            if t != "rien":
+                self.gen(";; pop dans rax car innutile")
+                self.pop("rax")
         elif tok.get_rule() == colonm:
             pass
         else:
@@ -504,7 +514,7 @@ class Generator:
         args = token.child[2]
         scope = token.child[3]
         
-        ret_type = gettype(token.child[0].child[0])
+        ret_type = gettype(token.child[0])
         footprint_name = self.footprint_name_def(name, args)
         arglen = len(args.child) if not isinstance(args.child[0], tok.t_empty) else 0
         
@@ -989,12 +999,18 @@ class Generator:
             self.gen(f"  call chr_copy")
             return 8 # C'est un pointeur
         if token.get_rule() == t_bool:
+            
+            token.print()
+            print(len(token.child))
+            print(token.parent.lit_seq)
             self.gen("  xor rax, rax")
+            if token.content != "Vrai" and token.content != "Faux":
+                error(f"Pas un vrai booléen : {token.content}", token.reference)
             if token.content == "Vrai":
-                self.gen(f"  mov {reg_size[1][0]}, 1")
+                self.gen(f"  mov rax, 1")
             else:
-                self.gen(f"  mov {reg_size[1][0]}, 0")
-            self.push_reg(reg_size[1][0])
+                self.gen(f"  mov rax, 0")
+            self.push_reg("rax")
             return type_size("bool")
         if token.get_rule() == identifier:
             return self.g_identifier(token)
@@ -1028,8 +1044,11 @@ class Generator:
             self.g_statement(index)
             self.pop("rdx")
             self.pop("rax")
-            self.generation.append(f"  lea rax, [rax + rdx*{type_size(get_liste_type(type_t))}]")
-            self.push_gen("qword [rax]")
+            type_t_list = get_liste_type(type_t)
+            self.generation.append(f"  lea rax, [rax + rdx*{type_size(type_t_list)}]")
+            self.gen("  xor rbx, rbx")
+            self.gen(f"  mov {reg_size[type_size(type_t_list)][1]}, {word_size[type_size(type_t_list)]} [rax]")
+            self.push_reg("rbx")
             return type_size(get_liste_type(type_t))
         if token.get_rule() == attribute_identifier:
             name_t = type(token.child[0], self.variables_info, self.functions, self.classes, self.global_vars)
@@ -1110,6 +1129,7 @@ class Generator:
             self.gen(f"  sub rbx, rax")
             self.push_reg("rbx")
             return type_size(type_t)
+        assert False, "Pas implémenté"
         
     def g_arraydef(self, token: tok.BasicToken):
         array_def = token.child[0]
@@ -1207,7 +1227,7 @@ class Generator:
             error(f"La variable doît être de type 'ptr'", name_og.reference)
         c_type = type(statement, self.variables_info, self.functions, self.classes, self.global_vars)
         if c_type != get_ptr_type(type_t):
-            error(f"Mauvais type pour l'assignement, on attendais '{get_ptr_type()}', et on a eut '{c_type}'")
+            error(f"Mauvais type pour l'assignement, on attendais '{get_ptr_type(type_t)}', et on a eut '{c_type}'")
         self.g_statement(statement)
         self.pop("rbx")
         decal = sum(self.sim_stack[pos:])
@@ -1246,11 +1266,11 @@ class Generator:
         desired_type = gettype(opt_type_usage) if not isinstance(opt_type_usage, tok.t_empty) else ""
         got_type = type(content, self.variables_info, self.functions, self.classes, self.global_vars)
 
-        reg = self.g_statement(content)
+        reg_size_t = self.g_statement(content)
         if name[:2] == "__":
-            self.pop("rax")
             if not is_ptr(got_type) and type_size(got_type) != 8:
                 error("Le type d'une variable globale devrait être *ptr ou être de taille 8")
+            self.pop("rax")
             if name not in self.global_vars:
                 self.global_vars[name] = got_type
             self.generation.append(f"  mov qword [{name}], rax")
@@ -1268,7 +1288,7 @@ class Generator:
             if got_type != self.variables_info[name][0]:
                 error(f"Le type attendu ('{self.variables_info[name][0]}') pour la variable '{name}' n'est pas celui obtenu '{got_type}'", token.reference)
             
-            reg = reg_size[reg][0]
+            reg = reg_size[reg_size_t][0]
             self.pop(reg)
             
             size_t = type_size(got_type)

@@ -40,13 +40,10 @@ def calcul_rearangement(t:tok.BasicToken) -> tok.BasicToken:
     t.child[index].push_child(calcul_rearangement(rhs))
     return t.child[index]
 
-comment = rls.r_option(
-    rls.r_sequence(
-        rls.r_char_sequence("//").ignore_token(),
-        rls.r_setlist(ch.c_any_but("\n"))
-    ).set_name("comment"),
-    rls.r_enclosure("/*", "*/").set_name("comment")
-)
+comment = rls.r_sequence(
+    rls.r_char_sequence("//").ignore_token(),
+    rls.r_setlist(ch.c_any_but("\n"))
+).set_name("comment")
 
 colonm = rls.r_character(";").ignore_token()
 k_classe = rls.r_char_sequence("classe").ignore_token()
@@ -104,7 +101,7 @@ class_type_opt = rls.r_sequence(
     rls.r_optional(
         rls.r_patern_repetition(
             rls.r_sequence(
-                rls.r_identifier(),
+                type_t_name_dec,
                 rls.r_character(",").ignore_token(),
             ).ignore_token()
         ).ignore_token()
@@ -122,6 +119,7 @@ type_usage = rls.r_sequence(
     rls.r_character(">").ignore_token()
 ).set_name("Type-Usage")
 
+#class_type_opt.sequence[1].sub.patern.sequence[0] = type_usage
 type_names.add_option(type_usage)
 
 # enclosures
@@ -147,7 +145,7 @@ hex_int = rls.r_sequence(
 t_bool = rls.r_option(
     rls.r_char_sequence("Vrai"),
     rls.r_char_sequence("Faux")
-).be_parent().set_name("bool")
+).set_name("bool")
 
 float = rls.r_sequence(
     int_,
@@ -189,7 +187,7 @@ methcall = rls.r_sequence(
 
 classcall = rls.r_sequence(
     rls.r_optional(
-        class_type_opt  
+        class_type_opt
     ),
     identifier,
     parenthesis
@@ -461,10 +459,15 @@ forloop = rls.r_sequence(
 
 whileloop = rls.r_sequence(
     k_tant,
-    k_que,
+    k_que.set_error("expected 'que'"),
     attended_expression,
     scope
 ).set_name("whileloop")
+
+outside_expected_value = rls.r_sequence(
+    attended_expression,
+    rls.r_character(";").ignore_token().set_error("Expected ';'")
+)
 
 basic_rulling = [
     comment,
@@ -484,7 +487,7 @@ basic_rulling = [
     scope,
     listed_value,
     parenthesis,
-    attended_expression,
+    outside_expected_value,
     colonm
 ]
 

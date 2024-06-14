@@ -4,3 +4,4 @@
 line_counter.py
 *.asm
 test*
+*.out

@@ -126,7 +126,7 @@ class t_char_sequence(BasicToken):
     def __init__(self, sequence, ignore: bool, parent, ref):
         super().__init__(ignore, parent, ref)
 
-        self.content =  "" # = sequence
+        self.content =  sequence # = sequence
         self.sequence = sequence
         self.child = []
 
