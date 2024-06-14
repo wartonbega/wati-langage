@@ -7,3 +7,4 @@ inclue "char.wati";
 inclue "bool.wati";
 inclue "erreur.wati";
 inclue "tuples.wati";
+inclue "stack.wati";
