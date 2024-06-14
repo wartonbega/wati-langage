@@ -5,4 +5,4 @@ line_counter.py
 *.asm
 test*
 *.out
-*.pyc
+__pycache/*.pyc
