@@ -130,7 +130,8 @@ class r_char_sequence(Rule):
         
     def consume(self, document:Document):
         assert self.try_consume(document)[0], "The sequence is incomplete"
-        return self.rearangement(tok.t_char_sequence(document.consume(length=len(self.lit_seq)), self._ignore_tok, self, document.find_reference()))
+        document.consume(length=len(self.lit_seq))
+        return self.rearangement(tok.t_char_sequence(self.lit_seq, self._ignore_tok, self, document.find_reference()))
 
     def try_consume(self, document:Document, shift=0):
         """Check wether the character sequence is complete"""

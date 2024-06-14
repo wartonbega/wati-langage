@@ -21,7 +21,6 @@ fin
 fonction <*rien> alloue_block_memoire () fait 
     renvoie !_malloc(10000);
 fin
-
 <*rien> __memoire = !alloue_block_memoire();
 <*rien> __nul = <*rien> (0);
 <ent> __blocs_alloue = 0;
@@ -69,7 +68,7 @@ fonction <*rien> mallom(<ent> taille) fait
         i = i + 1;
     fin
     si __blocs_alloue >= __taille_mem fait  // Pas trop sûr ...
-        !erreur("Le nombre de blocs mémoire alloués est supérieur à la taille de mémoire disponible")
+        !erreur("Le nombre de blocs mémoire alloués est supérieur à la taille de mémoire disponible");
     fin
     si __blocs_alloue != 0 fait
         dernier_block = __section_mem[__blocs_alloue - 1];
@@ -128,22 +127,22 @@ fonction <rien> libere(<*rien> ptr) fait
         fin
         i = i + 1;
     fin
-    !erreur("N'a pas trouvé le pointeur demandé")
+    !erreur("N'a pas trouvé le pointeur demandé");
 fin
 
 fonction <rien> copimem(<*rien> src, <*rien> dest) fait 
     b1 = !trouve(__section_mem, __blocs_alloue, src);
     b2 = !trouve(__section_mem, __blocs_alloue, src);
     si b1 == 0 fait 
-        !erreur("!copimem : L'argument 1 (la source) n'a pas été allouée avec 'mallom'")
+        !erreur("!copimem : L'argument 1 (la source) n'a pas été allouée avec 'mallom'");
     fin
     si b2 == 0 fait 
-        !erreur("!copimem : L'argument 2 (la destination) n'a pas été allouée avec 'mallom'")
+        !erreur("!copimem : L'argument 2 (la destination) n'a pas été allouée avec 'mallom'");
     fin
     taille = b1.taille;
     taille2 = b2.taille;
     si taille != taille2 fait 
-        !erreur("!copimem : Les tailles des deux pointeurs ne sont pas égales")
+        !erreur("!copimem : Les tailles des deux pointeurs ne sont pas égales");
     fin
     i = 0;
     tant que i < taille fait 
@@ -156,24 +155,24 @@ fin
 
 fonction <rien> affiche_memoire() fait 
     i = 0;
-    !println("Blocs alloués : addresse, taille, <ent>contenu")
+    !println("Blocs alloués : addresse, taille, <ent>contenu");
     tant que i < __blocs_alloue fait 
         bloc = __section_mem[i];
-        !print(!hex(<ent>(bloc.ptr)))
-        !print(", ")
+        !print(!hex(<ent>(bloc.ptr)));
+        !print(", ");
         !print(bloc.taille);
-        !print(", ")
+        !print(", ");
         !println(*<*ent>(bloc.ptr));
         i = i + 1;
     fin
     i = 0;
-    !println("Blocs vides : addresse, taille, <ent>contenu")
+    !println("Blocs vides : addresse, taille, <ent>contenu");
     tant que i < __blocs_libres fait 
         bloc = __section_libre[i];
-        !print(!hex(<ent>(bloc.ptr)))
-        !print(", ")
+        !print(!hex(<ent>(bloc.ptr)));
+        !print(", ");
         !print(bloc.taille);
-        !print(", ")
+        !print(", ");
         !println(*<*ent>(bloc.ptr));
         i = i + 1;
     fin

@@ -1,13 +1,18 @@
 inclue "syscall.wati";
 inclue "listes.wati";
 inclue "entiers.wati";
-
+inclue "tuples.wati";
 
 <ent> __stdin = 0;
 <ent> __stdout = 1;
+<ent> __stderr = 1;
+
 <ent> __icanon = 2;
 <ent> __echo = 8;
 
+<ent> __buff_size = 1024;
+
+<[__buff_size]chr> __input_chr_tampon;
 <[1]chr> __chr_tampon;
 
 fonction <rien> print(<chr> x) fait 
@@ -16,18 +21,49 @@ fonction <rien> print(<chr> x) fait
 fin
 
 fonction <rien> println(<chr> x) fait 
-    !print(x)
-    !print('\n')
+    !print(x);
+    !print('\n');
 fin
 
 fonction <rien> print(<[_]chr> x) fait 
-    !write(__stdout, x, !long(x))
+    !write(__stdout, x, !long(x));
 fin
 
 fonction <rien> input(<[_]chr> tamp, <ent> taille) fait 
-    !read(__stdin, tamp, taille)
+    !read(__stdin, tamp, taille);
 fin
 
 fonction <rien> exit(<ent> code) fait
-    !exit(<ent8>(code))
+    !exit(<ent8>(code));
+fin
+
+fonction <rien> vide_buffer(<[_]chr> tampon, <ent> taille) fait
+    <ent> i = 0;
+    tant que i < taille fait
+        tampon[i] = '';
+        i = i + 1;
+    fin
+fin
+
+fonction <*tuple<<[_]chr>, ent>> input(<[_]chr> prompt) fait 
+    !vide_buffer(__input_chr_tampon, __buff_size);
+    !write(__stdout, prompt, !long(prompt));
+    <ent> bytesRead = !read(__stdin, __input_chr_tampon, __buff_size - 1);
+    si bytesRead < 0 fait 
+        renvoie <[_]chr, ent>tuple("", -1);
+    fin
+    __input_chr_tampon[bytesRead] = '';
+    si bytesRead > 0 && __input_chr_tampon[bytesRead - 1] == '\n' fait 
+        __input_chr_tampon[bytesRead - 1] = '';
+        bytesRead = bytesRead - 1;
+    fin
+    <[bytesRead]chr> ret;
+    !chr_copie(bytesRead, ret, __input_chr_tampon);
+    renvoie <[_]chr, ent>tuple(ret, bytesRead);
+fin
+
+// On utilise au moins une fois le type <[_]chr, ent>, pas pratique mais j'ai pas mieux
+fait
+    t = <[_]chr, ent>tuple("", 0);
+    !t.liberateur();
 fin

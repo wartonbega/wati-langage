@@ -217,24 +217,59 @@ fin
 
 fonction <rien> print(<ent> x) fait 
     si x < 0 fait 
-        !print('-')
-        !print(!ent_en_chaine(0 - x))
+        !print('-');
+        !print(!ent_en_chaine(0 - x));
     fin sinon fait
-        !print(!ent_en_chaine(x))
+        !print(!ent_en_chaine(x));
     fin
 fin
 
 fonction <rien> println(<ent> x) fait 
-    !print(x)
-    !print('\n')
+    !print(x);
+    !print('\n');
 fin
 
-fonction <rien> print(<ent32> x) fait  !print(<ent>(x)) fin
-fonction <rien> print(<ent16> x) fait  !print(<ent>(x)) fin
-fonction <rien> print(<ent8> x) fait  !print(<ent>(x)) fin
+fonction <rien> print(<ent32> x) fait  !print(<ent>(x)); fin
+fonction <rien> print(<ent16> x) fait  !print(<ent>(x)); fin
+fonction <rien> print(<ent8> x) fait  !print(<ent>(x));  fin
 
 
-fonction <rien> println(<ent32> x) fait  !println(<ent>(x)) fin
-fonction <rien> println(<ent16> x) fait  !println(<ent>(x)) fin
-fonction <rien> println(<ent8> x) fait  !println(<ent>(x)) fin
+fonction <rien> println(<ent32> x) fait  !println(<ent>(x)); fin
+fonction <rien> println(<ent16> x) fait  !println(<ent>(x)); fin
+fonction <rien> println(<ent8> x) fait  !println(<ent>(x)); fin
 
+fonction <ent> chr_en_ent (<chr> x) fait 
+    si x == '1' fait 
+        renvoie 1;
+    fin sinonsi x == '2' fait 
+        renvoie 2;
+    fin sinonsi x == '3' fait 
+        renvoie 3;
+    fin sinonsi x == '4' fait 
+        renvoie 4;
+    fin sinonsi x == '5' fait 
+        renvoie 5;
+    fin sinonsi x == '6' fait 
+        renvoie 6;
+    fin sinonsi x == '7' fait 
+        renvoie 7;
+    fin sinonsi x == '8' fait 
+        renvoie 8;
+    fin sinonsi x == '9' fait 
+        renvoie 9;
+    fin
+    renvoie 0;
+fin
+
+fonction <ent> liste_en_ent(<[_]chr> liste) fait 
+    l = !long(liste);
+    x = 0;
+    dix = 1;
+    i = l - 1;
+    tant que i >= 0 fait 
+        x = x + !chr_en_ent(liste[i]) * dix;
+        dix = dix * 10;
+        i = i - 1;
+    fin
+    renvoie x;
+fin

@@ -28,14 +28,14 @@ fonction <rien> print (<[_]chr> arr) fait
     l = !long(arr);
     i = 0;
     tant que i < l fait 
-        !print(arr[i])
+        !print(arr[i]);
         i = i + 1;
     fin 
 fin
 
 fonction <rien> println (<[_]chr> arr) fait
     !print(arr);
-    !print(<chr>(10))
+    !print(<chr>(10));
 fin
 
 fonction <[_]chr> copie (<ent> index, <[_]chr> dest, <[_]chr> source) fait 
@@ -48,4 +48,12 @@ fonction <[_]chr> copie (<ent> index, <[_]chr> dest, <[_]chr> source) fait
         i = i + 1;
     fin
     renvoie dest;
+fin
+
+fonction <rien> chr_copie (<ent> taille, <[_]chr> dest, <[_]chr> source) fait 
+    i = 0;
+    tant que i < taille fait 
+        dest[i] = source[i];
+        i = i + 1;
+    fin
 fin

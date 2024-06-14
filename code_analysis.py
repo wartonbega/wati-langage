@@ -269,7 +269,7 @@ def get_methcall_name(tok: tok.BasicToken, variables, functions, classes, global
     for c in tok.child[0].child[1:-1]:
         att_name = c.child[0].content
         if name_t[1:] not in classes:
-            error(f"Classe inconnue : {name_t}", c.reference)
+            error(f"Classe inconnue : {name_t} (ou n'a jamais été initialisé)", c.reference)
         r = classes[name_t[1:]]
         if att_name not in r.att_name:
             error(f"Attribut inconnu : {att_name}", c.reference)
@@ -322,6 +322,8 @@ def type(expression: tok.BasicToken, variables:dict, functions:dict, classes:dic
     if expression.get_rule() == operator:
         type0 = type(expression.child[0], variables, functions, classes, global_vars)
         type1 = type(expression.child[1], variables, functions, classes, global_vars)
+        if type0 == "rien" or type1 == "rien":
+            error(f"Ne peut pas appliquer l'opérateur '{expression.content}' avec 'rien'", expression.reference)
         r = operator_type(expression.content, type0, type1)
         f = f"{type0}.{FUNC_OP[expression.content]}({type0},{type1})"
         if not r and f not in functions:
@@ -384,7 +386,8 @@ def type(expression: tok.BasicToken, variables:dict, functions:dict, classes:dic
         for c in expression.child[1:]:
             att_name = c.child[0].content 
             if name_t not in classes:
-                error(f"Classe inconnue : {name_t}", c.reference)
+                print(list(classes.keys()))
+                error(f"Classe inconnue : {name_t} (ou n'a jamais été initialisé)", c.reference)
             r = classes[name_t]
             if att_name not in r.att_name:
                 error(f"Attribut inconnu : {att_name}", c.reference)

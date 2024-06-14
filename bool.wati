@@ -6,17 +6,17 @@ fin
 
 fonction <rien> println(<bool> x) fait 
     si x fait 
-        !println("Vrai")
+        !println("Vrai");
     fin sinon fait
-        !println("Faux")
+        !println("Faux");
     fin
 fin
 
 fonction <rien> print(<bool> x) fait 
     si x fait 
-        !print("Vrai")
+        !print("Vrai");
     fin sinon fait
-        !print("Faux")
+        !print("Faux");
     fin
 fin
 

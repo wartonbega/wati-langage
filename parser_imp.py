@@ -6,23 +6,28 @@ from document import *
 import tokens as tok
 
 def tokenise(rules:list[rls.Rule], document:Document, print_bar=False) -> list[tok.BasicToken]:
-    toks: list[tok.BasicToken]
-    toks = []
-    while document.peek() != "<EOF>":
-        rls.ignore_whitespace_consume(document)
-        ruled = False
-        for rule in rules:
-            if rule.try_consume(document)[0]:
-                toks.append(rule.consume(document))
-                #toks[-1].print(0)
-                ruled = True
-                break
-        if not ruled and document.peek() != "<EOF>":
-            print(document.peek(), document.counter)
-            raise rls.RuleError("Not eof and not rulled", document)
-            assert False, "Not eof and not rulled"
-    if print_bar:print(); reset_bar()
-    return toks
+    try:
+        toks: list[tok.BasicToken]
+        toks = []
+        while document.peek() != "<EOF>":
+            rls.ignore_whitespace_consume(document)
+            ruled = False
+            for rule in rules:
+                if rule.try_consume(document)[0]:
+                    toks.append(rule.consume(document))
+                    #toks[-1].print(0)
+                    ruled = True
+                    break
+            if not ruled and document.peek() != "<EOF>":
+                print(document.peek(), document.counter)
+                raise rls.RuleError("Not eof and not rulled", document)
+                assert False, "Not eof and not rulled"
+        if print_bar:print(); reset_bar()
+        return toks
+    except KeyboardInterrupt:
+        print()
+        print(document.find_reference(0))
+        exit(1)
 
 def try_tokenise(rules:list[rls.Rule], document:Document, shift:int) -> Tuple[bool, int]:
     if document.peek(shift=shift) == "<EOF>":

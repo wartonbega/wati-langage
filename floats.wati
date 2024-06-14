@@ -1,0 +1,63 @@
+inclue "std.wati";
+
+deftype float 8; // les floatants sont codés sur 8 octets
+
+
+fonction <*rien> "*rien._plus" (<*rien> soit, <ent> x) fait
+    renvoie <*rien>(<ent>soit + x);
+fin
+
+fonction <*rien> "*rien._moins" (<*rien> soit, <ent> x) fait
+    renvoie <*rien>(<ent>soit - x);
+fin
+
+fonction <ent32> mantisse(<float> z) fait 
+    <*float> q = &z;
+    <*ent32> p = <*ent32>(<*rien>q + 4);
+    renvoie *p;
+fin
+
+fonction <ent32> exposant(<float> z) fait 
+    <*float> q = &z;
+    <*ent32> p = <*ent32>(<*rien>q);
+    renvoie *p;
+fin
+
+
+fonction <float> float (<ent> x) fait 
+    y = <ent32> x;
+    z = <float> 0;
+    <*float> q = &z;
+    <*ent32> p = <*ent32>(<*rien>q + 4);
+    *p = y;
+    renvoie z;
+fin
+
+fonction <float> ecrit_float(<ent> man, <ent> exp) fait 
+    f = !float(man);
+    <*float> q = &f;
+    <*ent32> p = <*ent32>(<*rien>q);
+    *p = <ent32>exp;
+    renvoie f;
+fin
+
+fonction <float> "float._div" (<float> soit, <ent> x) fait 
+    exp = <ent>!exposant(soit);
+    man = <ent>!mantisse(soit);
+    p = !puissance_dix(x) - 1;
+    exp = exp - p;
+    man = man / x;
+    renvoie !ecrit_float(man, exp);
+fin
+
+fonction <rien> print(<float> x) fait 
+    <ent> mant = <ent> !mantisse(x);
+    <ent> exps = <ent> !exposant(x);
+    !println(exps)
+    dix = 10^exps;
+    !println(dix)
+    !print(mant/dix)
+    !print('.')
+    virg = mant - dix * (mant/dix);
+    !print(virg)
+fin
