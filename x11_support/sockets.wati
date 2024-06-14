@@ -1,0 +1,88 @@
+inclue "syscall.wati";
+inclue "erreur.wati";
+inclue "mallom.wati";
+
+fonction <rien> copie_mem(<*rien> ptr, <[_]chr> src, <ent> long) fait 
+    i = 0;
+    tant que long >= 0 fait 
+        r = <*chr>ptr;
+        *r = src[i];
+        ptr = <*rien>(<ent>ptr + 1);
+        i = i + 1;
+        long = long - 1;
+    fin
+fin
+
+classe x11_connection_req_t contient
+    <ent8>  order;
+    <ent8>  pad1;
+    <ent16> major;
+    <ent16> minor;
+    <ent16> auth_proto_len;
+    <ent16> auth_data_len;
+    <ent16> pad2;
+
+    methode <*x11_connection_req_t> constructeur (<chr> order, <ent> major) fait 
+        soit = <*x11_connection_req_t>!mallom(12);
+        soit.order = <ent8>order;
+        soit.pad1 = <ent8>0;
+        soit.major = <ent16>major;
+        soit.minor = <ent16>0;
+        soit.auth_proto_len = <ent16>0;
+        soit.auth_data_len = <ent16>0;
+        soit.pad2 = <ent16>0;
+        renvoie soit;
+    fin
+fin
+
+classe X11_read_serv contient
+    <ent32> id;
+    <ent32> id_base;
+    <ent32> id_mask;
+    <ent32> root_visual_id;
+
+    methode <*X11_read_serv> constructeur () fait 
+        renvoie <*X11_read_serv>!mallom(16);
+    fin
+fin
+
+fonction <ent> x11_connect_server() fait 
+    fd = !socket(__AF_UNIX, __SOCK_STREAM, 0);
+    si fd < 0 fait 
+        !erreur("Impossible de créer un socket")
+    fin
+    !println(fd);
+
+    addr = !mallom(112);
+    p = <*ent16>addr;
+    *p = <ent16>__AF_UNIX;
+    !copie_mem(<*rien>(<ent>addr + 2), "/otr/X11/bin/Xquartz", 22)
+    fd = !connect(fd, addr, 112);
+    si fd < 0 fait 
+        !erreur("Ne peut pas se connecter")
+    fin
+    !println(fd);
+
+    <*x11_connection_req_t> handshake = x11_connection_req_t('1', 11);
+    nb_ecrit = !write(fd, <[_]chr>handshake, 12);
+    si nb_ecrit != 12 fait 
+        !erreur("N'a pas réussi à écrire le handshake")
+    fin
+
+    <[8]chr> buff;
+    nb_lut = !read(fd, buff, 8);
+    
+    si nb_lut != 8 fait 
+        !erreur("N'a pas lut 8 octets")
+    fin
+    si <ent>(buff[0]) != 1 fait 
+        !erreur("Le premier octet n'est pas un succès")
+    fin
+
+    resp = X11_read_serv();
+    !read(fd, <[_]chr>resp, 16)
+
+    renvoie fd;
+fin
+
+!x11_connect_server();

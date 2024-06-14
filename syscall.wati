@@ -4,6 +4,9 @@ externe <*rien> _malloc(<ent>);
 
 //0	AUE_NULL	ALL	{ int nosys(void); }   { indirect syscall }
 
+<ent> __EXIT_FAILURE = 1;
+<ent> __EXIT_SUCCESS = 0;
+
 //1	AUE_EXIT	ALL	{ void exit(int rval); } 
 fonction <rien> exit (<ent8> rval) fait 
     syscall 1, rval;
@@ -12,13 +15,15 @@ fin
 //2	AUE_FORK	ALL	{ int fork(void); } 
 
 //3	AUE_NULL	ALL	{ user_ssize_t read(int fd, user_addr_t cbuf, user_size_t nbyte); } 
-fonction <rien> read(<ent> fd, <[_]chr> cbuf, <ent> nbyte) fait 
+fonction <ent> read(<ent> fd, <[_]chr> cbuf, <ent> nbyte) fait 
     syscall 3, fd, cbuf, nbyte;
+    renvoie sys_ret_;
 fin
 
 //4	AUE_NULL	ALL	{ user_ssize_t write(int fd, user_addr_t cbuf, user_size_t nbyte); } 
-fonction <rien> write(<ent> fd, <[_]chr> cbuf, <ent> nbyte) fait 
+fonction <ent> write(<ent> fd, <[_]chr> cbuf, <ent> nbyte) fait 
     syscall 4, fd, cbuf, nbyte;
+    renvoie sys_ret_;
 fin
 
 //5	AUE_OPEN_RWTC	ALL	{ int open(user_addr_t path, int flags, int mode); } 
@@ -49,6 +54,7 @@ fin
 //25	AUE_GETEUID	ALL	{ int geteuid(void); } 
 //26	AUE_PTRACE	ALL	{ int ptrace(int req, pid_t pid, caddr_t addr, int data); } 
 //#if SOCKETS
+
 //27	AUE_RECVMSG	ALL	{ int recvmsg(int s, struct msghdr *msg, int flags); } 
 //28	AUE_SENDMSG	ALL	{ int sendmsg(int s, caddr_t msg, int flags); } 
 //29	AUE_RECVFROM	ALL	{ int recvfrom(int s, void *buf, size_t len, int flags, struct sockaddr *from, int *fromlenaddr); } 
@@ -133,8 +139,31 @@ fin
 //95	AUE_FSYNC	ALL	{ int fsync(int fd); } 
 //96	AUE_SETPRIORITY	ALL	{ int setpriority(int which, id_t who, int prio); } 
 //#if SOCKETS
+
+<ent> __AF_UNIX         = 1;
+<ent> __AF_INET         = 2;
+<ent> __AF_ISO          = 3;
+<ent> __AF_NS           = 4;
+<ent> __AF_IMPLINK      = 5;
+
+<ent> __SOCK_STREAM     = 1;
+<ent> __SOCK_DGRAM      = 2;
+<ent> __SOCK_RAW        = 3;
+<ent> __SOCK_SEQPACKET  = 4;
+<ent> __SOCK_RDM        = 5;
+
 //97	AUE_SOCKET	ALL	{ int socket(int domain, int type, int protocol); } 
+fonction <ent> socket (<ent> domain, <ent> type, <ent> protocol) fait
+    syscall 97, domain, type, protocol;
+    renvoie sys_ret_;
+fin
+
 //98	AUE_CONNECT	ALL	{ int connect(int s, caddr_t name, socklen_t namelen); } 
+fonction <ent> connect (<ent> s, <*rien> name, <ent> namelen) fait 
+    syscall 98, s, name, namelen;
+    renvoie sys_ret_;
+fin
+
 //#else
 //97	AUE_NULL	ALL	{ int nosys(void); }
 //98	AUE_NULL	ALL	{ int nosys(void); }
