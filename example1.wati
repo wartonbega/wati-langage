@@ -1,0 +1,58 @@
+inclue "std.wati";
+
+// Une petite calculatrice en ligne de commande
+// Un seul opérateur
+
+fonction <bool> est_operateur(<chr> x) fait 
+    renvoie x == '+' || x == '-' || x == '*' || x == '/';
+fin
+
+!println("Faites des calculs avec un opérateur, et tapez 'stop' pour arrêter la calculette");
+
+continue = Vrai;
+tant que continue fait
+    chaine_long = !input("Calcul : ");
+    chaine = chaine_long.premier;
+    long = chaine_long.second;
+
+    si chaine == "stop" fait 
+        continue = Faux;
+    fin sinon fait
+        <[10]chr> nb1;
+        nb1_taille = 0;
+        <[10]chr> nb2;
+        nb2_taille = 0;
+        <chr> op = '';
+
+        i = 0;
+        tant que i < long fait 
+            c = chaine[i];
+            si c != '' && c != ' ' fait
+                si !est_operateur(c) fait 
+                    op = c;
+                fin sinonsi op == '' fait 
+                    nb1[nb1_taille] = c;
+                    nb1_taille = nb1_taille + 1;
+                fin sinon fait 
+                    nb2[nb2_taille] = c;
+                    nb2_taille = nb2_taille + 1;
+                fin
+            fin
+            i = i + 1;
+        fin
+
+        e1 = !liste_en_ent(nb1);
+        e2 = !liste_en_ent(nb2);
+        resultat = 0;
+        si op == '+' fait 
+            resultat = e1 + e2;
+        fin sinonsi op == '-' fait 
+            resultat = e1 - e2;
+        fin sinonsi op == '*' fait 
+            resultat = e1 * e2;
+        fin sinonsi op == '/' fait 
+            resultat = e1 / e2;
+        fin
+        !println(resultat);
+    fin
+fin
