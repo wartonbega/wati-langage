@@ -321,8 +321,8 @@ class Generator:
             g.undetermined = self.undetermined
             g.generate_code(True)
             information(f"Importé '{filename}'", token.reference)
-            
             for i in g.generation[1:]:
+                
                 self.generation.append(i)
 
     def g_syscall(self, token: tok.BasicToken):
@@ -999,10 +999,6 @@ class Generator:
             self.gen(f"  call chr_copy")
             return 8 # C'est un pointeur
         if token.get_rule() == t_bool:
-            
-            token.print()
-            print(len(token.child))
-            print(token.parent.lit_seq)
             self.gen("  xor rax, rax")
             if token.content != "Vrai" and token.content != "Faux":
                 error(f"Pas un vrai booléen : {token.content}", token.reference)
