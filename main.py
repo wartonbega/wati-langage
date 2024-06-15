@@ -6,6 +6,8 @@ output_name = "a"
 filename = ""
 rm_asm = True
 
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         prog="Compilateur pour Wati-langage",
@@ -31,7 +33,7 @@ if __name__ == "__main__":
     filename = args.filename
     generator2.run_code(filename, output_name + ".asm")
     print("Compilé en assembleur !")
-    os.system(f"nasm -f macho64 -o {output_name}.o {output_name}.asm")
+    os.system(f"nasm -f{'macho64' if generator2.macos else 'elf64'} -o {output_name}.o {output_name}.asm")
     print("Liage de l'assembleur !")
     os.system(f"gcc -e _start {output_name}.o -lc -m64 -o {output_name}.out -Wl,-no_pie")
     if rm_asm:

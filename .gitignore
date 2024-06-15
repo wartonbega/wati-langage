@@ -3,6 +3,5 @@
 *.dSYM
 line_counter.py
 *.asm
-test*
 *.out
 __pycache/*.pyc
