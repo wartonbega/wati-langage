@@ -36,7 +36,7 @@ if __name__ == "__main__":
     print(f"nasm -f{'macho64' if sys.platform == 'darwin' else 'elf64'} -o {output_name}.o {output_name}.asm")
     os.system(f"nasm -f{'macho64' if sys.platform == 'darwin' else 'elf64'} -o {output_name}.o {output_name}.asm")
     print("Liage de l'assembleur !")
-    print(f"gcc -e {generator2.starting_label} {output_name}.o -lc -m64 -o {output_name}.out -Wl,-no_pie")
+    print(f"gcc {('-e ' + generator2.starting_label) if sys.platform == 'darwin' else ''} {output_name}.o -lc -m64 -o {output_name}.out -Wl,-no_pie")
     os.system(f"gcc -e {generator2.starting_label} {output_name}.o -lc -m64 -o {output_name}.out -Wl,-no_pie")
     if rm_asm:
         os.system(f"rm {output_name}.asm")
