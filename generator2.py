@@ -132,7 +132,7 @@ class Generator:
                 return 
             for i in range(self.arg_num):
                 self.push_reg(arg_register[i])
-            if self.name == "_start":
+            if self.name == starting_label:
                 self.gen("  mov rax, plateforme_name")
                 self.gen("  mov qword [__plateforme], rax")
             
@@ -157,7 +157,7 @@ class Generator:
     def generate_func(self):# Quand des nouvelles fonctions sont définies dans une fonction pendant
                             # la génération, ça merde. Donc il faut faire tampon 
         function_stack = list(self.functions.keys())
-        if self.name == "_start":
+        if self.name == starting_label:
             while len(function_stack) != 0:
                 i = function_stack.pop(0)
                 if self.functions[i][0] != None and self.functions[i][0].used:
@@ -239,7 +239,7 @@ class Generator:
             self.generation.append(f"  add rsp, {size}")
 
     def g_instruction(self, tok: tok.BasicToken):
-        #if self.name == "_start":
+        #if self.name == starting_label:
         #    tok.print(0)
         if tok.get_rule() == vardef:
             self.g_vardef(tok)
@@ -432,9 +432,9 @@ class Generator:
         return type_name
 
     def g_classdef(self, token: tok.BasicToken):
-        #if self.name == "_start" :
+        #if self.name == starting_label :
         #    token.print(0)
-        #if self.name != "_start":
+        #if self.name != starting_label:
         #    error("Ne peut pas définir de classe en dehors de '_start'", token.reference)
         type_intern_def = token.child[0]
         name = token.child[1].content
@@ -511,7 +511,7 @@ class Generator:
         self.classes[name] = clss
 
     def g_funcdef(self, token: tok.BasicToken):
-        #if self.name != "_start":
+        #if self.name != starting_label:
         #    error("Ne peut pas définir de fonction en dehors de '_start'", token.reference)
 
         name = token.child[1]
@@ -634,7 +634,7 @@ class Generator:
     def generate_undetermined(self, name: str, class_type_opt: tok.BasicToken):
         following = get_class_type(class_type_opt)
         token :tok.BasicToken = self.undetermined[name]
-        #if self.name == "_start":
+        #if self.name == starting_label:
         #    token.print(0)
         names = token.child[0]
         if isinstance(names.child[0], tok.t_empty):
@@ -654,7 +654,7 @@ class Generator:
         self.g_classdef(token)
 
     def g_classcall(self, token: tok.BasicToken):
-        #if self.name == "_start":
+        #if self.name == starting_label:
         #    token.print(0)
         class_type_opt = token.child[0]
         name = token.child[1].content
@@ -1273,7 +1273,7 @@ class Generator:
         self.variables_info[name] = (type, 0, False)
 
     def g_vardef(self, token: tok.BasicToken):
-        #if self.name == "_start":
+        #if self.name == starting_label:
         #    token.print(0)
         opt_type_usage = token.child[0]
         opt_ptr_modif = token.child[1]
