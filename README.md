@@ -86,7 +86,7 @@ On peut faire des castings en wati pour convertir une valeur d'un certain type e
 Par exemple :
 ```
 <ent> x = 109349185;
-<chr> y = <chr>x; // Y vaut 'A' : le premier octed de x est gardé
+<chr> y = <chr>x; // Y vaut 'A' : le premier octet de x est gardé
 ```
 Deux syntaxes possibles : 
 `y = <chr>x` ou `y = <chr>(x)`
@@ -139,7 +139,7 @@ La bibliothèque standard définit des classes comme :
      !l.ajoute(2);
      !l.ajoute(3);
      !l.println();
-     !println(!l.index(1)) // affiche '2'
+     !println(!l.index(1)); // affiche '2'
      ```
 
  
