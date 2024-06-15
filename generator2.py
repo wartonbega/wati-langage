@@ -88,7 +88,7 @@ class Classes:
 
 labels = LabelGenerator()
 
-starting_label = "_main"
+starting_label = "_start" if sys.platform == "darwin" else "_main"
 
 class Generator:
     def __init__(self, toks: list[tok.BasicToken], name=starting_label, end=basic_end, arg_num = 0, ret_type="rien", ref=""):
