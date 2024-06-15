@@ -1,4 +1,5 @@
 inclue "entiers.wati";
+inclue "listes.wati";
 
 externe <*rien> _malloc(<ent>);
 
@@ -7,31 +8,42 @@ externe <*rien> _malloc(<ent>);
 <ent> __EXIT_FAILURE = 1;
 <ent> __EXIT_SUCCESS = 0;
 
+si __plateforme == "darwin" fait
+    __syscall_exit = 1;
+    __syscall_read = 3;
+    __syscall_write = 4;
+    __syscall_socket = 97;
+    __syscall_connect = 98;
+    __syscall_mmap = 197;
+fin sinonsi __plateforme == "linux" || __plateforme == "linux2" fait 
+    __syscall_read = 0;
+    __syscall_write = 4;
+    __syscall_socket = 41;
+    __syscall_connect = 42;
+    __syscall_mmap = 9;
+    __syscall_exit = 60;
+fin
+
 //1	AUE_EXIT	ALL	{ void exit(int rval); } 
 fonction <rien> exit (<ent8> rval) fait 
-    syscall 1, rval;
+    syscall __syscall_exit, rval;
 fin
 
 //2	AUE_FORK	ALL	{ int fork(void); } 
 
 //3	AUE_NULL	ALL	{ user_ssize_t read(int fd, user_addr_t cbuf, user_size_t nbyte); } 
 fonction <ent> read(<ent> fd, <[_]chr> cbuf, <ent> nbyte) fait 
-    syscall 3, fd, cbuf, nbyte;
+    syscall __syscall_read, fd, cbuf, nbyte;
     renvoie sys_ret_;
 fin
 
 //4	AUE_NULL	ALL	{ user_ssize_t write(int fd, user_addr_t cbuf, user_size_t nbyte); } 
 fonction <ent> write(<ent> fd, <[_]chr> cbuf, <ent> nbyte) fait 
-    syscall 4, fd, cbuf, nbyte;
+    syscall __syscall_write, fd, cbuf, nbyte;
     renvoie sys_ret_;
 fin
 
 //5	AUE_OPEN_RWTC	ALL	{ int open(user_addr_t path, int flags, int mode); } 
-fonction <ent> read(<[_]chr> path, <ent> flags, <ent> mode) fait 
-    syscall 5, path, flags, mode;
-    renvoie sys_ret_;
-fin
-
 //6	AUE_CLOSE	ALL	{ int close(int fd); } 
 //7	AUE_WAIT4	ALL	{ int wait4(int pid, user_addr_t status, int options, user_addr_t rusage); } 
 //8	AUE_NULL	ALL	{ int nosys(void); }   { old creat }
@@ -91,11 +103,6 @@ fin
 //52	AUE_SIGPENDING	ALL	{ int sigpending(struct sigvec *osv); } 
 //53	AUE_SIGALTSTACK	ALL	{ int sigaltstack(struct sigaltstack *nss, struct sigaltstack *oss); } 
 //54	AUE_IOCTL	ALL	{ int ioctl(int fd, u_long com, caddr_t data); } 
-fonction <ent> ioctl(<ent> fd, <ent> com, <[_]chr> data) fait
-    syscall 54, fd, com, data;
-    renvoie sys_ret_;
-fin
-
 //55	AUE_REBOOT	ALL	{ int reboot(int opt, char *command); } 
 //56	AUE_REVOKE	ALL	{ int revoke(char *path); } 
 //57	AUE_SYMLINK	ALL	{ int symlink(char *path, char *link); } 
@@ -152,15 +159,17 @@ fin
 <ent> __SOCK_SEQPACKET  = 4;
 <ent> __SOCK_RDM        = 5;
 
+
 //97	AUE_SOCKET	ALL	{ int socket(int domain, int type, int protocol); } 
 fonction <ent> socket (<ent> domain, <ent> type, <ent> protocol) fait
-    syscall 97, domain, type, protocol;
+    syscall __syscall_socket, domain, type, protocol;
     renvoie sys_ret_;
 fin
 
+
 //98	AUE_CONNECT	ALL	{ int connect(int s, caddr_t name, socklen_t namelen); } 
 fonction <ent> connect (<ent> s, <*rien> name, <ent> namelen) fait 
-    syscall 98, s, name, namelen;
+    syscall __syscall_connect, s, name, namelen;
     renvoie sys_ret_;
 fin
 
@@ -300,8 +309,10 @@ fin
 //195	AUE_SETRLIMIT	ALL	{ int setrlimit(u_int which, struct rlimit *rlp); } 
 //196	AUE_GETDIRENTRIES	ALL	{ int getdirentries(int fd, char *buf, u_int count, long *basep); } 
 //197	AUE_MMAP	ALL	{ user_addr_t mmap(caddr_t addr, size_t len, int prot, int flags, int fd, off_t pos); } 
+
+
 fonction <*rien> mmap(<*rien> addr, <ent> len, <ent> prot, <ent> flags, <ent> fd, <ent> pos) fait 
-    syscall 197, addr, len, prot, flags, fd, pos;
+    syscall __syscall_mmap, addr, len, prot, flags, fd, pos;
     renvoie <*rien>(sys_ret_);
 fin
 

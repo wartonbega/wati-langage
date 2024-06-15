@@ -57,3 +57,19 @@ fonction <rien> chr_copie (<ent> taille, <[_]chr> dest, <[_]chr> source) fait
         i = i + 1;
     fin
 fin
+
+fonction <bool> "liste[chr]._egal" (<[_]chr> soit, <[_]chr>x) fait 
+    l1 = !long(soit);
+    l2 = !long(x);
+    si l1 != l2 fait 
+        renvoie Faux;
+    fin
+    i = 0;
+    tant que i < l1 fait 
+        si soit[i] != x[i] fait 
+            renvoie Faux;
+        fin
+        i = i + 1;
+    fin
+    renvoie Vrai;
+fin

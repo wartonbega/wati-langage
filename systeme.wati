@@ -1,0 +1,11 @@
+inclue "std.wati";
+
+__petit_boutien = Faux;
+__gros_boutien = Faux;
+
+test_boutiennete = 0x1234;
+si <ent8>test_boutiennete == 0x12 fait 
+    __gros_boutien = Vrai;
+fin sinon fait 
+    __petit_boutien = Vrai;
+fin

@@ -130,6 +130,9 @@ class Generator:
                 return 
             for i in range(self.arg_num):
                 self.push_reg(arg_register[i])
+            if self.name == "_start":
+                self.gen("  mov rax, plateforme_name")
+                self.gen("  mov qword [__plateforme], rax")
             
         found_ret = False
         for i, tok in enumerate(self.toks):
@@ -335,17 +338,19 @@ class Generator:
             val = [val]
         if len(val) > 7:
             error("Un syscall ne peut pas avoir plus de 7 arguments", token.reference)
-        if val[0].get_rule() != int_ and  val[0].get_rule() != hex_int:
-            error("Le premier arguement d'un syscall doit être un entier", val[0].reference)
+        t0 = type(val[0], self.variables_info, self.functions, self.classes, self.global_vars)
+        if t0 != "ent":
+            error(f"Le premier arguement d'un syscall doit être un entier, pas '{t0}'", val[0].reference)
         for arg in val[1:]:
             self.g_statement(arg)
         order = ["rdi", "rsi", "rdx", "r10", "r8", "r9"][:len(val)-1]
         order.reverse()
         for i, arg in enumerate(val[1:]):
             self.pop(f"{order[i]}")
-        num = hex(int(val[0].content) + 0x2000000 if macos else 0)
-        self.gen(f"  mov rax, {num}")
-        
+        num = 0x2000000 if macos else 0
+        self.g_statement(val[0])
+        self.pop("rax")
+        self.gen(f"  lea rax, [rax + {str(hex(num))}]")
         self.gen("  syscall")
         self.push_reg("rax")
         
@@ -1323,14 +1328,19 @@ class Generator:
     
 def generate(g :Generator):
     g.used = True
+    
+    g.global_vars["__plateforme"] = "liste[chr]"
+    g.variables.append("__plateforme")
+    g.variables_info["__plateforme"] = ("liste[chr]", 0, False)
+    
     g.generate_code()
     g.generate_func()
     g.generation.append(inb.print_func)
     g.generation.append("section .data")
     g.generation.append("  chr_buffer:  times 10 db 0")
-    g.generation.append("""  endianness: dw 0""")
     for i, msg in enumerate(g.declared_string):
         g.generation.append(f"  msg{i}: db \"{msg}\", 0, 0, 0, 0, 0, 0, 0, 0")
+    g.gen(f"  plateforme_name: db \"{sys.platform}\", 0, 0, 0, 0, 0, 0, 0, 0")
     for i, name in enumerate(g.global_vars):
         g.generation.append(f"  {name}: dq 0")
     g.generation.append("  newline: db 10")

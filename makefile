@@ -9,6 +9,7 @@ runC:
 	nasm -f macho64 -o test.o $(VAR)
 	gcc -e _start test.o -lc -m64 -o a.out -Wl,-no_pie
 	
-clear:
-	rm test.o 
-	rm a.out
+clean:
+	rm *.out	
+	rm *.o
+	rm *.asm
