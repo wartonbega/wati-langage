@@ -1196,7 +1196,7 @@ class Generator:
         type_t, pos, free = self.variables_info[name]
         c_type = type(value, self.variables_info, self.functions, self.classes, self.global_vars)
         if f"liste[{c_type}]" != type_t:
-            error(f"Mauvais type pour l'assignement, on attendais '{type_t[len("liste["): -1]}', et on a eut '{c_type}'", token.reference)
+            error(f"Mauvais type pour l'assignement, on attendais '{type_t[len('liste['): -1]}', et on a eut '{c_type}'", token.reference)
         self.g_statement(index)
         self.g_statement(value)
         self.pop("rbx")
