@@ -1088,7 +1088,7 @@ class Generator:
             self.g_statement(token.child[0])
             if f"{type_t}._pas({type_t})" in self.functions:
                 self.pop("rax")
-                self.generation.append(f"  call _{self.nasm_footprint_name(f"{type_t}._pas({type_t})")}")
+                self.generation.append(f"  call _{self.nasm_footprint_name(f'{type_t}._pas({type_t})')}")
                 self.push_reg("rax")
                 _, _, ret_type = self.functions[f"{type_t}._pas({type_t})"]
                 return type_size(ret_type)
