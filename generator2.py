@@ -9,7 +9,8 @@ from parser_imp import *
 import os, sys
 
 plateform = sys.platform
-macos = plateform == "darwin"
+macos = os.name == "darwin"
+print(f"Compilation pour '{plateform}'")
 
 basic = """
 default rel
