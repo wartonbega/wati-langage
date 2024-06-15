@@ -144,7 +144,7 @@ class Generator:
             self.g_end(self.basic_end)
 
             # Little check to know if we messed up with the pop/push function : 
-            assert len(self.sim_stack) == 0, f"The sim stack is not empty : {self.sim_stack} for {self.name}"
+            assert len(self.sim_stack) == 0, f"The sim stack is not empty : {self.sim_stack} for {self.name}, {self.reference}"
     
     def add_function(self, name, value):
         self.functions[name] = value
@@ -207,13 +207,16 @@ class Generator:
         self.gen(f"  push {register}")
         self.sim_stack.append(8)
         return 8
-        
-    def g_end(self, end):
+    
+    def g_empty_vars(self):
         for _ in range(len(self.variables)):
             name = self.variables.pop()
             if name not in self.global_vars:
                 self.pop()
             self.variables_info.__delitem__(name)
+    
+    def g_end(self, end):
+        self.g_empty_vars()
         self.gen(end)    
 
     def begin_scope(self):
@@ -308,6 +311,7 @@ class Generator:
             doc = Document(filename=filename)
             toks = tokenise(basic_rulling, doc, True)
             g = Generator(toks, name=filename)
+            g.sim_stack = self.sim_stack
             g.functions = self.functions
             g.classes = self.classes
             g.declared_string = self.declared_string
@@ -320,7 +324,6 @@ class Generator:
             g.generate_code(True)
             information(f"Importé '{filename}'", token.reference)
             for i in g.generation[1:]:
-                
                 self.generation.append(i)
 
     def g_syscall(self, token: tok.BasicToken):
@@ -1123,7 +1126,30 @@ class Generator:
             self.gen(f"  sub rbx, rax")
             self.push_reg("rbx")
             return type_size(type_t)
+        if token.get_rule() == conditional_value:
+            type1 = type(token.child[0], self.variables_info, self.functions, self.classes, self.global_vars)
+            condition_type = type(token.child[1], self.variables_info, self.functions, self.classes, self.global_vars)
+            type2 = type(token.child[2], self.variables_info, self.functions, self.classes, self.global_vars)
+            if type1 != type2:
+                error(f"Les types des deux valeurs possibles devraient être égaux, pas '{type1}' et '{type2}'", token.reference)
+            if condition_type != "bool":
+                error(f"Le type de la condition devrait être de type 'bool', pas '{condition_type}'", token.reference)
+            lab1 = labels.label(modif="cond_val")
+            lab_end = labels.label(modif="cond_val_end")
+            self.g_statement(token.child[1]) # La condition
+            self.pop("rax")
+            self.gen("  test rax, rax")
+            self.gen(f"  jnz {lab1}")
+            self.g_statement(token.child[2])
+            self.gen(f"  jmp {lab_end}")
+            self.gen(f"{lab1}:")
+            self.g_statement(token.child[0])
+            self.gen(f"{lab_end}:")
+            # On triche : 
+            self.sim_stack.pop()
+            return type_size(type1)
         assert False, "Pas implémenté"
+        
         
     def g_arraydef(self, token: tok.BasicToken):
         array_def = token.child[0]
@@ -1139,15 +1165,14 @@ class Generator:
         self.generation.append(f"  call {MALLOC_NAME}")
         if name in self.variables:
             error(f"'{name}' a déjà été défini et ne peut pas être réécris par une liste", token.reference)
-        
         if name[:2] == "__":
             self.generation.append(f"  mov qword [{name}], rax")
             self.global_vars[name] = l_type
         else:
             self.push_reg("rax")
-
         self.variables.append(name)
         self.variables_info[name] = (f"{l_type}", len(self.sim_stack), True)
+    
 
     def g_array_modif(self, token: tok.BasicToken):
         name = token.child[2].content
@@ -1261,9 +1286,9 @@ class Generator:
         got_type = type(content, self.variables_info, self.functions, self.classes, self.global_vars)
 
         reg_size_t = self.g_statement(content)
-        if name[:2] == "__":
-            if not is_ptr(got_type) and type_size(got_type) != 8:
-                error("Le type d'une variable globale devrait être *ptr ou être de taille 8", token.reference)
+        if len(name) >= 3 and name[:2] == "__":
+            if not is_ptr(got_type) and type_size(got_type) > 8:
+                error(f"La taille maximale d'une variable est 8 octets, pas {type_size(got_type)} ({got_type})", token.reference)
             self.pop("rax")
             if name not in self.global_vars:
                 self.global_vars[name] = got_type

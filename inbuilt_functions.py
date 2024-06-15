@@ -82,24 +82,6 @@ _strlen_null:
   mov   rax, rcx       ; rcx = the length (put in rax)
   pop   rcx            ; restore rcx
   ret                  ; get out
-  
-_big_or_little_endian:
-  mov  ax, 0x1234        ; load up 1234 hex
-  mov  [endianness], ax      ; store that word to memory
-  mov  al, [endianness]      ; get first byte of that
-  cmp  al, 0x12          ; 12 means big endian
-  je   big
-little:
-  mov rax, 1
-  xor rbx, rbx
-  mov  qword [__little_endian], rax
-  mov  qword [__big_endian], rbx
-  ret
-big:
-  mov rax, 1
-  xor rbx, rbx
-  mov  qword [__little_endian], rbx
-  mov  qword [__big_endian], rax
-  ret
+
 
 """

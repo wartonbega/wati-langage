@@ -407,7 +407,15 @@ def type(expression: tok.BasicToken, variables:dict, functions:dict, classes:dic
         return f"*{type(expression.child[0], variables, functions, classes, global_vars)}"
     if expression.get_rule() == not_op:
         return type(expression.child[0], variables, functions, classes, global_vars)
-    
+    if expression.get_rule() == conditional_value:
+        type1 = type(expression.child[0], variables, functions, classes, global_vars)
+        condition_type = type(expression.child[1], variables, functions, classes, global_vars)
+        type2 = type(expression.child[2], variables, functions, classes, global_vars)
+        if type1 != type2:
+            error(f"Les types des deux valeurs possibles devraient être égaux, pas '{type1}' et '{type2}'", expression.reference)
+        if condition_type != "bool":
+            error(f"Le type de la condition devrait être de type 'bool', pas '{condition_type}'", expression.reference)
+        return type1
     assert False, f"Unimplemented rule : {expression.get_rule().name if expression.get_rule().name != "" else expression.get_rule()}. Reference : {expression.reference}"
     
 def gettype(token: tok.BasicToken) -> str:

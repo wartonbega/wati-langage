@@ -283,6 +283,17 @@ attended_expression = rls.r_option(
     identifier
 )
 
+conditional_value = rls.r_sequence(
+    rls.r_character("?").ignore_token(),
+    attended_expression,
+    k_si,
+    attended_expression,
+    k_sinon,
+    attended_expression
+).set_name("conditional-value")
+
+attended_expression.add_option(conditional_value)
+
 array_dec_brackets.set_mid_patern(attended_expression)
 
 keyword_return = rls.r_sequence(

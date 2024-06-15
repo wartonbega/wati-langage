@@ -19,6 +19,7 @@ def tokenise(rules:list[rls.Rule], document:Document, print_bar=False) -> list[t
                     ruled = True
                     break
             if not ruled and document.peek() != "<EOF>":
+                print()
                 print(document.peek(), document.counter)
                 raise rls.RuleError("Not eof and not rulled", document)
                 assert False, "Not eof and not rulled"
