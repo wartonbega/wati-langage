@@ -87,8 +87,10 @@ class Classes:
 
 labels = LabelGenerator()
 
+starting_label = "_start" if macos else "_main"
+
 class Generator:
-    def __init__(self, toks: list[tok.BasicToken], name="_start", end=basic_end, arg_num = 0, ret_type="rien", ref=""):
+    def __init__(self, toks: list[tok.BasicToken], name=starting_label, end=basic_end, arg_num = 0, ret_type="rien", ref=""):
         self.toks = toks
         self.name = name
         self.real_name = ""
