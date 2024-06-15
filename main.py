@@ -33,8 +33,8 @@ if __name__ == "__main__":
     filename = args.filename
     generator2.run_code(filename, output_name + ".asm")
     print("Compilé en assembleur !")
-    print(f"nasm -f{'macho64' if sys.platform == "darwin" else 'elf64'} -o {output_name}.o {output_name}.asm")
-    os.system(f"nasm -f{'macho64' if sys.platform == "darwin" else 'elf64'} -o {output_name}.o {output_name}.asm")
+    print(f"nasm -f{'macho64' if sys.platform == 'darwin' else 'elf64'} -o {output_name}.o {output_name}.asm")
+    os.system(f"nasm -f{'macho64' if sys.platform == 'darwin' else 'elf64'} -o {output_name}.o {output_name}.asm")
     print("Liage de l'assembleur !")
     print(f"gcc -e {generator2.starting_label} {output_name}.o -lc -m64 -o {output_name}.out -Wl,-no_pie")
     os.system(f"gcc -e {generator2.starting_label} {output_name}.o -lc -m64 -o {output_name}.out -Wl,-no_pie")
