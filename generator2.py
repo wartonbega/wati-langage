@@ -14,9 +14,9 @@ print(f"Compilation pour '{plateform}'")
 
 basic = """
 default rel
-section .text
-    global _start
+global _start
 
+section .text
 """
 
 basic_end = f"""
