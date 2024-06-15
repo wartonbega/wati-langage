@@ -131,8 +131,6 @@ class Generator:
             for i in range(self.arg_num):
                 self.push_reg(arg_register[i])
             
-            if self.name == "_start":
-                self.gen("  call _big_or_little_endian")
         found_ret = False
         for i, tok in enumerate(self.toks):
             self.g_instruction(tok)
@@ -1265,7 +1263,7 @@ class Generator:
         reg_size_t = self.g_statement(content)
         if name[:2] == "__":
             if not is_ptr(got_type) and type_size(got_type) != 8:
-                error("Le type d'une variable globale devrait être *ptr ou être de taille 8")
+                error("Le type d'une variable globale devrait être *ptr ou être de taille 8", token.reference)
             self.pop("rax")
             if name not in self.global_vars:
                 self.global_vars[name] = got_type
@@ -1300,8 +1298,6 @@ class Generator:
     
 def generate(g :Generator):
     g.used = True
-    g.global_vardef("__big_endian", "bool")
-    g.global_vardef("__little_endian", "bool")
     g.generate_code()
     g.generate_func()
     g.generation.append(inb.print_func)
