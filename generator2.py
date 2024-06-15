@@ -580,7 +580,7 @@ class Generator:
         func_gen, f_args, ret_type = self.functions[footprint_name]
         func_gen.used = True
         if func_gen.arg_num != len(args):
-            error(f"Mauvais nombre d'arguments indiqué : {footprint_name} requiers {len(f_args)} argument{"s" if len(f_args) > 1 else ""}")
+            error(f"Mauvais nombre d'arguments indiqué : {footprint_name} requiers {len(f_args)} argument{'s' if len(f_args) > 1 else ''}")
         f_args_name = [f_args[i].child[1].content for i in range(func_gen.arg_num)]
         f_args_type = [func_gen.args_type[i] for i in f_args_name]
         for i, v in enumerate(args):
@@ -609,7 +609,7 @@ class Generator:
     
         func_gen, f_args, ret_type = self.functions[footprint_name]
         if func_gen.arg_num - 1 != len(args):
-            error(f"Mauvais nombre d'arguments, {footprint_name} requiers {func_gen.arg_num - 1} argument{"s" if func_gen.arg_num > 2 else ""}", token.reference)
+            error(f"Mauvais nombre d'arguments, {footprint_name} requiers {func_gen.arg_num - 1} argument{'s' if func_gen.arg_num > 2 else ''}", token.reference)
         f_args_name = [f_args[i].child[1].content for i in range(func_gen.arg_num - 1)]
         f_args_type = [func_gen.args_type[i] for i in f_args_name]
         for i, v in enumerate(args):
@@ -682,7 +682,7 @@ class Generator:
         func_gen, f_args, ret_type = self.functions[footprint_name]
         func_gen.used = True
         if func_gen.arg_num - 1 != len(args):
-            error(f"Mauvais nombre d'arguments, {footprint_name} requiers {func_gen.arg_num - 1} argument{"s" if func_gen.arg_num > 2 else ""}", token.reference)
+            error(f"Mauvais nombre d'arguments, {footprint_name} requiers {func_gen.arg_num - 1} argument{'s' if func_gen.arg_num > 2 else ''}", token.reference)
         if ret_type != f"*{name}":
             error(f"Le constructeur devrait renvoyer '*{name}', pas '{ret_type}'", func_gen.reference)
         f_args_name = [f_args[i].child[1].content for i in range(func_gen.arg_num - 1)]
@@ -905,7 +905,7 @@ class Generator:
         if f"{lhs_type}.{FUNC_OP[op]}({lhs_type},{rhs_type})" in self.functions:
             self.pop("rbx")
             self.pop("rax")
-            self.generation.append(f"  call _{self.nasm_footprint_name(f"{lhs_type}.{FUNC_OP[op]}({lhs_type},{rhs_type})")}")
+            self.generation.append(f"  call _{self.nasm_footprint_name(f'{lhs_type}.{FUNC_OP[op]}({lhs_type},{rhs_type})')}")
             self.push_reg("rax")
             _, _, ret_type = self.functions[f"{lhs_type}.{FUNC_OP[op]}({lhs_type},{rhs_type})"]
             return type_size(ret_type)
@@ -995,7 +995,8 @@ class Generator:
             #content = bytes(content, "utf-8").decode("unicode_escape")
             if not content.replace("\n", "\", 10 ,\"") in self.declared_string:
                 self.declared_string.append(content.replace("\n", "\", 10 ,\""))
-            self.gen(f"  mov rax, qword msg{self.declared_string.index(content.replace("\n", "\", 10 ,\""))}")
+            g = self.declared_string.index(content.replace("\n", "\", 10 ,\""))
+            self.gen(f"  mov rax, qword msg{g}")
             self.push_reg("rax")
             self.gen(f"  mov rdx, {l}")
             self.gen(f"  call {MALLOC_NAME}")
@@ -1120,12 +1121,12 @@ class Generator:
             self.g_statement(token.child[0])
             if f"{type_t}._negatif({type_t})" in self.functions:
                 self.pop("rax")
-                self.generation.append(f"  call _{self.nasm_footprint_name(f"{type_t}._negatif({type_t})")}")
+                self.generation.append(f"  call _{self.nasm_footprint_name(f'{type_t}._negatif({type_t})')}")
                 self.push_reg("rax")
-                _, _, ret_type = self.functions[f"{type_t}._negatif({type_t})"]
+                _, _, ret_type = self.functions[f'{type_t}._negatif({type_t})']
                 return type_size(ret_type)
             if type_t != "ent":
-                error(f"Le type '{type_t}' ne peut pas être négatif, ou ne possède pas de méthode '{f"{type_t}._negatif({type_t})"}'", token.reference)
+                error(f"Le type '{type_t}' ne peut pas être négatif, ou ne possède pas de méthode '{f'{type_t}._negatif({type_t})'}'", token.reference)
             self.pop("rax")
             self.gen("  mov rbx, 0")
             self.gen(f"  sub rbx, rax")

@@ -416,7 +416,7 @@ def type(expression: tok.BasicToken, variables:dict, functions:dict, classes:dic
         if condition_type != "bool":
             error(f"Le type de la condition devrait être de type 'bool', pas '{condition_type}'", expression.reference)
         return type1
-    assert False, f"Unimplemented rule : {expression.get_rule().name if expression.get_rule().name != "" else expression.get_rule()}. Reference : {expression.reference}"
+    assert False, f"Unimplemented rule : {expression.get_rule().name if expression.get_rule().name != '' else expression.get_rule()}. Reference : {expression.reference}"
     
 def gettype(token: tok.BasicToken) -> str:
     following = ""
