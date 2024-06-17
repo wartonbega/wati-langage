@@ -1,5 +1,7 @@
 Le compilateur du wati-langage !
 
+Un langage de programmation tout en français.
+
 Bien qu'écrit en python, et sans optimisation de code, le wati langage peut être compilé : 
 `$ python3 main.py sourcefile.wati -o output`
 
