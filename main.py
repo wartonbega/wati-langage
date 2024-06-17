@@ -37,8 +37,9 @@ if __name__ == "__main__":
     os.system(f"nasm -f{'macho64' if sys.platform == 'darwin' else 'elf64'} -o {output_name}.o {output_name}.asm")
     print("Liage de l'assembleur !")
     if sys.platform == 'darwin':
-        print(f"gcc {('-e ' + generator2.starting_label) if sys.platform == 'darwin' else ''} {output_name}.o -lc -m64 -o {output_name}.out -Wl,-no_pie")
-        os.system(f"gcc -e {generator2.starting_label} {output_name}.o -lc -m64 -o {output_name}.out -Wl,-no_pie")
+        commande = f"gcc {('-e ' + generator2.starting_label) if sys.platform == 'darwin' else ''} {output_name}.o -lc -R/usr/X11/lib -L/usr/X11/lib -lX11 -m64 -o {output_name}.out -Wl,-no_pie"
+        print(commande)
+        os.system(commande)
     else:
         print(f"gcc {output_name}.o -L/usr/lib/gcc/x86_64-linux-gnu/9/ -lc -m64 -o {output_name}.out -Wl,-no_pie")
         os.system(f"gcc -e {generator2.starting_label} {output_name}.o -lc -m64 -o {output_name}.out -Wl,-no_pie")

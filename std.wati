@@ -6,6 +6,7 @@ inclue "char.wati";
 inclue "bool.wati";
 inclue "erreur.wati";
 inclue "systeme.wati";
+inclue "iterateurs.wati";
 //inclue "tuples.wati";
 //inclue "stack.wati";
 //inclue "listes.wati";

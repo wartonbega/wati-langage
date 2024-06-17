@@ -1,2 +1,10 @@
 inclue "std.wati";
-!println("Hello World!");
+
+%sidef PLATEFORME_DARWIN fait
+    !println("Hello World!");
+fin
+
+
+pour i dans plage(0, 10) fait 
+    !println(i);
+fin

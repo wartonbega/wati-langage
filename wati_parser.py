@@ -122,6 +122,9 @@ type_usage = rls.r_sequence(
 #class_type_opt.sequence[1].sub.patern.sequence[0] = type_usage
 type_names.add_option(type_usage)
 
+
+
+
 # enclosures
 scope = rls.r_enclosure("fait", "fin").set_name("scope{}")
 class_scope = rls.r_enclosure("contient", "fin").set_name("classe-scope{}")
@@ -394,8 +397,12 @@ vardef = rls.r_sequence(
     identifier,
     rls.r_optional(brackets),
     rls.r_optional(rls.r_patern_repetition(proto_attribute).set_name("attributes-asgmt")),
-    rls.r_character("=").ignore_token(),
-    attended_expression,
+    rls.r_optional(
+        rls.r_sequence(
+            rls.r_character("=").ignore_token(),
+            attended_expression
+        ).ignore_token()
+    ),
     rls.r_character(";").set_error("';' attendu").ignore_token()
 ).set_name("vardef")
 
@@ -438,6 +445,9 @@ classdef = rls.r_sequence(
         class_type_opt
     ),
     identifier,
+    rls.r_optional(
+        rls.r_char_sequence("IT")
+    ).set_name("iterateur"),
     class_scope.set_error("Expected class scope")
 ).set_name("classdef")
 
@@ -462,9 +472,12 @@ ifstmt = rls.r_sequence(
 
 forloop = rls.r_sequence(
     k_pour,
-    identifier,
+    rls.r_identifier(),
     k_dans,
-    brackets,
+    rls.r_option(
+        brackets,
+        attended_expression
+    ),
     scope
 ).set_name("forloop")
 
@@ -475,6 +488,21 @@ whileloop = rls.r_sequence(
     scope
 ).set_name("whileloop")
 
+# ifdef
+ifdefscope = rls.r_sequence(
+    rls.r_character("%").ignore_token(),
+    rls.r_char_sequence("sidef").ignore_token(),
+    rls.r_identifier(),
+    scope
+)
+
+define_k = rls.r_sequence(
+    rls.r_character("%").ignore_token(),
+    rls.r_char_sequence("definis").ignore_token(),
+    rls.r_identifier()
+)
+
+# outside-of-smthg value
 outside_expected_value = rls.r_sequence(
     attended_expression,
     rls.r_character(";").ignore_token().set_error("Expected ';'")
@@ -482,6 +510,8 @@ outside_expected_value = rls.r_sequence(
 
 basic_rulling = [
     comment,
+    ifdefscope,
+    define_k,
     array_def,
     vardef,
     funcdef,

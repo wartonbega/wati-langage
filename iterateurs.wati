@@ -1,0 +1,39 @@
+inclue "mallom.wati";
+inclue "io.wati";
+
+// l'itérateur le plus basique, génère un interval [a, b] de naturels
+classe plage IT contient 
+    <ent> depart;
+    <ent> arrivee;
+    <ent> courant;
+
+    methode <*plage> constructeur (<ent> dep, <ent> arr) fait 
+        soit = <*plage>!mallom(24);
+        soit.depart = dep;
+        soit.arrivee = arr;
+        soit.courant = dep;
+        renvoie soit;
+    fin
+    
+    methode <*plage> constructeur (<ent> arr) fait 
+        soit = <*plage>!mallom(24);
+        soit.depart = 0;
+        soit.arrivee = arr;
+        soit.courant = 0;
+        renvoie soit;
+    fin
+
+    methode <rien> debut () fait 
+        soit.courant = soit.depart;
+    fin
+
+    methode <bool> fin () fait
+        renvoie soit.courant == soit.arrivee; 
+    fin
+
+    methode <ent> suivant () fait 
+        c = soit.courant;
+        soit.courant = soit.courant + 1;
+        renvoie c;
+    fin
+fin

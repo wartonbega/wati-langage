@@ -253,6 +253,7 @@ class r_enclosure(Rule):
         self.mid = mid
         self.whitespace_ig = True
         self.evaluation = False
+        return self
 
     def set_evaluation(self, rulling:list[Rule], evaluation:Callable[..., list[tok.BasicToken]], try_evaluation:Callable[..., Tuple[bool, int]]):
         self.rulling = rulling

@@ -1,0 +1,12 @@
+inclue "std.wati";
+
+externe <*rien> _XOpenDisplay(<*rien>);
+externe <*rien> _XCreateSimpleWindow(<*rien>, <*rien>, <ent>, <ent>, <ent>, <ent>);
+externe <*rien> _DefaultScreen(<*rien>);
+
+dpy = !_XOpenDisplay(<*rien>0);
+
+blackColor = 0;
+whiteColor = 255;
+
+w = !_XCreateSimpleWindow(dpy, <*rien>0, 0, 0, 200, 100);

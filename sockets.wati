@@ -1,0 +1,98 @@
+inclue "syscall.wati";
+inclue "erreur.wati";
+inclue "mallom.wati";
+
+fonction <rien> copie_mem(<*rien> ptr, <[_]chr> src, <ent> long) fait 
+    i = 0;
+    tant que long >= 0 fait 
+        r = <*chr>ptr;
+        *r = src[i];
+        ptr = <*rien>(<ent>ptr + 1);
+        i = i + 1;
+        long = long - 1;
+    fin
+fin
+
+classe x11_connection_req_t contient
+    <ent8>  order;
+    <ent8>  pad1;
+    <ent16> major;
+    <ent16> minor;
+    <ent16> auth_proto_len;
+    <ent16> auth_data_len;
+    <ent16> pad2;
+
+    methode <*x11_connection_req_t> constructeur (<chr> order, <ent> major) fait 
+        soit = <*x11_connection_req_t>!mallom(12);
+        soit.order = <ent8>order;
+        //soit.pad1 = <ent8>0;
+        soit.major = <ent16>major;
+        //soit.minor = <ent16>0;
+        //soit.auth_proto_len = <ent16>0;
+        //soit.auth_data_len = <ent16>0;
+        //soit.pad2 = <ent16>0;
+        renvoie soit;
+    fin
+fin
+
+classe x11_response_error contient
+    <ent8>  err;
+    <ent8>  length;
+    <ent16> protocol_major;
+    <ent16> protocol_minor;
+    <ent16> additionnal;
+    <[_]chr> string;
+fin
+
+
+
+classe X11_read_serv contient
+    <ent32> id;
+    <ent32> id_base;
+    <ent32> id_mask;
+    <ent32> root_visual_id;
+
+    methode <*X11_read_serv> constructeur () fait 
+        renvoie <*X11_read_serv>!mallom(16);
+    fin
+fin
+
+fonction <ent> x11_connect_server() fait 
+    sock = !socket(__AF_UNIX, __SOCK_STREAM, 0);
+    si sock <= 0 fait 
+        !erreur("Impossible de créer un socket");
+    fin
+    addr = !mallom(112);
+    p = <*ent16>addr;
+    *p = <ent16>__AF_UNIX;
+    !copie_mem(<*rien>(<ent>addr + 3), "/usr/X11/bin/Xquartz", 22); 
+    fd = !connect(sock, addr, 112);
+    si fd <= 0 fait 
+        !erreur("Ne peut pas se connecter");
+    fin
+    <[12]ent8> InitializationRequest;
+    InitializationRequest[0] = <ent8>'1';
+    InitializationRequest[2] = <ent8>11;
+
+    <[1024]chr> ReadBuffer;
+    <[1024]chr> SendBuffer;
+
+    BytesWritten = !write(sock, <[_]chr>InitializationRequest, 12);
+    si BytesWritten != 9 fait 
+        !println(BytesWritten);
+        !erreur("Mauvais nombre d'octets écrits");
+    fin
+
+    BytesRead = !read(sock, ReadBuffer, 8);
+    si ReadBuffer[0] == '' fait
+        q = <*x11_response_error>(ReadBuffer);
+        !print("State:"); !println(q.err);
+        !print("MajorVersion: "); !println(q.protocol_major);
+        !print("MinorVersion: "); !println(q.protocol_minor);
+        !print("Reason: "); !println(<[_]chr>(<ent>q + 8));
+        !erreur("Le premier octet est une erreur");
+    fin
+    renvoie 0;
+fin
+
+!x11_connect_server();

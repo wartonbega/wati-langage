@@ -1,5 +1,5 @@
 import os
-_, large = os.get_terminal_size()
+large, _ = os.get_terminal_size()
 
 class settings:
     last_perc = 0
@@ -8,7 +8,7 @@ def reset_bar():
     settings.last_perc = 0
 
 def print_bar(perc, filename):
-    l = large - 10
+    l = large - 50
     print("\r", end="")
     if int(perc * 100) == settings.last_perc:
         return

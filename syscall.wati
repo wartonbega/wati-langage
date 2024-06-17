@@ -8,16 +8,18 @@ externe <*rien> _malloc(<ent>);
 <ent> __EXIT_FAILURE = 1;
 <ent> __EXIT_SUCCESS = 0;
 
-si __plateforme == "darwin" fait
+%sidef PLATEFORME_DARWIN fait
     __syscall_exit = 1;
     __syscall_read = 3;
     __syscall_write = 4;
     __syscall_socket = 97;
     __syscall_connect = 98;
     __syscall_mmap = 197;
-fin sinonsi __plateforme == "linux" || __plateforme == "linux2" fait 
+fin 
+
+%sidef PLATEFORME_LINUX fait 
     __syscall_read = 0;
-    __syscall_write = 4;
+    __syscall_write = 1;
     __syscall_socket = 41;
     __syscall_connect = 42;
     __syscall_mmap = 9;
@@ -147,17 +149,17 @@ fin
 //96	AUE_SETPRIORITY	ALL	{ int setpriority(int which, id_t who, int prio); } 
 //#if SOCKETS
 
-<ent> __AF_UNIX         = 1;
-<ent> __AF_INET         = 2;
-<ent> __AF_ISO          = 3;
-<ent> __AF_NS           = 4;
-<ent> __AF_IMPLINK      = 5;
+<ent> __AF_UNIX         = 0;
+<ent> __AF_INET         = 1;
+<ent> __AF_ISO          = 2;
+<ent> __AF_NS           = 3;
+<ent> __AF_IMPLINK      = 4;
 
-<ent> __SOCK_STREAM     = 1;
-<ent> __SOCK_DGRAM      = 2;
-<ent> __SOCK_RAW        = 3;
-<ent> __SOCK_SEQPACKET  = 4;
-<ent> __SOCK_RDM        = 5;
+<ent> __SOCK_STREAM     = 0;
+<ent> __SOCK_DGRAM      = 1;
+<ent> __SOCK_RAW        = 2;
+<ent> __SOCK_SEQPACKET  = 3;
+<ent> __SOCK_RDM        = 4;
 
 
 //97	AUE_SOCKET	ALL	{ int socket(int domain, int type, int protocol); } 

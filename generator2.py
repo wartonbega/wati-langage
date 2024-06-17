@@ -9,14 +9,17 @@ from parser_imp import *
 import os, sys
 
 plateform = sys.platform
-macos = os.name == "darwin"
+macos = sys.platform == "darwin"
 print(f"Compilation pour '{plateform}'")
 
-basic = """
+
+starting_label = "_start" if sys.platform == "darwin" else "_main"
+
+basic = f"""
 default rel
-global _start
 
 section .text
+    global {starting_label}
 """
 
 basic_end = f"""
@@ -80,15 +83,15 @@ class Bool:
         
     
 class Classes:
-    def __init__(self, name: str, attributes_name: list[str], attributes_type: list[str], methodes: dict[str: Tuple["Generator", list[tok.BasicToken], str]]) -> None:
+    def __init__(self, name: str, attributes_name: list[str], attributes_type: list[str], methodes: dict[str: Tuple["Generator", list[tok.BasicToken], str]], iterator: bool) -> None:
         self.name = name
         self.att_name = attributes_name
         self.att_type = attributes_type
         self.methodes = methodes
+        self.iterator = iterator
 
 labels = LabelGenerator()
 
-starting_label = "_start" if sys.platform == "darwin" else "_main"
 
 class Generator:
     def __init__(self, toks: list[tok.BasicToken], name=starting_label, end=basic_end, arg_num = 0, ret_type="rien", ref=""):
@@ -109,6 +112,7 @@ class Generator:
         self.extern_functions = {}
         self.defined_types = {} # typename : size
         self.undetermined = {} # name : token
+        self.defined = []
         
         self.functions: dict[str: Tuple[Generator, list[tok.BasicToken], str]] = {} # . . return type
         
@@ -252,6 +256,8 @@ class Generator:
             self.g_ifstmt(tok)
         elif tok.get_rule() == whileloop:
             self.g_while(tok)
+        elif tok.get_rule() == forloop:
+            self.g_for(tok)
         elif tok.get_rule() == funcall:
             type_t = type(tok, self.variables_info, self.functions, self.classes, self.global_vars)
             self.g_funcall(tok)
@@ -290,10 +296,24 @@ class Generator:
             if t != "rien":
                 self.gen(";; pop dans rax car innutile")
                 self.pop("rax")
+        elif tok.get_rule() == define_k:
+            self.g_define(tok)
+        elif tok.get_rule() == ifdefscope:
+            self.g_ifdef(tok)
         elif tok.get_rule() == colonm:
             pass
         else:
             pass
+
+    def g_define(self, token: tok.BasicToken):
+        name = token.child[0].content
+        self.defined.append(name)
+        
+    def g_ifdef(self, token: tok.BasicToken):
+        name = token.child[0].content
+        scope = token.child[1]
+        if name in self.defined:
+            self.g_scope(scope)
 
     def g_return(self, token: tok.BasicToken):
         ret = token.child[0]
@@ -327,6 +347,7 @@ class Generator:
             g.variables_info = self.variables_info
             g.extern_functions = self.extern_functions
             g.undetermined = self.undetermined
+            g.defined = self.defined
             g.generate_code(True)
             information(f"Importé '{filename}'", token.reference)
             for i in g.generation[1:]:
@@ -350,7 +371,7 @@ class Generator:
         order.reverse()
         for i, arg in enumerate(val[1:]):
             self.pop(f"{order[i]}")
-        num = 0x2000000 if macos else 0
+        num = 0x2000000 if sys.platform == "darwin" else 0
         self.g_statement(val[0])
         self.pop("rax")
         self.gen(f"  lea rax, [rax + {str(hex(num))}]")
@@ -445,8 +466,10 @@ class Generator:
            self.undetermined[name] = token
            return 
         
-        attributes = token.child[2].child[0]
-        methodes = token.child[2].child[1]
+        iterator: Bool = not isinstance(token.child[2], tok.t_empty)
+        
+        attributes = token.child[3].child[0]
+        methodes = token.child[3].child[1]
         
         att_names = [att.child[1].content   for att in attributes.child]
         att_types = [gettype(att.child[0])  for att in attributes.child]
@@ -480,7 +503,7 @@ class Generator:
             scope = m.child[3]
             narg = len(args.child) if not isinstance(args.child[0], tok.t_empty) else 0
             
-            func = Generator(scope.child, f"_{self.nasm_footprint_name(footprint_name)}", func_end, arg_num=narg + 1, ret_type=ret_type)
+            func = Generator(scope.child, f"{self.nasm_footprint_name(footprint_name)}", func_end, arg_num=narg + 1, ret_type=ret_type)
             func.real_name = footprint_name
             func.functions = self.functions
             func.classes = self.classes
@@ -489,6 +512,7 @@ class Generator:
             func.type_convertion = self.type_convertion
             func.extern_functions = self.extern_functions
             func.undetermined = self.undetermined
+            func.defined = self.defined
             func.variables.append("soit")
 
             func.variables_info["soit"] = ("*" + name, len(func.variables), False)
@@ -508,7 +532,7 @@ class Generator:
                 func.variables_info[i] = (self.global_vars[i], 0, False)
             
             self.add_function(footprint_name, (func, args.child, ret_type))
-        clss = Classes(name, att_names, att_types, methodes_def)
+        clss = Classes(name, att_names, att_types, methodes_def, iterator)
         self.classes[name] = clss
 
     def g_funcdef(self, token: tok.BasicToken):
@@ -529,7 +553,7 @@ class Generator:
         
         # On copie les informations utiles au code
         # global_vars est passé en tant que tel pour que la liste puisse être modifiée
-        func = Generator(scope.child, f"_{self.nasm_footprint_name(footprint_name)}", func_end, arg_num=arglen, ret_type=ret_type, ref=token.reference)
+        func = Generator(scope.child, f"{self.nasm_footprint_name(footprint_name)}", func_end, arg_num=arglen, ret_type=ret_type, ref=token.reference)
         func.real_name = footprint_name
         func.functions = self.functions
         func.classes = self.classes
@@ -538,6 +562,7 @@ class Generator:
         func.type_convertion = self.type_convertion
         func.extern_functions = self.extern_functions
         func.undetermined = self.undetermined
+        func.defined = self.defined
         # On assigne les arguments
         if not isinstance(args.child[0], tok.t_empty): 
             for i, v in enumerate(args.child):
@@ -554,7 +579,7 @@ class Generator:
         self.add_function(footprint_name, (func, args.child, ret_type))
 
     def nasm_footprint_name(self, name):
-        return name.replace("(", "_").replace(")", "_").replace(",", "_").replace("[", "_").replace("]", "_").replace("*", "ptr").replace("<", "..").replace(">", "..")
+        return "_" + name.replace("(", "_").replace(")", "_").replace(",", "_").replace("[", "_").replace("]", "_").replace("*", "ptr").replace("<", "..").replace(">", "..")
 
     def g_funcall(self, token: tok.BasicToken):
         name = token.child[0].content
@@ -570,6 +595,8 @@ class Generator:
                 self.g_statement(arg)
             order = ["rdi", "rsi", "rdx", "r10", "r8", "r9"][:len(args)]
             order.reverse()
+            if len(args) > len(order):
+                error(f"Trop d'arguments passés, maximul {len(args)}", token.reference)
             for i, arg in enumerate(args):
                 self.pop(f"{order[i]}")
             self.gen(f"  call {self.extern_functions[footprint_name]}")
@@ -593,7 +620,7 @@ class Generator:
             self.g_statement(v)
         for i in range(len(args)):
             self.pop(arg_register[len(args) - i - 1])
-        self.gen(f"  call _{self.nasm_footprint_name(footprint_name)}")
+        self.gen(f"  call {self.nasm_footprint_name(footprint_name)}")
         if ret_type != "rien":
             self.push_gen("rax") # TODO: modify this
         return type_size(ret_type)
@@ -628,7 +655,7 @@ class Generator:
         self.pop(arg_register[0])
         for i in range(len(args)):
             self.pop(arg_register[len(args) - i])
-        self.generation.append(f"  call _{self.nasm_footprint_name(footprint_name)}") # Grossier
+        self.generation.append(f"  call {self.nasm_footprint_name(footprint_name)}") # Grossier
         if ret_type != "rien":
             self.push_reg("rax")
 
@@ -701,7 +728,7 @@ class Generator:
         for i in range(func_gen.arg_num - 1):
             self.pop(arg_register[func_gen.arg_num - i - 1])
         self.gen("  mov rax, 0") # Le pointeur doit être initialisé dans constructeur
-        self.gen(f"  call _{self.nasm_footprint_name(footprint_name)}") # Grossier
+        self.gen(f"  call {self.nasm_footprint_name(footprint_name)}") # Grossier
         self.push_reg("rax")
         return 8 # La taille d'un pointeur
 
@@ -749,21 +776,90 @@ class Generator:
     def g_while(self, token: tok.BasicToken):
         condition = token.child[0]
         code = token.child[1]
-        
         label_begin = labels.label("WhileBegin")
         label_end = labels.label("WhileEnd")
-        
         self.generation.append(f"{label_begin}:")
         self.g_statement(condition)
         self.pop("rax") # The condition
         self.generation.append("  test rax, rax") # The test
         self.generation.append(f"  jz {label_end}") # is it false ?
-        
         self.g_scope(code)
-        
         self.generation.append(f"  jmp {label_begin}")
-        
         self.generation.append(f"{label_end}:")
+    
+    def g_for(self, token: tok.BasicToken):
+        var_name = token.child[0].content
+        value = token.child[1]
+        scope = token.child[2]
+        if value == attended_expression:
+            type_t = type(value, self.variables_info, self.functions, self.classes, self.global_vars)
+            if not is_ptr(type_t):
+                error(f"La valeur dans la boucle 'pour' doît être un objet", value.reference)
+            type_t = get_ptr_type(type_t)
+            if type_t not in self.classes:
+                error(f"La classe '{type_t}' n'existe pas", value.reference)
+            clss: Classes = self.classes[type_t]
+            if not clss.iterator:
+                error(f"L'objet doit être un itérateur", value.reference)
+            fname_deb = f"*{type_t}.debut()"
+            fname_svt = f"*{type_t}.suivant()"
+            fname_fin = f"*{type_t}.fin()"
+            if fname_deb not in self.functions or fname_fin not in self.functions or fname_svt not in self.functions:
+                error(f"Un itérateur doit posséder une méthode '.debut()', une méthode '.suivant()' et une méthode '.fin()'", value.reference)
+            
+            f_debG: Generator; f_deb_rettype: str
+            f_svtG: Generator; f_svt_rettype: str
+            f_finG: Generator; f_fin_rettype: str
+            f_debG, _, f_deb_rettype = self.functions[fname_deb]
+            f_svtG, _, f_svt_rettype = self.functions[fname_svt]
+            f_finG, _, f_fin_rettype = self.functions[fname_fin]
+            if f_fin_rettype != "bool":
+                error(f"Le type de retour de la méthode '{fname_fin}' doit être 'bool'", value.reference)
+            if f_deb_rettype != "rien":
+                error(f"La méthode '{fname_deb}' doit être 'rien'", value.reference)
+            if f_svt_rettype == "rien":
+                error(f"La méthode '{fname_svt}' ne doit pas être 'rien'", value.reference)
+        
+            footprint_n_deb = self.nasm_footprint_name(fname_deb)
+            footprint_n_svt = self.nasm_footprint_name(fname_svt)
+            footprint_n_fin = self.nasm_footprint_name(fname_fin)
+            
+            
+            self.gen(f"  mov rax, 0")
+            self.push_reg("rax")
+            if var_name in self.variables:
+                error(f"La variable '{var_name}' est déjà définie", token.child[0].reference)
+            self.variables.append(var_name)
+            self.variables_info[var_name] = (f_svt_rettype, len(self.sim_stack), False)
+            pos = len(self.sim_stack)
+            
+            self.g_statement(value)
+            
+            self.gen("mov rax, [rsp]")
+            self.gen(f"  call {footprint_n_deb}")
+            
+            labdeb = labels.label("debut", "forloop")
+            labfin = labels.label("fin", "forloop")
+            
+            self.gen(f"{labdeb}:")
+            
+            self.gen("mov rax, [rsp]")
+            self.gen(f"  call {footprint_n_svt}")
+            decal = sum(self.sim_stack[pos:])
+            self.gen(f"  mov qword [rsp + {decal}], rax")
+            
+            self.g_scope(scope)
+            
+            self.gen("mov rax, [rsp]")
+            self.gen(f"  call {footprint_n_fin}")
+            self.gen(f"  cmp rax, 0")
+            self.gen(f"  jpe {labdeb}")
+            self.pop("rax") # L'itérateur
+            self.pop("rax") # L'indexateur
+            self.variables.pop(self.variables.index(var_name))
+            self.variables_info.__delitem__(var_name)
+        elif value == brackets:
+            pass
 
     def g_identifier(self, token: tok.BasicToken):
         n = token.content
@@ -908,7 +1004,7 @@ class Generator:
         if f"{lhs_type}.{FUNC_OP[op]}({lhs_type},{rhs_type})" in self.functions:
             self.pop("rbx")
             self.pop("rax")
-            self.generation.append(f"  call _{self.nasm_footprint_name(f'{lhs_type}.{FUNC_OP[op]}({lhs_type},{rhs_type})')}")
+            self.generation.append(f"  call {self.nasm_footprint_name(f'{lhs_type}.{FUNC_OP[op]}({lhs_type},{rhs_type})')}")
             self.push_reg("rax")
             _, _, ret_type = self.functions[f"{lhs_type}.{FUNC_OP[op]}({lhs_type},{rhs_type})"]
             return type_size(ret_type)
@@ -1088,7 +1184,7 @@ class Generator:
             self.g_statement(token.child[0])
             if f"{type_t}._pas({type_t})" in self.functions:
                 self.pop("rax")
-                self.generation.append(f"  call _{self.nasm_footprint_name(f'{type_t}._pas({type_t})')}")
+                self.generation.append(f"  call {self.nasm_footprint_name(f'{type_t}._pas({type_t})')}")
                 self.push_reg("rax")
                 _, _, ret_type = self.functions[f"{type_t}._pas({type_t})"]
                 return type_size(ret_type)
@@ -1124,7 +1220,7 @@ class Generator:
             self.g_statement(token.child[0])
             if f"{type_t}._negatif({type_t})" in self.functions:
                 self.pop("rax")
-                self.generation.append(f"  call _{self.nasm_footprint_name(f'{type_t}._negatif({type_t})')}")
+                self.generation.append(f"  call {self.nasm_footprint_name(f'{type_t}._negatif({type_t})')}")
                 self.push_reg("rax")
                 _, _, ret_type = self.functions[f'{type_t}._negatif({type_t})']
                 return type_size(ret_type)
@@ -1292,9 +1388,18 @@ class Generator:
             return self.g_attribute_modif(name_og, opt_attributes, content)
         
         desired_type = gettype(opt_type_usage) if not isinstance(opt_type_usage, tok.t_empty) else ""
-        got_type = type(content, self.variables_info, self.functions, self.classes, self.global_vars)
-
-        reg_size_t = self.g_statement(content)
+        if not isinstance(content, tok.t_empty):
+            reg_size_t = self.g_statement(content)
+            got_type = type(content, self.variables_info, self.functions, self.classes, self.global_vars)
+        elif not isinstance(opt_type_usage, tok.t_empty) and name not in self.variables:
+            got_type = desired_type
+            self.gen("  mov rax, 0")
+            self.push_reg("rax")
+        else:
+            if isinstance(opt_type_usage, tok.t_empty):
+                error(f"Ne peut pas déclarer une variable de type implicite si le contenu n'est pas déclaré", token.reference)
+            elif name in self.variables:
+                error(f"Ne peut pas déclarer une variable déjà existante", token.reference)
         if len(name) >= 3 and name[:2] == "__":
             if not is_ptr(got_type) and type_size(got_type) > 8:
                 error(f"La taille maximale d'une variable est 8 octets, pas {type_size(got_type)} ({got_type})", token.reference)
@@ -1336,6 +1441,8 @@ def generate(g :Generator):
     g.global_vars["__plateforme"] = "liste[chr]"
     g.variables.append("__plateforme")
     g.variables_info["__plateforme"] = ("liste[chr]", 0, False)
+    g.defined.append(f"PLATEFORME_{sys.platform.upper()}")
+    print("Définis : ", f"PLATEFORME_{sys.platform.upper()}")
     
     g.generate_code()
     g.generate_func()
