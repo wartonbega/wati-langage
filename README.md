@@ -188,6 +188,7 @@ La bibliothèque standard définit des classes comme :
    - `<rien>println()>` : affiche la liste et un retour à la ligne, si `print(<type>)` existe.
    - `<type>index(<ent> i)` : renvoie la valeur à l'index `i`.
    - `<type>pop(<ent> i)` : enlève l'élément à l'index `i` et renvoie son contenu
+     On notera que '`liste<type>` est un itérateur.
    - Exemple :
      ```
      <liste<ent>>l = <ent>liste(); // Définit une liste d'entiers
@@ -197,16 +198,7 @@ La bibliothèque standard définit des classes comme :
      !l.println();
      !println(!l.index(1)); // affiche '2'
      ```
-
- 
-
-
-
-
-
-
-
-
-
-
-
+ - `pile<type>` : une pile classique, de taille dynamique. Ses méthodes : 
+   - `<rien>ajoute(<type> x)` : ajoute l'élément `x` sur le haut de la pile.
+   - `<type>pop()` : enlève et renvoie l'élément sur le haut de la pile.
+     Contrairement à la liste chainée, la pile n'est pas un itérateur
