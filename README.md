@@ -108,6 +108,7 @@ classe plage IT contient
    <ent> courant;
 
    methode <*plage> constructeur (<ent> deb, <ent> fin) fait
+       soit = <*plage>!mallom(24); // Fait 24 octets de long, à raison de 8 octets par entiers
        soit.debut = deb;
        soit.fin = fin;
        soit.courant = deb;
