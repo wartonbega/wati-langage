@@ -82,6 +82,15 @@ fin sinon fait
 fin
 ```
 
+## Boucles
+Deux types de boucles, les boucles `tant que ... fait ... fin` et `pour . dans ... fait ... fin`.
+
+Boucles `tant que` sont des classiques boucles conditionnelles. Exemple : 
+```wati
+```
+
+
+
 ## La conversion de type
 On peut faire des castings en wati pour convertir une valeur d'un certain type en un autre tyoe, et en écrasant les données qui ne sont pas comprises dans la taille du type.
 
