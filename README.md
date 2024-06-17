@@ -87,8 +87,53 @@ Deux types de boucles, les boucles `tant que ... fait ... fin` et `pour . dans .
 
 Boucles `tant que` sont des classiques boucles conditionnelles. Exemple : 
 ```wati
+<ent> i = 0;
+tant que i < 10 fait
+ !println(i);
+ i = i + 1;
+fin
 ```
 
+Les boucles `pour . dans` prennent après le 'dans' un objet de type itérateur.
+
+Ces derniers sont définis en rajoutant `IT` après le nom de classe. Ils doivent avoir au minimum 3 méthodes : `.debut()`, `.suivant()`, `.fin()`.
+ - `.debut()` initialise l'itérateur et ne doit renvoyer rien
+ - `.suivant()` doit renvoyer la valeur suivant prise par la variable de boucle
+ - `.fin()` doit renvoyer un booléen indiquant soit la boucle doit se stopper.
+Exemple de création d'un itérateur :
+```wati
+classe plage IT contient
+   <ent> debut;
+   <ent> fin;
+   <ent> courant;
+
+   methode <*plage> constructeur (<ent> deb, <ent> fin) fait
+       soit.debut = deb;
+       soit.fin = fin;
+       soit.courant = deb;
+   fin
+
+   methode <rien> debut () fait
+       soit.courant = soit.debut;
+   fin
+
+   methode <ent> suivant () fait
+       s = soit.courant;
+       soit.courant = soit.courant + 1;
+       renvoie s;
+   fin
+
+   methode <bool> fin () fait
+       renvoie soit.courant == soit.fin;
+   fin
+fin
+```
+Enfin on peut utiliser cet itérateur dans une boucle : 
+```wati
+pour i dans plage(0, 10) fait
+    !println(i);
+fin
+```
 
 
 ## La conversion de type
