@@ -1,5 +1,5 @@
 import os, sys
-import generator2
+import generator
 import argparse
 
 output_name = "a"
@@ -21,9 +21,9 @@ if __name__ == "__main__":
     parser.add_argument("-a", "--asm", const=True, nargs="?")
     args = parser.parse_args()
     if args.informations == None or args.informations == "n":
-        generator2.INFORMATIONS = False
+        generator.INFORMATIONS = False
     else:
-        generator2.INFORMATIONS = True
+        generator.INFORMATIONS = True
     if args.output != None:
         output_name = args.output
     else:
@@ -31,18 +31,18 @@ if __name__ == "__main__":
     if args.asm != None:
         rm_asm = False
     filename = args.filename
-    generator2.run_code(filename, output_name + ".asm")
+    generator.run_code(filename, output_name + ".asm")
     print("Compilé en assembleur !")
     print(f"nasm -f{'macho64' if sys.platform == 'darwin' else 'elf64'} -o {output_name}.o {output_name}.asm")
     os.system(f"nasm -f{'macho64' if sys.platform == 'darwin' else 'elf64'} -o {output_name}.o {output_name}.asm")
     print("Liage de l'assembleur !")
     if sys.platform == 'darwin':
-        commande = f"gcc {('-e ' + generator2.starting_label) if sys.platform == 'darwin' else ''} {output_name}.o -lc -R/usr/X11/lib -L/usr/X11/lib -lX11 -m64 -o {output_name}.out -Wl,-no_pie"
+        commande = f"gcc {('-e ' + generator.starting_label) if sys.platform == 'darwin' else ''} {output_name}.o -lc -R/usr/X11/lib -L/usr/X11/lib -lX11 -m64 -o {output_name}.out -Wl,-no_pie"
         print(commande)
         os.system(commande)
     else:
         print(f"gcc {output_name}.o -L/usr/lib/gcc/x86_64-linux-gnu/9/ -lc -m64 -o {output_name}.out -Wl,-no_pie")
-        os.system(f"gcc -e {generator2.starting_label} {output_name}.o -lc -m64 -o {output_name}.out -Wl,-no_pie")
+        os.system(f"gcc -e {generator.starting_label} {output_name}.o -lc -m64 -o {output_name}.out -Wl,-no_pie")
         
     if rm_asm:
         os.system(f"rm {output_name}.asm")
