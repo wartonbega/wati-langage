@@ -172,6 +172,7 @@ La bibliothèque standard définit des types de bases comme :
  - `<ent32>` : des entiers sur 32 bits (4 octets)
  - `<ent16>` : des entiers sur 16 bits (2 octets)
  - `<ent8>`  : des entiers sur 8 bits (1 octets)
+
 Les 3 types précédents n'acceptent des opérations qu'avec `<ent>`. Ainsi il faut caster le type du second opérateur vers `ent` pour effectuer le calcul.
 
 Exemple : 
