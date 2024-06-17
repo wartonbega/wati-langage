@@ -70,6 +70,17 @@ La syntaxe avec des guillemets doubles invoque une chaine de caractère de type 
 <[_]chr> a = "chaine";
 ```
 
+## La conversion de type
+On peut faire des castings en wati pour convertir une valeur d'un certain type en un autre tyoe, et en écrasant les données qui ne sont pas comprises dans la taille du type.
+
+Par exemple :
+```
+<ent> x = 109349185;
+<chr> y = <chr>x; // Y vaut 'A' : le premier octet de x est gardé
+```
+Deux syntaxes possibles : 
+`y = <chr>x` ou `y = <chr>(x)`
+
 ## Les tests conditionnels
 Par l'exemple : 
 ```
@@ -135,18 +146,6 @@ pour i dans plage(0, 10) fait
     !println(i);
 fin
 ```
-
-
-## La conversion de type
-On peut faire des castings en wati pour convertir une valeur d'un certain type en un autre tyoe, et en écrasant les données qui ne sont pas comprises dans la taille du type.
-
-Par exemple :
-```
-<ent> x = 109349185;
-<chr> y = <chr>x; // Y vaut 'A' : le premier octet de x est gardé
-```
-Deux syntaxes possibles : 
-`y = <chr>x` ou `y = <chr>(x)`
 
 # Erreurs fréquentes et incompréhensible si on a pas codé le wati-langage : 
 `pop from empty list` : J'ai pas implémenté encore
