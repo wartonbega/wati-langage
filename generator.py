@@ -650,6 +650,7 @@ class Generator:
         
         soit = token.child[0]
         soit_bis = copy.copy(soit)
+        soit_bis.child = copy.copy(soit.child)
         soit_bis.child.pop()
         self.g_statement(soit_bis)
         self.pop(arg_register[0])
@@ -1400,6 +1401,7 @@ class Generator:
                 error(f"Ne peut pas déclarer une variable de type implicite si le contenu n'est pas déclaré", token.reference)
             elif name in self.variables:
                 error(f"Ne peut pas déclarer une variable déjà existante", token.reference)
+        
         if len(name) >= 3 and name[:2] == "__":
             if not is_ptr(got_type) and type_size(got_type) > 8:
                 error(f"La taille maximale d'une variable est 8 octets, pas {type_size(got_type)} ({got_type})", token.reference)

@@ -52,15 +52,17 @@ classe <type> noeud contient
     fin
 fin
 
-classe <type> liste contient
+classe <type> liste IT contient
     <*noeud<type>> debut;
     <ent> taille;
     <ent> dernier_index;
     <*noeud<type>> dernier_noeud;
+    <*noeud<type>> iter;
 
     methode <*liste<type>> constructeur() fait 
-        soit = <*liste<type>>!mallom(16);
+        soit = <*liste<type>>!mallom(40);
         soit.debut = <type>noeud(<type>0);
+        soit.dernier_noeud = soit.debut;
         soit.taille = 0;
         renvoie soit;
     fin
@@ -104,5 +106,18 @@ classe <type> liste contient
         fin
         soit.taille = soit.taille - 1;
         renvoie !soit.debut.pop(index + 1);
+    fin
+
+    methode <rien> debut () fait 
+        soit.iter = soit.debut;
+    fin
+
+    methode <type> suivant () fait 
+        soit.iter = soit.iter.proch;
+        renvoie soit.iter.contenu;
+    fin
+
+    methode <bool> fin () fait
+        renvoie soit.iter.proch == soit.iter || soit.iter == 0;
     fin
 fin

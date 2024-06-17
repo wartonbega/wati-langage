@@ -1,10 +1,19 @@
 inclue "std.wati";
+inclue "listes_chaines.wati";
 
 %sidef PLATEFORME_DARWIN fait
     !println("Hello World!");
 fin
 
-
-pour i dans plage(0, 10) fait 
+l = <ent>liste();
+!l.ajoute(12);
+!l.ajoute(1);
+!l.ajoute(2);
+!l.ajoute(3);
+!l.ajoute(4);
+!l.ajoute(5);
+!l.ajoute(6);
+pour i dans l fait 
     !println(i);
 fin
+!println(!l.index(0));

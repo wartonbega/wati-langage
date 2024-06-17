@@ -341,8 +341,6 @@ def type(expression: tok.BasicToken, variables:dict, functions:dict, classes:dic
     if expression.get_rule() == methcall:
         name = get_methcall_name(expression, variables, functions, classes, global_vars)
         if name not in functions:
-            #assert False
-            #print(list(functions.keys()))
             error(f"Methode inconnue {name}", expression.reference)
         return functions[name][2]
     if expression.get_rule() == identifier:
