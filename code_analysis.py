@@ -338,6 +338,8 @@ def type(expression: tok.BasicToken, variables:dict, functions:dict, classes:dic
             #    print(i)
             error(f"Fonction inconnue {name}", expression.reference)
         return functions[name][2]
+    if expression.get_rule() == sizeof_funcall:
+        return "ent"
     if expression.get_rule() == methcall:
         name = get_methcall_name(expression, variables, functions, classes, global_vars)
         if name not in functions:
@@ -370,7 +372,14 @@ def type(expression: tok.BasicToken, variables:dict, functions:dict, classes:dic
         if is_liste(r):
             return r[len("liste["):-1]
         if is_ptr(r):
-            return r[1:]
+            type_t_bis = get_ptr_type(r)
+            if type_t_bis not in classes:
+                error(f"Nom de classe ou d'objet inconnu : '{type_t_bis}'", expression.reference)
+            func_name = f"{r}.index(ent)"
+            if func_name not in functions:
+                error(f"Méthode inconnue : '{func_name}'. La classe doit contenir une méthode '.index(ent)' pour supporter l'indexation", expression.reference)
+            _, _, rettype = functions[func_name]
+            return rettype
         error(f"Type imcompatible avec une indexation, '{r}'", expression.reference)
     if expression.get_rule() == classcall:
         following = ""

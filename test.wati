@@ -1,19 +1,5 @@
-inclue "std.wati";
-inclue "listes_chaines.wati";
+inclue "io.wati";
 
-%sidef PLATEFORME_DARWIN fait
-    !println("Hello World!");
-fin
-
-l = <ent>liste();
-!l.ajoute(12);
-!l.ajoute(1);
-!l.ajoute(2);
-!l.ajoute(3);
-!l.ajoute(4);
-!l.ajoute(5);
-!l.ajoute(6);
-pour i dans l fait 
+pour i dans [5, 10]  fait 
     !println(i);
 fin
-!println(!l.index(0));

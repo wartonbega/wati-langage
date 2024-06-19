@@ -100,6 +100,22 @@ classe <type> liste IT contient
         renvoie p.contenu;
     fin
 
+    methode <rien> assigne_index(<ent> index, <type> x) fait 
+        si index >= soit.taille fait 
+            !erreur("!liste.assigne_index : L'index est plus grand que la taille de la liste");
+        fin
+        si index >= soit.dernier_index fait 
+            p = !soit.dernier_noeud.index(index - soit.dernier_index);
+            p.contenu = x; // On assigne la valeur
+            dernier_index = index;
+            dernier_noeud = p;
+        fin
+        <*noeud<type>> p = !soit.debut.index(index + 1);
+        p.contenu = x; // On assigne la valeur
+        dernier_index = index;
+        dernier_noeud = p;
+    fin
+
     methode <type> pop (<ent> index) fait 
         si index >= soit.taille fait 
             !erreur("!liste.pop : L'index est plus grand que la taille de la liste");

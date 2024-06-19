@@ -233,7 +233,6 @@ fonction <rien> print(<ent32> x) fait  !print(<ent>(x)); fin
 fonction <rien> print(<ent16> x) fait  !print(<ent>(x)); fin
 fonction <rien> print(<ent8> x) fait  !print(<ent>(x));  fin
 
-
 fonction <rien> println(<ent32> x) fait  !println(<ent>(x)); fin
 fonction <rien> println(<ent16> x) fait  !println(<ent>(x)); fin
 fonction <rien> println(<ent8> x) fait  !println(<ent>(x)); fin

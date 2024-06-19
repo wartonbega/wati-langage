@@ -5,7 +5,7 @@ inclue "tuples.wati";
 
 <ent> __stdin = 0;
 <ent> __stdout = 1;
-<ent> __stderr = 1;
+<ent> __stderr = 2;
 
 <ent> __icanon = 2;
 <ent> __echo = 8;

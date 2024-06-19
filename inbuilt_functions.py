@@ -1,34 +1,6 @@
 
 
 print_func = """
-
-div_rcx_10:
-    push rax
-    mov rax, rcx
-    mov rbx, 10
-    xor rdx, rdx
-    div rbx
-    mov rcx, rax
-    pop rax
-    ret
-
-biggest_ten:
-    push rax
-    mov rax, rcx
-    mov rbx, 10
-    mul rbx
-    mov rcx, rax
-    pop rax
-    push rax    
-    xor rdx, rdx
-    div rcx
-    mov rbx, rax
-    pop rax
-    cmp rbx, 0
-    jnz biggest_ten
-    call div_rcx_10
-    ret
-    
 malloc:
   ;; in rdx, there is the size needed to the alloc
   mov rdi, rdx

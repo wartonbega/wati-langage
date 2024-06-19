@@ -80,8 +80,12 @@ type_names = rls.r_option(
 ).set_name("TypeN")
 array_dec_brackets = rls.r_enclosure("[", "]").set_name("brackets")
 
+# <[10]ent> g;  —> *liste[ent]     <[_] ent> = *liste[ent]
+# <[10]&ent> g; —> *liste[ent]     <[_] ent> =  liste[ent]
+
 type_array_declaration: rls.r_sequence = rls.r_sequence(
     array_dec_brackets,
+    #rls.r_optional(rls.r_character("&")),
     type_names
 ).set_name("array-dec")
 
@@ -182,6 +186,12 @@ funcall = rls.r_sequence(
     parenthesis
 ).set_name("funcall")
 
+sizeof_funcall = rls.r_sequence(
+    rls.r_character("!").ignore_token(),
+    rls.r_char_sequence("taillede").ignore_token(),
+    rls.r_enclosure("(", ")").set_mid_patern(type_usage)
+).set_name("taillede")
+
 methcall = rls.r_sequence(
     rls.r_character("!").ignore_token(),
     attribute_identifier,
@@ -193,6 +203,9 @@ classcall = rls.r_sequence(
         class_type_opt
     ),
     identifier,
+    #rls.r_optional(
+    #    rls.r_character("&")  
+    #),
     parenthesis
 ).set_name("calsscall")
 
@@ -208,6 +221,7 @@ attribute = rls.r_sequence(
 ).set_name("attribute")
 
 value = rls.r_option(
+    sizeof_funcall,
     funcall,
     classcall,
     methcall,
@@ -285,6 +299,8 @@ attended_expression = rls.r_option(
     value,
     identifier
 )
+
+#array_accession.sequence[0] = attended_expression
 
 conditional_value = rls.r_sequence(
     rls.r_character("?").ignore_token(),
@@ -395,8 +411,8 @@ vardef = rls.r_sequence(
     rls.r_optional(type_usage),
     rls.r_optional(rls.r_character("*")).set_name("ptr-modif"),
     identifier,
-    rls.r_optional(brackets),
     rls.r_optional(rls.r_patern_repetition(proto_attribute).set_name("attributes-asgmt")),
+    rls.r_optional(brackets),
     rls.r_optional(
         rls.r_sequence(
             rls.r_character("=").ignore_token(),
@@ -433,9 +449,11 @@ attributedef = rls.r_sequence(
 
 class_scope.set_mid_patern(
     rls.r_sequence(
+        rls.r_optional(rls.r_patern_repetition(comment)).ignore_token(),
         rls.r_optional(rls.r_patern_repetition(attributedef).set_name("attributes")),
+        rls.r_optional(rls.r_patern_repetition(comment)).ignore_token(),
         rls.r_optional(rls.r_patern_repetition(methodedef).set_name("methodes")),
-        
+        rls.r_optional(rls.r_patern_repetition(comment)).ignore_token(),
     ).ignore_token()
 )
 
@@ -470,12 +488,19 @@ ifstmt = rls.r_sequence(
     rls.r_optional(proto_else)
 ).set_name("ifstmt")
 
+forloop_brackets = rls.r_enclosure("[", "]").set_mid_patern(
+    rls.r_sequence(
+    attended_expression,
+    rls.r_character(",").ignore_token(),
+    attended_expression)
+)
+
 forloop = rls.r_sequence(
     k_pour,
     rls.r_identifier(),
     k_dans,
     rls.r_option(
-        brackets,
+        forloop_brackets,
         attended_expression
     ),
     scope

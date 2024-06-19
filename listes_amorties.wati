@@ -1,0 +1,81 @@
+inclue "std.wati";
+
+classe <Type> dliste contient
+    <ent> taille;
+    <ent> max;
+    <[_]Type> mem;
+
+    methode <*dliste<Type>> constructeur () fait 
+        soit = <*dliste<Type>>!mallom(24);
+        soit.taille = 0;
+        soit.max = 8;
+        soit.mem = <[_]Type> !mallom(!taillede(<Type>) * 8);
+        renvoie soit;
+    fin
+
+    methode <rien> remaniement (<ent> max) fait 
+        soit.max = max/2;
+        <[_]Type> nouv = <[_]Type> !mallom(!taillede(<Type>) * (soit.max + 1)); // on prend un de plus pour éviter les débordement de mémoire
+        pour i dans [0, soit.taille] fait 
+            nouv[i] = soit.mem[i];
+            soit.mem[i] = 0;
+        fin
+        !libere(<*rien>soit.mem);
+        soit.mem = nouv;
+    fin
+
+    methode <rien> ajoute(<Type> x) fait
+        si soit.taille + 1 == soit.max fait 
+            !soit.remaniement(soit.max * 2);
+        fin
+        soit.mem[soit.taille] = x;
+        soit.taille = soit.taille + 1;
+    fin
+
+    methode <Type> pop (<ent> index) fait 
+        si index >= soit.taille fait 
+            !erreur("!dliste.pop : L'index est plus grand que la taille de la liste");
+        fin
+        r = soit.mem[index];
+        pour i dans [index, soit.taille - 1] fait 
+            soit.mem[i] = soit.mem[i + 1];
+        fin
+        soit.mem[soit.taille] = <Type>0; // On détruit la valeur finale pour plus de sécurité
+        soit.taille = soit.taille - 1;
+        si soit.taille <= soit.max/2 fait 
+            !soit.remaniement(soit.max/2);
+        fin
+        renvoie r;
+    fin
+
+    methode <Type> index (<ent> index) fait 
+        si index >= soit.taille fait 
+            !erreur("!dliste.index : L'index est plus grand que la taille de la liste");
+        fin
+        renvoie soit.mem[index];
+    fin
+
+    methode <rien> assigne_index(<ent> index, <Type> x) fait 
+        si index >= soit.taille fait 
+            !erreur("!dliste.assigne_index : L'index est plus grand que la taille de la liste");
+        fin
+        soit.mem[index] = x;
+    fin
+
+    methode <rien> println() fait 
+        !print("[ ");
+        pour i dans [0, soit.taille] fait 
+            !print(soit.mem[i]); !print(' ');
+        fin
+        !println(']');
+    fin
+fin
+
+l = <ent>dliste();
+pour i dans [0, 12] fait 
+    !l.ajoute(i);
+fin
+!l.println();
+l[3] = 16;
+!println(l[3]);
+!l.println();

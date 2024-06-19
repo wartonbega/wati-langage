@@ -11,53 +11,54 @@ fonction <*rien> "*rien._moins" (<*rien> soit, <ent> x) fait
     renvoie <*rien>(<ent>soit - x);
 fin
 
-fonction <ent32> mantisse(<float> z) fait 
-    <*float> q = &z;
-    <*ent32> p = <*ent32>(<*rien>q + 4);
-    renvoie *p;
+classe float contient
+    <ent32> prem;
+    <ent32> virg;
 fin
-
-fonction <ent32> exposant(<float> z) fait 
-    <*float> q = &z;
-    <*ent32> p = <*ent32>(<*rien>q);
-    renvoie *p;
-fin
-
 
 fonction <float> float (<ent> x) fait 
-    y = <ent32> x;
     z = <float> 0;
     <*float> q = &z;
-    <*ent32> p = <*ent32>(<*rien>q + 4);
-    *p = y;
+    q.prem = <ent32>x;
+    q.virg = <ent32>0;
     renvoie z;
 fin
 
-fonction <float> ecrit_float(<ent> man, <ent> exp) fait 
-    f = !float(man);
-    <*float> q = &f;
-    <*ent32> p = <*ent32>(<*rien>q);
-    *p = <ent32>exp;
-    renvoie f;
-fin
-
 fonction <float> "float._div" (<float> soit, <ent> x) fait 
-    exp = <ent>!exposant(soit);
-    man = <ent>!mantisse(soit);
-    p = !puissance_dix(x) - 1;
-    exp = exp - p;
-    man = man / x;
-    renvoie !ecrit_float(man, exp);
+    q = &soit;
+    prem = q.prem;
+    reste = prem % x;
+    div = prem / x;
+    q.prem = div;
+    virg = 0;
+    dernier = 0;
+    iter = 0;
+    tant que reste != 0 && iter < 10 fait
+        reste = reste * 10;
+        virg = virg * 10;
+        b = reste / x;
+        reste = reste % x;
+        virg = <ent>(b) + virg;
+        iter = iter + 1;
+    fin
+    m1 = !puissance_dix(q.virg);
+    m2 = !puissance_dix(virg);
+    si m2 > m1 fait 
+        q.virg = q.virg * 10 * (m2 - m1);
+    fin sinonsi m2 < m1 fait 
+        virg = virg * 10 * (m1 - m2);
+    fin
+    q.virg = q.virg / x;
+    q.virg = q.virg + virg;
+    renvoie *q;
 fin
 
 fonction <rien> print(<float> x) fait 
-    <ent> mant = <ent> !mantisse(x);
-    <ent> exps = <ent> !exposant(x);
-    !println(exps)
-    dix = 10^exps;
-    !println(dix)
-    !print(mant/dix)
-    !print('.')
-    virg = mant - dix * (mant/dix);
-    !print(virg)
+    q = &x;
+    !print(<ent>(q.prem)); !print(','); !print(<ent>(q.virg));
 fin
+fonction <rien> println(<float> x) fait !print(x); !print('\n'); fin
+
+b = !float(1);
+a = b / 3;
+!println(a/166);
