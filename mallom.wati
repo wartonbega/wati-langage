@@ -6,7 +6,11 @@ externe <*rien> _malloc(<ent>); // Utile pour allouer de la mémoire grossièrem
 externe <rien> _free(<*rien>);
 
 fonction <*rien> mallom(<ent> taille) fait 
-    renvoie !_malloc(taille);
+    <*rien> r = !_malloc(taille);
+    si <ent>r == 0 fait 
+        !erreur("Impossible d'allouer le bloc de taille demandée");
+    fin
+    renvoie r;
 fin
 
 fonction <rien> libere(<*rien> taille) fait 

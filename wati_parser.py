@@ -64,6 +64,9 @@ k_typedef = rls.r_char_sequence("deftype").ignore_token()
 k_type_convert = rls.r_char_sequence("convertype").ignore_token()
 k_syscall = rls.r_char_sequence("syscall").ignore_token()
 k_extern = rls.r_char_sequence("externe").ignore_token()
+k_utilise = rls.r_char_sequence("utilise").ignore_token()
+k_definis = rls.r_char_sequence("definis").ignore_token()
+k_nomenclature = rls.r_char_sequence("nomenclature").ignore_token()
 
 operator = rls.r_option(
     rls.r_setlist(ch.TWO_SYM_OPERATORS),
@@ -426,6 +429,11 @@ funcdef = rls.r_sequence(
     k_func,
     type_usage,
     rls.r_option(
+        rls.r_sequence(
+            identifier,
+            rls.r_character(".").ignore_token(),
+            identifier
+        ).set_name("funcdef-methode"),
         identifier,
         string
     ),
@@ -523,20 +531,37 @@ ifdefscope = rls.r_sequence(
 
 define_k = rls.r_sequence(
     rls.r_character("%").ignore_token(),
-    rls.r_char_sequence("definis").ignore_token(),
+    k_definis,
     rls.r_identifier()
 )
+
+definis_dans = rls.r_sequence(
+    k_nomenclature,
+    class_type_opt,
+    identifier,
+    k_dans,
+    scope
+).set_name("nomenclature")
+
+utilise_k = rls.r_sequence(
+    k_utilise,
+    class_type_opt,
+    identifier,
+    rls.r_character(";").ignore_token()
+).set_name("utilise-keyword")
 
 # outside-of-smthg value
 outside_expected_value = rls.r_sequence(
     attended_expression,
     rls.r_character(";").ignore_token().set_error("Expected ';'")
-)
+).set_name("outside-expected-value")
 
 basic_rulling = [
     comment,
     ifdefscope,
+    definis_dans,
     define_k,
+    utilise_k,
     array_def,
     funcdef,
     classdef,
@@ -556,7 +581,6 @@ basic_rulling = [
     outside_expected_value,
     colonm
 ]
-
 
 func_arguments.set_mid_patern(
     rls.r_optional(
@@ -594,5 +618,4 @@ brackets.set_mid_patern(
     attended_expression
 )
 
-#brackets.set_evaluation(basic_rulling, tokenise, try_tokenise)
 scope.set_evaluation(basic_rulling, tokenise, try_tokenise)

@@ -1,5 +1,14 @@
-inclue "io.wati";
+inclue "std.wati";
 
-pour i dans [5, 10]  fait 
-    !println(i);
+utilise <ent>pile;
+
+nomenclature <t1, t2> toto dans fait 
+
+fonction <t1> test (<t2> x) fait 
+    !println(x);
 fin
+
+fin
+
+utilise <rien, ent> toto;
+!test(18);

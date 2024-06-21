@@ -5,7 +5,7 @@ import argparse
 output_name = "a"
 filename = ""
 rm_asm = True
-
+optimise_asm = False
 
 
 if __name__ == "__main__":
@@ -19,6 +19,7 @@ if __name__ == "__main__":
     parser.add_argument("-o", "--output", required=False)
     parser.add_argument("-i", "--informations", choices=["o", "n"], required=False)
     parser.add_argument("-a", "--asm", const=True, nargs="?")
+    parser.add_argument("-O", "--optimiseAsm", const=True, nargs="?")
     args = parser.parse_args()
     if args.informations == None or args.informations == "n":
         generator.INFORMATIONS = False
@@ -30,8 +31,12 @@ if __name__ == "__main__":
         output_name = args.filename.removesuffix(".wati")
     if args.asm != None:
         rm_asm = False
+    if args.optimiseAsm:
+        optimise_asm = True
+    else:
+        optimise_asm = False
     filename = args.filename
-    generator.run_code(filename, output_name + ".asm")
+    generator.run_code(filename, output_name + ".asm", optimise_asm=optimise_asm)
     print("Compilé en assembleur !")
     print(f"nasm -f{'macho64' if sys.platform == 'darwin' else 'elf64'} -o {output_name}.o {output_name}.asm")
     os.system(f"nasm -f{'macho64' if sys.platform == 'darwin' else 'elf64'} -o {output_name}.o {output_name}.asm")

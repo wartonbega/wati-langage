@@ -9,16 +9,16 @@ classe <Type> dliste contient
         soit = <*dliste<Type>>!mallom(24);
         soit.taille = 0;
         soit.max = 8;
-        soit.mem = <[_]Type> !mallom(!taillede(<Type>) * 8);
+        soit.mem = <[_]Type> !mallom(!taillede(<Type>) * soit.max);
         renvoie soit;
     fin
 
     methode <rien> remaniement (<ent> max) fait 
-        soit.max = max/2;
+        soit.max = max;
         <[_]Type> nouv = <[_]Type> !mallom(!taillede(<Type>) * (soit.max + 1)); // on prend un de plus pour éviter les débordement de mémoire
         pour i dans [0, soit.taille] fait 
             nouv[i] = soit.mem[i];
-            soit.mem[i] = 0;
+            soit.mem[i] = <Type>0;
         fin
         !libere(<*rien>soit.mem);
         soit.mem = nouv;
@@ -42,7 +42,7 @@ classe <Type> dliste contient
         fin
         soit.mem[soit.taille] = <Type>0; // On détruit la valeur finale pour plus de sécurité
         soit.taille = soit.taille - 1;
-        si soit.taille <= soit.max/2 fait 
+        si soit.taille <= soit.max/2 && soit.max > 8 fait 
             !soit.remaniement(soit.max/2);
         fin
         renvoie r;
@@ -71,11 +71,10 @@ classe <Type> dliste contient
     fin
 fin
 
-l = <ent>dliste();
-pour i dans [0, 12] fait 
-    !l.ajoute(i);
+l = <chr>dliste();
+pour i dans [0, 10000] fait 
+    !l.ajoute('1');
 fin
-!l.println();
-l[3] = 16;
-!println(l[3]);
+
+!println(l[18]);
 !l.println();

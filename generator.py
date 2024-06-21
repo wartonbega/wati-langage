@@ -6,6 +6,7 @@ import copy
 from document import Document
 from typing import Tuple
 from parser_imp import *
+import asm_optimiser
 import os, sys
 
 plateform = sys.platform
@@ -41,7 +42,7 @@ exit_end = f"""
 IMPORTED = []
 
 MALLOC_NAME = "malloc"
-FREE_NAME = "_free"
+#FREE_NAME = "_free"
 
 arg_register = ["rax", "rbx", "rcx", "rdx", "rsi", "rdi", "rsp", "rbp", "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15"]
 
@@ -118,6 +119,7 @@ class Generator:
         self.extern_functions = {}
         self.defined_types = {} # typename : size
         self.undetermined = {} # name : token
+        self.undetermined_nomenclature = {} # name : token
         self.defined = []
         
         self.functions: dict[str: Tuple[Generator, list[tok.BasicToken], str]] = {} # . . return type
@@ -288,6 +290,10 @@ class Generator:
             self.g_convertype(tok)
         elif tok.get_rule() == keyword_extern:
             self.g_extern(tok)
+        elif tok.get_rule() == utilise_k:
+            self.g_utilise(tok)
+        elif tok.get_rule() == definis_dans:
+            self.g_nomenclature(tok)
         elif tok.get_rule() == classdef:
             self.g_classdef(tok)
         elif tok.get_rule() == outside_expected_value:
@@ -430,6 +436,20 @@ class Generator:
         self.add_function(name, (None, args, type_t))
         self.extern_functions[name] = og_name
         
+    def g_utilise(self, token: tok.BasicToken):
+        #token.print()
+        name = token.child[1].content
+        type_usage_opt = token.child[0]
+        if name in self.undetermined and name + get_class_type(type_usage_opt) not in self.classes:
+            self.generate_undetermined(name, type_usage_opt)
+        elif name in self.undetermined_nomenclature:
+            self.generate_undetermined_nomenclature(name, type_usage_opt)
+        #name = name + get_class_type(type_usage_opt)
+    
+    def g_nomenclature(self, token: tok.BasicToken):
+        
+        name = token.child[1].content
+        self.undetermined_nomenclature[name] = token
     
     def g_func_print(self, token: tok.BasicToken):
         # Le chr sont de longueur 1
@@ -548,6 +568,8 @@ class Generator:
         name = token.child[1]
         if name.get_rule() == string:
             name = name.child[0].content
+        elif isinstance(name.get_rule(), rls.r_sequence):
+            name = name.child[0].content + "." + name.child[1].content
         else:
             name = name.content
         args = token.child[2]
@@ -666,11 +688,28 @@ class Generator:
         if ret_type != "rien":
             self.push_reg("rax")
 
+    def generate_undetermined_nomenclature(self, name: str, class_type_opt: tok.BasicToken):
+        following = get_class_type(class_type_opt)
+        token :tok.BasicToken = self.undetermined_nomenclature[name]
+        names = token.child[0]
+        if isinstance(names.child[0], tok.t_empty):
+            names = names.child[1:]
+        else:
+            names = names.child
+        if isinstance(class_type_opt.child[0], tok.t_empty):
+            class_type_opt = class_type_opt.child[1:]
+        else:
+            class_type_opt = class_type_opt.child
+        if len(class_type_opt) != len(names):
+            error(f"Mauvais nombre de types indiqué pour l'utilisation", class_type_opt.reference)
+        type_names = [t.content for t in names]
+        token = token.child[2].modify(type_names, class_type_opt)
+        print(f"Généré : {name + following}")
+        self.g_scope(token)
+        
     def generate_undetermined(self, name: str, class_type_opt: tok.BasicToken):
         following = get_class_type(class_type_opt)
         token :tok.BasicToken = self.undetermined[name]
-        #if self.name == starting_label:
-        #    token.print(0)
         names = token.child[0]
         if isinstance(names.child[0], tok.t_empty):
             names = names.child[1:]
@@ -920,31 +959,31 @@ class Generator:
         self.push_gen(f"qword [rsp + {shift}]")
         return type_size(type_t)
 
-    def g_operator_add(self):
-        self.generation.append("  add rax, rbx")
+    def g_operator_add(self, float=False):
+        self.generation.append(f"  {'f' if float else ''}add rax, rbx")
 
-    def g_operator_sub(self):
-        self.generation.append("  sub rax, rbx")
+    def g_operator_sub(self, float=False):
+        self.generation.append(f"  {'f' if float else ''}sub rax, rbx")
     
-    def g_operator_mul(self):
-        self.generation.append("  mul rbx")
+    def g_operator_mul(self, float=False):
+        self.generation.append(f"  {'f' if float else ''}mul rbx")
     
-    def g_operator_div(self):
+    def g_operator_div(self, float=False):
         self.generation.append("  xor rdx, rdx")
-        self.generation.append("  div rbx")
+        self.generation.append(f"  {'f' if float else ''}div rbx")
     
-    def g_operator_modulo(self):
+    def g_operator_modulo(self, float=False):
         self.generation.append("  xor rdx, rdx")
         self.generation.append("  div rbx")
         self.generation.append("  mov rax, rdx")
               
-    def g_operator_and(self):
+    def g_operator_and(self, float=False):
         self.generation.append("  and rax, rbx")
     
-    def g_operator_or(self):
+    def g_operator_or(self, float=False):
         self.generation.append("  or rax, rbx")
         
-    def g_operator_less_than(self):
+    def g_operator_less_than(self, float=False):
         lab1 = labels.label("Lt")
         lab2 = labels.label("Lt")
         self.generation.append("  cmp rax, rbx")
@@ -955,7 +994,7 @@ class Generator:
         self.generation.append("  mov rax, 0")
         self.generation.append(f"{lab1}:")
     
-    def g_operator_less_eq_than(self):
+    def g_operator_less_eq_than(self, float=False):
         lab1 = labels.label("Lt")
         lab2 = labels.label("Lt")
         self.generation.append("  inc rbx")
@@ -967,7 +1006,7 @@ class Generator:
         self.generation.append("  mov rax, 0")
         self.generation.append(f"{lab1}:")
     
-    def g_operator_more_than(self):
+    def g_operator_more_than(self, float=False):
         lab1 = labels.label("Mt")
         lab2 = labels.label("Mt")
         self.generation.append("  inc rbx")
@@ -979,7 +1018,7 @@ class Generator:
         self.generation.append("  mov rax, 0")
         self.generation.append(f"{lab1}:")
     
-    def g_operator_more_eq_than(self):
+    def g_operator_more_eq_than(self, float=False):
         lab1 = labels.label("Mt")
         lab2 = labels.label("Mt")
         self.generation.append("  cmp rax, rbx")
@@ -990,7 +1029,7 @@ class Generator:
         self.generation.append("  mov rax, 0")
         self.generation.append(f"{lab1}:")
         
-    def g_operator_equals(self):
+    def g_operator_equals(self, float=False):
         lab1 = labels.label("Eq")
         lab2 = labels.label("Eq")
         self.generation.append("  cmp rax, rbx")
@@ -1001,7 +1040,7 @@ class Generator:
         self.generation.append("  mov rax, 1")
         self.generation.append(f"{lab2}:")
 
-    def g_basic_eq(self):
+    def g_basic_eq(self, float=False):
         lab1 = labels.label("Eq")
         lab2 = labels.label("Eq")
         self.generation.append("  cmp rax, rbx")
@@ -1012,7 +1051,7 @@ class Generator:
         self.generation.append("  mov rax, 1")
         self.generation.append(f"{lab2}:")
     
-    def g_operator_not_equals(self):
+    def g_operator_not_equals(self, float=False):
         lab1 = labels.label("Neq")
         lab2 = labels.label("Neq")
         self.generation.append("  cmp rax, rbx")
@@ -1056,31 +1095,31 @@ class Generator:
             self.pop("rbx")
             self.pop("rax")
             if op == "+":
-                self.g_operator_add()
+                self.g_operator_add(float=False)
             elif op == "-":
-                self.g_operator_sub()
+                self.g_operator_sub(float=False)
             elif op == "*":
-                self.g_operator_mul()
+                self.g_operator_mul(float=False)
             elif op == "/":
-                self.g_operator_div()
+                self.g_operator_div(float=False)
             elif op == "%":
-                self.g_operator_modulo()
+                self.g_operator_modulo(float=False)
             elif op == "<":
-                self.g_operator_less_than()
+                self.g_operator_less_than(float=False)
             elif op == ">":
-                self.g_operator_more_than()
+                self.g_operator_more_than(float=False)
             elif op == "<=":
-                self.g_operator_less_eq_than()
+                self.g_operator_less_eq_than(float=False)
             elif op == ">=":
-                self.g_operator_more_eq_than()
+                self.g_operator_more_eq_than(float=False)
             elif op == "==":
-                self.g_operator_equals()
+                self.g_operator_equals(float=False)
             elif op == "!=":
-                self.g_operator_not_equals()
+                self.g_operator_not_equals(float=False)
             elif op == "||":
-                self.g_operator_or()
+                self.g_operator_or(float=False)
             elif op == "&&":
-                self.g_operator_and()
+                self.g_operator_and(float=False)
             #elif op == "^":
             #    self.g_operator_pow()
             self.push_reg("rax")
@@ -1180,12 +1219,12 @@ class Generator:
             g = self.declared_string.index(content.replace("\n", "\", 10 ,\""))
             self.gen(f"  mov rax, qword msg{g}")
             self.push_reg("rax")
-            self.gen(f"  mov rdx, {l + 2}") # +2 encore une fois, jsp pourquoi
-            self.gen(f"  call {MALLOC_NAME}")
-            self.push_reg("rax")
-            self.gen(f"  mov rdi, rax")
-            self.pop("rsi")
-            self.gen(f"  call chr_copy")
+            #self.gen(f"  mov rdx, {l + 2}") # +2 encore une fois, jsp pourquoi
+            #self.gen(f"  call {MALLOC_NAME}")
+            #self.gen(f"  mov rdi, rax")
+            #self.pop(f"rdi")
+            #self.push_reg("rax")
+            #self.gen(f"  call chr_copy")
             return 8 # C'est un pointeur
         if token.get_rule() == t_bool:
             self.gen("  xor rax, rax")
@@ -1202,8 +1241,8 @@ class Generator:
         if token.get_rule() == casting:
             type_t_dest = type(token          , self.variables_info, self.functions, self.classes, self.global_vars)
             type_t_orgn = type(token.child[1] , self.variables_info, self.functions, self.classes, self.global_vars)
-            self.g_statement(token.child[1])
             size = type_size(type_t_dest)
+            self.g_statement(token.child[1])
             self.pop("rax")
             self.gen("  xor rbx, rbx")
             self.gen(f"  mov {reg_size[size][1]}, {reg_size[size][0]}")
@@ -1334,6 +1373,7 @@ class Generator:
         return name_t
     
     def g_arraydef(self, token: tok.BasicToken):
+        #assert False, f"Déprécié {token.reference}"
         array_def = token.child[0]
         l_type = gettype(array_def)
         length = array_def.child[0].child[0]
@@ -1344,23 +1384,17 @@ class Generator:
             error(f"La longueur de la liste doit être indiquée par un 'ent', pas '{type_t_length}'", token.reference)
         self.g_statement(length)
         self.pop("rdx")
-        if False:
-            assert False, "Pas implémenté"
-            self.push_reg("rdx") 
-            self.sim_stack.append()
-            self.push_()
+        self.gen(f"  lea rdx, [(rdx + 2) * {type_size(l_type)}]") # Le +2 résoud un bug d'affichage pour les chaines de caractère ...
+        self.gen(f"  call {MALLOC_NAME}")
+        if name in self.variables:
+            error(f"'{name}' a déjà été défini et ne peut pas être réécris par une liste", token.reference)
+        if name[:2] == "__":
+            self.gen(f"  mov qword [{name}], rax")
+            self.global_vars[name] = l_type
         else:
-            self.gen(f"  lea rdx, [(rdx + 2) * {type_size(l_type)}]") # Le +2 résoud un bug d'affichage pour les chaines de caractère ...
-            self.gen(f"  call {MALLOC_NAME}")
-            if name in self.variables:
-                error(f"'{name}' a déjà été défini et ne peut pas être réécris par une liste", token.reference)
-            if name[:2] == "__":
-                self.gen(f"  mov qword [{name}], rax")
-                self.global_vars[name] = l_type
-            else:
-                self.push_reg("rax")
-            self.variables.append(name)
-            self.variables_info[name] = (f"{l_type}", len(self.sim_stack), True)
+            self.push_reg("rax")
+        self.variables.append(name)
+        self.variables_info[name] = (f"{l_type}", len(self.sim_stack), True)
     
     def g_array_modif(self, token: tok.BasicToken):
         #token.print()
@@ -1537,17 +1571,17 @@ class Generator:
             r += i + "\n"
         return r
     
-def generate(g :Generator):
+def generate(g :Generator, optimise: bool):
     g.used = True
-    
     g.global_vars["__plateforme"] = "liste[chr]"
     g.variables.append("__plateforme")
     g.variables_info["__plateforme"] = ("liste[chr]", 0, False)
     g.defined.append(f"PLATEFORME_{sys.platform.upper()}")
     print("Définis : ", f"PLATEFORME_{sys.platform.upper()}")
-    
     g.generate_code()
     g.generate_func()
+    if optimise:
+        g.generation = asm_optimiser.optimise(g.generation)
     g.generation.append(inb.print_func)
     g.generation.append("section .data")
     g.generation.append("  chr_buffer:  times 10 db 0")
@@ -1561,13 +1595,12 @@ def generate(g :Generator):
         g.generation.append(f"extern {g.extern_functions[e]}")
     return basic + g.to_file()
     
-def run_code(filename, output_asm_name):
+def run_code(filename, output_asm_name, optimise_asm = True):
     doc = Document(filename=filename)
     toks = tokenise(basic_rulling, doc, True)
-    
     g = Generator(toks)
     IMPORTED.append(filename)
-    g_str = generate(g)
+    g_str = generate(g, optimise_asm)
     with open(output_asm_name,'w') as file: 
         file.write(g_str)
     
