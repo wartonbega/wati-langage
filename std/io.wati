@@ -2,6 +2,9 @@ inclue "syscall.wati";
 inclue "listes.wati";
 inclue "entiers.wati";
 inclue "tuples.wati";
+inclue "mallom.wati";
+
+fonction <*rien> mallom (<ent> taille);
 
 <ent> __stdin = 0;
 <ent> __stdout = 1;

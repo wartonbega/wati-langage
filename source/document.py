@@ -1,5 +1,4 @@
 import os
-large, _ = os.get_terminal_size()
 
 class settings:
     last_perc = 0
@@ -8,13 +7,14 @@ def reset_bar():
     settings.last_perc = 0
 
 def print_bar(perc, filename):
-    l = large - 50
+    large, _ = os.get_terminal_size()
     print("\r", end="")
     if int(perc * 100) == settings.last_perc:
         return
     else:
         settings.last_perc = int(perc * 100)
     p = str(int(perc*100)) + "%"
+    l = large - len(filename) - 7 - len(str(p))
     print(filename, f" {p}: [ ", "#" * int(perc * l), " " * int((1 - perc)*l), f" ]", sep="", end="")
 
 class Document:

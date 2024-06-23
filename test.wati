@@ -1,14 +1,8 @@
-inclue "std.wati";
+inclue "std/std.wati";
+inclue "std/listes_amorties.wati";
 
-utilise <ent>pile;
-
-nomenclature <t1, t2> toto dans fait 
-
-fonction <t1> test (<t2> x) fait 
-    !println(x);
-fin
-
-fin
-
-utilise <rien, ent> toto;
-!test(18);
+b = <[_]<*rien>>!mallom(1);
+!println(!typede(b));
+a = <ent>dliste();
+!println(!attribut_existe(a, "mem"));
+!println(!fonction_existe("println(ent)"));

@@ -13,12 +13,14 @@ nomenclature <type_t, type_t_2> entiers_impl_op dans fait
     fonction <bool> type_t._egal             (<type_t> soit, <type_t_2>x) fait renvoie           <type_t_2>(soit) == x  ;   fin
     fonction <bool> type_t._plus_petit       (<type_t> soit, <type_t_2>x) fait renvoie           <type_t_2>(soit) <  x  ;   fin
     fonction <bool> type_t._plus_grand       (<type_t> soit, <type_t_2>x) fait renvoie           <type_t_2>(soit) >  x  ;   fin
-    fonction <type_t> type_t._puissance      (<type_t> soit, <type_t_2>x) fait renvoie <type_t>( <type_t_2>(soit) ^  x );   fin
     fonction <type_t> type_t._fois           (<type_t> soit, <type_t_2>x) fait renvoie <type_t>( <type_t_2>(soit) *  x );   fin
     fonction <type_t> type_t._div            (<type_t> soit, <type_t_2>x) fait renvoie <type_t>( <type_t_2>(soit) /  x );   fin
     fonction <type_t> type_t._plus           (<type_t> soit, <type_t_2>x) fait renvoie <type_t>( <type_t_2>(soit) +  x );   fin
     fonction <type_t> type_t._moins          (<type_t> soit, <type_t_2>x) fait renvoie <type_t>( <type_t_2>(soit) -  x );   fin
     fonction <type_t> type_t._modulo         (<type_t> soit, <type_t_2>x) fait renvoie <type_t>( <type_t_2>(soit) %  x );   fin
+fin
+
+nomenclature <type_t> entiers_impl_puiss dans fait 
     fonction <type_t> type_t._negatif        (<type_t> soit)              fait renvoie <type_t>(    0 - <ent>(soit)    );   fin
 fin
 
@@ -108,11 +110,24 @@ nomenclature <type_t> entiers_impl dans fait
         !print(x);
         !print('\n');
     fin
+
+    fonction <rien> type_t.print(<type_t> soit) fait 
+        !print(soit);
+    fin
+    
+    fonction <rien> type_t.println(<type_t> soit) fait 
+        !println(soit);
+    fin
 fin
 
 utilise <ent8, ent> entiers_impl_op;
 utilise <ent16, ent> entiers_impl_op;
 utilise <ent32, ent> entiers_impl_op;
+
+utilise <ent8> entiers_impl_puiss;
+utilise <ent16> entiers_impl_puiss;
+utilise <ent32> entiers_impl_puiss;
+utilise <ent> entiers_impl_puiss;
 
 utilise <ent8, ent8> entiers_impl_op;
 utilise <ent16, ent16> entiers_impl_op;

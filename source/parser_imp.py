@@ -22,7 +22,6 @@ def tokenise(rules:list[rls.Rule], document:Document, print_bar=False) -> list[t
                 print()
                 print(document.peek(), document.counter)
                 raise rls.RuleError("Not eof and not rulled", document)
-                assert False, "Not eof and not rulled"
         if print_bar:print(); reset_bar()
         return toks
     except KeyboardInterrupt:

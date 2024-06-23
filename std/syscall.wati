@@ -12,6 +12,8 @@ externe <*rien> _malloc(<ent>);
     __syscall_exit = 1;
     __syscall_read = 3;
     __syscall_write = 4;
+    __syscall_open = 5;
+    __syscall_close = 6;
     __syscall_socket = 97;
     __syscall_connect = 98;
     __syscall_mmap = 197;
@@ -45,8 +47,31 @@ fonction <ent> write(<ent> fd, <[_]chr> cbuf, <ent> nbyte) fait
     renvoie sys_ret_;
 fin
 
+__O_RDONLY =   0 ;        //open for reading only
+__O_WRONLY =   1 ;        //open for writing only
+__O_RDWR =     2 ;          //open for reading and writing
+__O_NONBLOCK = 3 ;      //do not block on open or for data to become available
+__O_APPEND =   4 ;        //append on each write
+__O_CREAT =    5 ;         //create file if it does not exist
+__O_TRUNC =    6 ;         //truncate size to 0
+__O_EXCL =     7 ;          //error if O_CREAT and the file exists
+__O_SHLOCK =   8 ;        //atomically obtain a shared lock
+__O_EXLOCK =   9 ;        //atomically obtain an exclusive lock
+__O_NOFOLLOW = 10 ;      //do not follow symlinks
+__O_SYMLINK =  11 ;       //allow open of symlinks
+
 //5	AUE_OPEN_RWTC	ALL	{ int open(user_addr_t path, int flags, int mode); } 
+fonction <ent> open(<[_]chr> path, <ent> flags, <ent> mode) fait 
+    syscall __syscall_open, path, flags, mode;
+    renvoie sys_ret_;
+fin
+
 //6	AUE_CLOSE	ALL	{ int close(int fd); } 
+fonction <ent> close(<ent> fd) fait 
+    syscall __syscall_close, fd;
+    renvoie sys_ret_;
+fin
+
 //7	AUE_WAIT4	ALL	{ int wait4(int pid, user_addr_t status, int options, user_addr_t rusage); } 
 //8	AUE_NULL	ALL	{ int nosys(void); }   { old creat }
 //9	AUE_LINK	ALL	{ int link(user_addr_t path, user_addr_t link); } 

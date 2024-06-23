@@ -1,5 +1,5 @@
 import os, sys
-import generator
+import source.generator as generator
 import argparse
 
 output_name = "a"

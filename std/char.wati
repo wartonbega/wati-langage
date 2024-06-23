@@ -1,0 +1,11 @@
+
+inclue "mallom.wati";
+inclue "io.wati";
+
+fonction <rien> chr.print(<chr> soit) fait 
+    !print(soit);
+fin 
+
+fonction <rien> chr.println(<chr> soit) fait 
+    !println(soit);
+fin 

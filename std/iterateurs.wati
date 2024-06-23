@@ -7,7 +7,7 @@ classe plage IT contient
     <ent> arrivee;
     <ent> courant;
 
-    methode <*plage> constructeur (<ent> dep, <ent> arr) fait 
+    methode <*plage> constructeur (<*plage> soit, <ent> dep, <ent> arr) fait 
         soit = <*plage>!mallom(24);
         soit.depart = dep;
         soit.arrivee = arr;
@@ -15,7 +15,7 @@ classe plage IT contient
         renvoie soit;
     fin
     
-    methode <*plage> constructeur (<ent> arr) fait 
+    methode <*plage> constructeur (<*plage> soit, <ent> arr) fait 
         soit = <*plage>!mallom(24);
         soit.depart = 0;
         soit.arrivee = arr;
@@ -23,15 +23,15 @@ classe plage IT contient
         renvoie soit;
     fin
 
-    methode <rien> debut () fait 
+    methode <rien> debut (<*plage> soit) fait 
         soit.courant = soit.depart;
     fin
 
-    methode <bool> fin () fait
+    methode <bool> fin (<*plage> soit) fait
         renvoie soit.courant == soit.arrivee; 
     fin
 
-    methode <ent> suivant () fait 
+    methode <ent> suivant (<*plage> soit) fait 
         c = soit.courant;
         soit.courant = soit.courant + 1;
         renvoie c;

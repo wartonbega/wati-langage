@@ -5,7 +5,7 @@ classe <type> noeud_pile contient
     <type> contenu;
     <*noeud_pile<type>> prec;
 
-    methode <*noeud_pile <type>> constructeur(<type> x) fait
+    methode <*noeud_pile <type>> constructeur(<*noeud_pile <type>> soit, <type> x) fait
         soit = <*noeud_pile<type>>(!mallom(16));
         soit.contenu = x;
         soit.prec = soit;
@@ -18,13 +18,13 @@ classe <type> pile contient
     <ent> taille;
     <ent> dernier_index;
 
-    methode <*pile<type>> constructeur() fait 
+    methode <*pile<type>> constructeur(<*pile<type>> soit) fait 
         soit = <*pile<type>>!mallom(16);
         soit.taille = 0;
         renvoie soit;
     fin
 
-    methode <rien> ajoute(<type> x) fait 
+    methode <rien> ajoute(<*pile<type>> soit, <type> x) fait 
         soit.taille = soit.taille + 1;
         n = <type>noeud_pile(x);
         si soit.debut != 0 fait
@@ -33,7 +33,7 @@ classe <type> pile contient
         soit.debut = n;
     fin
 
-    methode <type> pop () fait 
+    methode <type> pop (<*pile<type>> soit) fait 
         si soit.taille <= 0 fait 
             !erreur("!pile.pop : Ne peut pas popper d'une pile vide");
         fin
@@ -45,3 +45,7 @@ classe <type> pile contient
         renvoie c;
     fin
 fin
+
+// Deux utilastions courrantes du stack
+utilise <ent>pile;
+utilise <chr>pile;

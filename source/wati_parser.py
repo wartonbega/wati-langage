@@ -195,6 +195,30 @@ sizeof_funcall = rls.r_sequence(
     rls.r_enclosure("(", ")").set_mid_patern(type_usage)
 ).set_name("taillede")
 
+typeof_funcall = rls.r_sequence(
+    rls.r_character("!").ignore_token(),
+    rls.r_char_sequence("typede").ignore_token(),
+    rls.r_enclosure("(", ")")
+).set_name("typede")
+
+attr_exist = rls.r_sequence(
+    rls.r_character("!").ignore_token(),
+    rls.r_char_sequence("attribut_existe").ignore_token(),
+    rls.r_enclosure("(", ")")
+).set_name("attr_exist")
+
+meth_exist = rls.r_sequence(
+    rls.r_character("!").ignore_token(),
+    rls.r_char_sequence("methode_existe").ignore_token(),
+    rls.r_enclosure("(", ")")
+).set_name("attr_exist")
+
+func_exist = rls.r_sequence(
+    rls.r_character("!").ignore_token(),
+    rls.r_char_sequence("fonction_existe").ignore_token(),
+    rls.r_enclosure("(", ")").set_mid_patern(string)
+).set_name("func_exist")
+
 methcall = rls.r_sequence(
     rls.r_character("!").ignore_token(),
     attribute_identifier,
@@ -225,6 +249,10 @@ attribute = rls.r_sequence(
 
 value = rls.r_option(
     sizeof_funcall,
+    typeof_funcall,
+    attr_exist,
+    func_exist,
+    meth_exist,
     funcall,
     classcall,
     methcall,
@@ -303,6 +331,23 @@ attended_expression = rls.r_option(
     identifier
 )
 
+typeof_funcall.sequence[2].set_mid_patern(attended_expression)
+
+attr_exist.sequence[2].set_mid_patern(
+    rls.r_sequence(
+        attended_expression,
+        rls.r_character(",").ignore_token(),
+        string
+    )
+)
+
+meth_exist.sequence[2].set_mid_patern(
+    rls.r_sequence(
+        attended_expression,
+        rls.r_character(",").ignore_token(),
+        string
+    )
+)
 #array_accession.sequence[0] = attended_expression
 
 conditional_value = rls.r_sequence(
@@ -441,6 +486,14 @@ funcdef = rls.r_sequence(
     scope
 ).set_name("funcdef")
 
+funcdef_dec = rls.r_sequence(
+    k_func,
+    type_usage,
+    identifier,
+    func_arguments,
+    rls.r_character(";").ignore_token()
+).set_name("function-declaration")
+
 methodedef = rls.r_sequence(
     k_methode,
     type_usage,
@@ -564,6 +617,7 @@ basic_rulling = [
     utilise_k,
     array_def,
     funcdef,
+    funcdef_dec,
     classdef,
     ifstmt,
     forloop,

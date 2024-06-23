@@ -283,7 +283,7 @@ def get_methcall_name(tok: tok.BasicToken, variables, functions, classes, global
         args = [args.child[0]]
     else:
         args = args.child[0].child
-    args_type_name = "("
+    args_type_name = "(" + name_t + ("," if len(args) != 0 else "")
     for i, v in enumerate(args):
         type_t = type(v, variables, functions, classes, global_vars)
         args_type_name += f"{type_t}," if i + 1 != len(args) else f"{type_t}"
@@ -299,6 +299,14 @@ def get_liste_type(type: str):
 def get_ptr_type(type: str):
     t = type[1:]
     return t
+    
+def type_exists(type: str) -> bool:
+    if is_ptr(type):
+        return type_exists(get_ptr_type(type))
+    if is_liste(type):
+        return type_exists(get_liste_type(type))
+    else:
+        return type in TYPES or type == "rien"
     
 def type_size(type: str):
     if is_liste(type):
@@ -340,6 +348,14 @@ def type(expression: tok.BasicToken, variables:dict, functions:dict, classes:dic
         return functions[name][2]
     if expression.get_rule() == sizeof_funcall:
         return "ent"
+    if expression.get_rule() == typeof_funcall:
+        return "liste[chr]"
+    if expression.get_rule() == attr_exist:
+        return "bool"
+    if expression.get_rule() == func_exist:
+        return "bool"
+    if expression.get_rule() == meth_exist:
+        return "bool"
     if expression.get_rule() == methcall:
         name = get_methcall_name(expression, variables, functions, classes, global_vars)
         if name not in functions:
@@ -378,7 +394,7 @@ def type(expression: tok.BasicToken, variables:dict, functions:dict, classes:dic
             func_name = f"{r}.index(ent)"
             if func_name not in functions:
                 error(f"Méthode inconnue : '{func_name}'. La classe doit contenir une méthode '.index(ent)' pour supporter l'indexation", expression.reference)
-            _, _, rettype = functions[func_name]
+            _, _, rettype, _ = functions[func_name]
             return rettype
         error(f"Type imcompatible avec une indexation, '{r}'", expression.reference)
     if expression.get_rule() == classcall:

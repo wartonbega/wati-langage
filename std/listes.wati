@@ -25,15 +25,6 @@ fonction <ent> long (<[_]chr> array) fait
     renvoie l;
 fin
 
-fonction <rien> print (<[_]chr> arr) fait
-    l = !long(arr);
-    i = 0;
-    tant que i < l fait 
-        !print(arr[i]);
-        i = i + 1;
-    fin 
-fin
-
 fonction <rien> println (<[_]chr> arr) fait
     !print(arr);
     !print(<chr>(10));
@@ -59,7 +50,7 @@ fonction <rien> chr_copie (<ent> taille, <[_]chr> dest, <[_]chr> source) fait
     fin
 fin
 
-fonction <bool> "liste[chr]._egal" (<[_]chr> soit, <[_]chr>x) fait 
+fonction <bool> "liste[chr]._egal" (<[_]chr> soit, <[_]chr> x) fait 
     l1 = !long(soit);
     l2 = !long(x);
     si l1 != l2 fait 
@@ -73,4 +64,17 @@ fonction <bool> "liste[chr]._egal" (<[_]chr> soit, <[_]chr>x) fait
         i = i + 1;
     fin
     renvoie Vrai;
+fin
+
+fonction <[_]chr> "listes[chr]._egal" (<[_]chr> soit, <[_]chr> x) fait 
+    l1 = !long(soit);
+    l2 = !long(x);
+    <[_]chr> ret = <[_]chr>!mallom(l1 + l2);
+    pour i dans [0, l1] fait 
+        ret[i] = soit[i];
+    fin
+    pour i dans [0, l2] fait 
+        ret[i + l1] = x[i];
+    fin
+    renvoie ret;
 fin

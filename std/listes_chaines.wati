@@ -4,14 +4,14 @@ classe <type> noeud contient
     <type> contenu;
     <*noeud<type>> proch;
 
-    methode <*noeud <type>> constructeur(<type> x) fait
+    methode <*noeud <type>> constructeur(<*noeud <type>> soit, <type> x) fait
         soit = <*noeud<type>>(!mallom(16));
         soit.contenu = x;
         soit.proch = soit;
         renvoie soit;
     fin
 
-    methode <rien> pousse(<type> x) fait 
+    methode <rien> pousse(<*noeud <type>> soit, <type> x) fait 
         si soit.proch == soit fait 
             soit.proch = <type>noeud(x);
         fin sinon fait 
@@ -19,7 +19,7 @@ classe <type> noeud contient
         fin
     fin
 
-    methode <rien> print() fait 
+    methode <rien> print(<*noeud <type>> soit) fait 
         si soit.proch == soit fait 
             !print(soit.contenu);
         fin sinon fait 
@@ -29,14 +29,14 @@ classe <type> noeud contient
         fin
     fin
     
-    methode <*noeud<type>> index(<ent> index) fait 
+    methode <*noeud<type>> index(<*noeud <type>> soit, <ent> index) fait 
         si index == 0 fait
             renvoie soit;
         fin
         renvoie !soit.proch.index(index - 1);
     fin
     
-    methode <type> pop(<ent> index) fait 
+    methode <type> pop(<*noeud <type>> soit, <ent> index) fait 
         si index == 1 fait
             p = soit.proch;
             c = p.contenu;
@@ -54,12 +54,12 @@ fin
 
 classe <type> liste IT contient
     <*noeud<type>> debut;
-    <ent> taille;
+    <ent> taille        ;
     <ent> dernier_index;
     <*noeud<type>> dernier_noeud;
     <*noeud<type>> iter;
 
-    methode <*liste<type>> constructeur() fait 
+    methode <*liste<type>> constructeur(<*liste<type>> soit) fait 
         soit = <*liste<type>>!mallom(40);
         soit.debut = <type>noeud(<type>0);
         soit.dernier_noeud = soit.debut;
@@ -67,24 +67,24 @@ classe <type> liste IT contient
         renvoie soit;
     fin
 
-    methode <rien> ajoute(<type> x) fait 
+    methode <rien> ajoute(<*liste<type>> soit, <type> x) fait 
         soit.taille = soit.taille + 1;
         !soit.debut.pousse(x);
     fin
 
-    methode <rien> print() fait 
+    methode <rien> print(<*liste<type>> soit) fait 
         si soit.taille == 0 fait !print("[ ]"); renvoie; fin
         !print("[ ");
         !soit.debut.proch.print();
         !print(" ]");
     fin
 
-    methode <rien> println() fait 
+    methode <rien> println(<*liste<type>> soit) fait 
         !soit.print();
         !print('\n');
     fin
     
-    methode <type> index (<ent> index) fait 
+    methode <type> index (<*liste<type>> soit, <ent> index) fait 
         si index >= soit.taille fait 
             !erreur("!liste.index : L'index est plus grand que la taille de la liste");
         fin
@@ -100,7 +100,7 @@ classe <type> liste IT contient
         renvoie p.contenu;
     fin
 
-    methode <rien> assigne_index(<ent> index, <type> x) fait 
+    methode <rien> assigne_index(<*liste<type>> soit, <ent> index, <type> x) fait 
         si index >= soit.taille fait 
             !erreur("!liste.assigne_index : L'index est plus grand que la taille de la liste");
         fin
@@ -116,7 +116,7 @@ classe <type> liste IT contient
         dernier_noeud = p;
     fin
 
-    methode <type> pop (<ent> index) fait 
+    methode <type> pop (<*liste<type>> soit, <ent> index) fait 
         si index >= soit.taille fait 
             !erreur("!liste.pop : L'index est plus grand que la taille de la liste");
         fin
@@ -124,16 +124,19 @@ classe <type> liste IT contient
         renvoie !soit.debut.pop(index + 1);
     fin
 
-    methode <rien> debut () fait 
+    methode <rien> debut (<*liste<type>> soit) fait 
         soit.iter = soit.debut;
     fin
 
-    methode <type> suivant () fait 
+    methode <type> suivant (<*liste<type>> soit) fait 
         soit.iter = soit.iter.proch;
         renvoie soit.iter.contenu;
     fin
 
-    methode <bool> fin () fait
+    methode <bool> fin (<*liste<type>> soit) fait
         renvoie soit.iter.proch == soit.iter || soit.iter == 0;
     fin
 fin
+
+utilise <ent>liste;
+utilise <chr>liste;
