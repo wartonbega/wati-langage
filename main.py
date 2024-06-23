@@ -20,6 +20,7 @@ if __name__ == "__main__":
     parser.add_argument("-i", "--informations", choices=["o", "n"], required=False)
     parser.add_argument("-a", "--asm", const=True, nargs="?")
     parser.add_argument("-O", "--optimiseAsm", const=True, nargs="?")
+    parser.add_argument("-d", "--definis", nargs='+')
     args = parser.parse_args()
     if args.informations == None or args.informations == "n":
         generator.INFORMATIONS = False
@@ -35,8 +36,10 @@ if __name__ == "__main__":
         optimise_asm = True
     else:
         optimise_asm = False
+    args.definis = [] if not args.definis else args.definis
+        
     filename = args.filename
-    generator.run_code(filename, output_name + ".asm", optimise_asm=optimise_asm)
+    generator.run_code(filename, output_name + ".asm", optimise_asm=optimise_asm, defined=args.definis)
     print("Compilé en assembleur !")
     print(f"nasm -f{'macho64' if sys.platform == 'darwin' else 'elf64'} -o {output_name}.o {output_name}.asm")
     os.system(f"nasm -f{'macho64' if sys.platform == 'darwin' else 'elf64'} -o {output_name}.o {output_name}.asm")

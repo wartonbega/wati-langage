@@ -120,24 +120,34 @@ nomenclature <type_t> entiers_impl dans fait
     fin
 fin
 
-utilise <ent8, ent> entiers_impl_op;
-utilise <ent16, ent> entiers_impl_op;
-utilise <ent32, ent> entiers_impl_op;
-
-utilise <ent8> entiers_impl_puiss;
-utilise <ent16> entiers_impl_puiss;
-utilise <ent32> entiers_impl_puiss;
-utilise <ent> entiers_impl_puiss;
-
-utilise <ent8, ent8> entiers_impl_op;
-utilise <ent16, ent16> entiers_impl_op;
-utilise <ent32, ent32> entiers_impl_op;
 
 
-utilise <ent> entiers_impl;
-utilise <ent8> entiers_impl;
-utilise <ent16> entiers_impl;
-utilise <ent32> entiers_impl;
+
+%sidef ENT8_IMP fait
+    utilise <ent8, ent> entiers_impl_op;
+    utilise <ent8> entiers_impl_puiss;
+    utilise <ent8, ent8> entiers_impl_op;
+    utilise <ent8> entiers_impl;
+fin
+
+%sidef ENT16_IMP fait
+    utilise <ent16, ent> entiers_impl_op;
+    utilise <ent16> entiers_impl_puiss;
+    utilise <ent16, ent16> entiers_impl_op;
+    utilise <ent16> entiers_impl;
+fin
+
+%sidef ENT32_IMP fait
+    utilise <ent32, ent> entiers_impl_op;
+    utilise <ent32> entiers_impl_puiss;
+    utilise <ent32, ent32> entiers_impl_op;
+    utilise <ent32> entiers_impl;
+fin
+
+%sidef ENT_IMP fait 
+    utilise <ent> entiers_impl_puiss;
+    utilise <ent> entiers_impl;
+fin
 
 fonction <ent> chr_en_ent (<chr> x) fait 
     si x == '1' fait 

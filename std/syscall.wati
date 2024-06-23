@@ -337,6 +337,11 @@ fin
 //196	AUE_GETDIRENTRIES	ALL	{ int getdirentries(int fd, char *buf, u_int count, long *basep); } 
 //197	AUE_MMAP	ALL	{ user_addr_t mmap(caddr_t addr, size_t len, int prot, int flags, int fd, off_t pos); } 
 
+<ent> __PROT_READ  = 0x0001;
+<ent> __PROT_WRITE = 0x1000;
+
+<ent> __MAP_SHARED =	      0x01;
+<ent> __MAP_ANON   =	      0x02;
 
 fonction <*rien> mmap(<*rien> addr, <ent> len, <ent> prot, <ent> flags, <ent> fd, <ent> pos) fait 
     syscall __syscall_mmap, addr, len, prot, flags, fd, pos;

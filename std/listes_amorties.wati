@@ -6,7 +6,7 @@ classe <Type> dliste contient
     <[_]Type> mem;
 
     methode <*dliste<Type>> constructeur (<*dliste<Type>> soit) fait 
-        soit = <*dliste<Type>>!mallom(24);
+        soit = <*dliste<Type>>!mallom(!taillede(<dliste<Type>>));
         soit.taille = 0;
         soit.max = 8;
         soit.mem = <[_]Type> !mallom(!taillede(<Type>) * soit.max);
