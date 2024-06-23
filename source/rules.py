@@ -1,9 +1,9 @@
 from typing import Any, Union
 from typing_extensions import Callable, Iterable, Tuple
 
-from document import Document
-import characters as ch
-import tokens as tok
+from source.document import Document
+import source.characters as ch
+import source.tokens as tok
 
 BASIC_CHARACTERS = ch.BASIC_CHARACTERS
 WHITESPACE = ch.WHITESPACE

@@ -1,4 +1,4 @@
-from wati_parser import *
+from source.wati_parser import *
 import numpy as np
 
 python_type = type

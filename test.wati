@@ -1,5 +1,5 @@
-inclue "std/std.wati";
-inclue "std/listes_amorties.wati";
+inclue "./std/std.wati";
+inclue "./std/listes_amorties.wati";
 
 b = <[_]<*rien>>!mallom(1);
 !println(!typede(b));

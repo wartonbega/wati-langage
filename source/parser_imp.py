@@ -1,9 +1,9 @@
 
 from typing import Tuple
-import rules as rls
-import characters as ch
-from document import *
-import tokens as tok
+import source.rules as rls
+import source.characters as ch
+from source.document import *
+import source.tokens as tok
 
 def tokenise(rules:list[rls.Rule], document:Document, print_bar=False) -> list[tok.BasicToken]:
     try:

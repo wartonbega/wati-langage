@@ -1,4 +1,4 @@
-from parser_imp import *
+from source.parser_imp import *
 
 ch.BASIC_CHARACTERS.append("_")
 

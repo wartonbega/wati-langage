@@ -1,12 +1,12 @@
-from wati_parser import *
-from code_analysis import *
-import inbuilt_functions as inb
-import tokens as tok
+from source.wati_parser import *
+from source.code_analysis import *
+import source.inbuilt_functions as inb
+import source.tokens as tok
 import copy
-from document import Document
+from source.document import Document
 from typing import Tuple
-from parser_imp import *
-import asm_optimiser
+from source.parser_imp import *
+import source.asm_optimiser as asm_optimiser
 import os, sys
 
 plateform = sys.platform
@@ -73,7 +73,7 @@ word_size = {
     1: "byte"
 }
 
-PATH = ["./"]
+PATH = ["."]
 
 class LabelGenerator:
     def __init__(self) -> None:
@@ -352,6 +352,16 @@ class Generator:
 
     def g_inclue(self, token: tok.BasicToken):
         filename = token.child[0].child[0].content
+        filename = filename.split("/")
+        base = filename[:-1]
+        head = filename[-1]
+        for i in base:
+            PATH.append("/")
+            PATH.append(i)
+        filename = ""
+        for i in PATH:
+            filename += i
+        filename += "/" + head
         if filename not in IMPORTED:
             IMPORTED.append(filename)
             doc = Document(filename=filename)
@@ -368,10 +378,14 @@ class Generator:
             g.extern_functions = self.extern_functions
             g.undetermined = self.undetermined
             g.defined = self.defined
+            
             g.generate_code(True)
             information(f"Importé '{filename}'", token.reference)
             for i in g.generation[1:]:
                 self.generation.append(i)
+        for i in base:
+            PATH.pop()
+            PATH.pop()
 
     def g_syscall(self, token: tok.BasicToken):
         #RDI, RSI, RDX, R10, R8, and R9, in order. System call number goes into RAX.
@@ -1276,10 +1290,10 @@ class Generator:
             self.gen(f"  mov rax, qword msg{g}")
             self.push_reg("rax")
             self.gen(f"  mov rdx, {l + 2}") # +2 encore une fois, jsp pourquoi
-            self.gen(f"  call {MALLOC_NAME}")
+            self.g_malloc("rdx")
             self.gen(f"  mov rdi, rax")
-            self.pop(f"rdi")
-            self.push_reg("rax")
+            self.pop(f"rsi")
+            self.push_reg(f"rdi")
             self.gen(f"  call chr_copy")
             return 8 # C'est un pointeur
         if token.get_rule() == t_bool:
