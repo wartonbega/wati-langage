@@ -1687,13 +1687,16 @@ class Generator:
             r += i + "\n"
         return r
     
-def generate(g :Generator, optimise: bool):
+def generate(g :Generator, optimise: bool, defined: list[str]):
     g.used = True
     g.global_vars["__plateforme"] = "liste[chr]"
     g.variables.append("__plateforme")
     g.variables_info["__plateforme"] = ("liste[chr]", 0, False)
     g.defined.append(f"PLATEFORME_{sys.platform.upper()}")
     print("Définis : ", f"PLATEFORME_{sys.platform.upper()}")
+    for d in defined:
+        g.defined.append(d.upper())
+        print("Définis : ", d.upper())
     g.generate_code()
     g.generate_func()
     if optimise:
@@ -1711,12 +1714,12 @@ def generate(g :Generator, optimise: bool):
         g.generation.append(f"extern {g.extern_functions[e]}")
     return basic + g.to_file()
     
-def run_code(filename, output_asm_name, optimise_asm = True):
+def run_code(filename, output_asm_name, optimise_asm = True, defined = []):
     doc = Document(filename=filename)
     toks = tokenise(basic_rulling, doc, True)
     g = Generator(toks)
     IMPORTED.append(filename)
-    g_str = generate(g, optimise_asm)
+    g_str = generate(g, optimise_asm, defined)
     with open(output_asm_name,'w') as file: 
         file.write(g_str)
     
