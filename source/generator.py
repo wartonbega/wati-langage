@@ -73,7 +73,7 @@ word_size = {
     1: "byte"
 }
 
-PATH = ["."]
+PATH = []
 
 class LabelGenerator:
     def __init__(self) -> None:
@@ -356,12 +356,12 @@ class Generator:
         base = filename[:-1]
         head = filename[-1]
         for i in base:
-            PATH.append("/")
             PATH.append(i)
+            PATH.append("/")
         filename = ""
         for i in PATH:
             filename += i
-        filename += "/" + head
+        filename += head
         if filename not in IMPORTED:
             IMPORTED.append(filename)
             doc = Document(filename=filename)
@@ -1289,12 +1289,12 @@ class Generator:
             g = self.declared_string.index(content.replace("\n", "\", 10 ,\""))
             self.gen(f"  mov rax, qword msg{g}")
             self.push_reg("rax")
-            self.gen(f"  mov rdx, {l + 2}") # +2 encore une fois, jsp pourquoi
-            self.g_malloc("rdx")
-            self.gen(f"  mov rdi, rax")
-            self.pop(f"rsi")
-            self.push_reg(f"rdi")
-            self.gen(f"  call chr_copy")
+            #self.gen(f"  mov rdx, {l + 2}") # +2 encore une fois, jsp pourquoi
+            #self.g_malloc("rdx")
+            #self.gen(f"  mov rdi, rax")
+            #self.pop(f"rsi")
+            #self.push_reg(f"rdi")
+            #self.gen(f"  call chr_copy")
             return 8 # C'est un pointeur
         if token.get_rule() == t_bool:
             self.gen("  xor rax, rax")
@@ -1408,18 +1408,23 @@ class Generator:
             return size
         if token.get_rule() == dereferencement:
             size = 8 # un pointeur
-            if token.child[0] != identifier:
+            if token.child[0] != identifier and token.child[0] != attribute_identifier:
                 error(f"La valeur passé à l'opérateur '&' doit être une variable", token.reference)
-            name = token.child[0].content
-            if name not in self.variables:
-                error(f"La variable '{name}' n'est pas définie", token.child[0].reference)
-            type_t, pos, free = self.variables_info[name]
-            shift = 0
-            for i in self.sim_stack[pos:]:
-                shift += i
-            self.gen(f"  lea rax, [rsp + {shift}]")
-            self.push_reg(f"rax")
-            return 8
+            if token.child[0] == identifier:
+                name = token.child[0].content
+                if name not in self.variables:
+                    error(f"La variable '{name}' n'est pas définie", token.child[0].reference)
+                type_t, pos, free = self.variables_info[name]
+                shift = 0
+                for i in self.sim_stack[pos:]:
+                    shift += i
+                self.gen(f"  lea rax, [rsp + {shift}]")
+                self.push_reg(f"rax")
+                return 8
+            if token.child[0] == attribute_identifier:
+                token.print()
+                self.g_attribute_identifier(token.child[0].child[0], token.child[0].child[1:])
+                return 8 # un pointeur
         if token.get_rule() == negativ:
             type_t = type(token, self.variables_info, self.functions, self.classes, self.global_vars)
             self.g_statement(token.child[0])
@@ -1460,7 +1465,7 @@ class Generator:
             return type_size(type1)
         assert False, "Pas implémenté"
     
-    def g_attribute_identifier(self, name: tok.BasicToken, attributes: tok.BasicToken):
+    def g_attribute_identifier(self, name: tok.BasicToken, attributes: list[tok.BasicToken]):
         name_t = type(name, self.variables_info, self.functions, self.classes, self.global_vars)
         self.g_statement(name)
         for j, c in  enumerate(attributes):
@@ -1716,6 +1721,10 @@ def generate(g :Generator, optimise: bool, defined: list[str]):
     
 def run_code(filename, output_asm_name, optimise_asm = True, defined = []):
     doc = Document(filename=filename)
+    filename = filename.split("/")
+    for f in filename[:-1]:
+        PATH.append(f)
+        PATH.append("/")
     toks = tokenise(basic_rulling, doc, True)
     g = Generator(toks)
     IMPORTED.append(filename)
