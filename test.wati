@@ -1,8 +1,5 @@
 inclue "./std/std.wati";
-inclue "./std/listes_amorties.wati";
 
-b = <[_]<*rien>>!mallom(1);
-!println(!typede(b));
-a = <ent>dliste();
-!println(!attribut_existe(a, "mem"));
-!println(!fonction_existe("println(ent)"));
+externe <ent> _time(<*rien>);
+
+a = !_time(<*rien> 0);

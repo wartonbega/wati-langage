@@ -66,7 +66,7 @@ fonction <bool> "liste[chr]._egal" (<[_]chr> soit, <[_]chr> x) fait
     renvoie Vrai;
 fin
 
-fonction <[_]chr> "listes[chr]._egal" (<[_]chr> soit, <[_]chr> x) fait 
+fonction <[_]chr> "listes[chr]._plus" (<[_]chr> soit, <[_]chr> x) fait 
     l1 = !long(soit);
     l2 = !long(x);
     <[_]chr> ret = <[_]chr>!mallom(l1 + l2);

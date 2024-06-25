@@ -1,5 +1,9 @@
 inclue "listes.wati";
 
+deftype ent8 1;
+deftype ent16 2;
+deftype ent32 4;
+
 nomenclature <type_t, type_t_2> entiers_impl_op dans fait 
     fonction <type_t> type_t._ou             (<type_t> soit, <type_t_2>x) fait renvoie <type_t>( <type_t_2>(soit) || x );   fin
     fonction <type_t> type_t._et             (<type_t> soit, <type_t_2>x) fait renvoie <type_t>( <type_t_2>(soit) && x );   fin
@@ -120,7 +124,6 @@ fin
 
 
 %sidef ENT8_IMP fait
-    deftype ent8 1;
     utilise <ent8, ent> entiers_impl_op;
     utilise <ent8> entiers_impl_puiss;
     utilise <ent8, ent8> entiers_impl_op;
@@ -128,7 +131,6 @@ fin
 fin
 
 %sidef ENT16_IMP fait
-    deftype ent16 2;
     utilise <ent16, ent> entiers_impl_op;
     utilise <ent16> entiers_impl_puiss;
     utilise <ent16, ent16> entiers_impl_op;
@@ -136,7 +138,6 @@ fin
 fin
 
 %sidef ENT32_IMP fait
-    deftype ent32 4;
     utilise <ent32, ent> entiers_impl_op;
     utilise <ent32> entiers_impl_puiss;
     utilise <ent32, ent32> entiers_impl_op;

@@ -1,5 +1,21 @@
-inclue "std.wati";
 
-<ent> x = 109349184;
-<chr> y = <chr>x;
-!println(y)
+
+inclue "./std/std.wati";
+
+fonction <ent> temps () fait 
+    m = <[_]ent>!mallom(16);
+    !gettimeofday(<*rien>m, <*rien>0);
+    r = m[1];
+    !libere(<*rien>m);
+    renvoie r;
+fin
+
+l = 0;
+
+tant que Vrai fait 
+    a = !temps();
+    si a != l fait 
+        !println(a);
+        l = a;
+    fin
+fin

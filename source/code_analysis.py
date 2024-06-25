@@ -425,8 +425,8 @@ def type(expression: tok.BasicToken, variables:dict, functions:dict, classes:dic
             error(f"Le type doit être *<type>, pas {t}", expression.reference)
         return get_ptr_type(t)
     if expression.get_rule() == dereferencement:
-        if expression.child[0].content not in variables:
-            error("Le déréférencement prend en argument seulement une variables définie", expression.reference)
+        #if expression.child[0].content not in variables:
+        #    error("Le déréférencement prend en argument seulement une variables définie", expression.reference)
         return f"*{type(expression.child[0], variables, functions, classes, global_vars)}"
     if expression.get_rule() == not_op:
         return type(expression.child[0], variables, functions, classes, global_vars)

@@ -98,6 +98,11 @@ fin
 //28	AUE_SENDMSG	ALL	{ int sendmsg(int s, caddr_t msg, int flags); } 
 //29	AUE_RECVFROM	ALL	{ int recvfrom(int s, void *buf, size_t len, int flags, struct sockaddr *from, int *fromlenaddr); } 
 //30	AUE_ACCEPT	ALL	{ int accept(int s, caddr_t name, socklen_t	*anamelen); } 
+fonction <ent> accept (<ent> s, <[_]chr> name, <*ent> anamelen) fait 
+    syscall 30, s, name, anamelen;
+    renvoie sys_ret_;
+fin
+
 //31	AUE_GETPEERNAME	ALL	{ int getpeername(int fdes, caddr_t asa, socklen_t *alen); } 
 //32	AUE_GETSOCKNAME	ALL	{ int getsockname(int fdes, caddr_t asa, socklen_t *alen); } 
 //#else
@@ -211,8 +216,18 @@ fin
 //103	AUE_NULL	ALL	{ int nosys(void); }   { old sigreturn }
 //#if SOCKETS
 //104	AUE_BIND	ALL	{ int bind(int s, caddr_t name, socklen_t namelen); } 
+fonction <ent> bind (<ent32> s, <[_]chr> name, <ent32> namelen) fait 
+    syscall 104, s, name, namelen;
+    renvoie sys_ret_;
+fin
+
 //105	AUE_SETSOCKOPT	ALL	{ int setsockopt(int s, int level, int name, caddr_t val, socklen_t valsize); } 
 //106	AUE_LISTEN	ALL	{ int listen(int s, int backlog); } 
+fonction <ent> listen (<ent32>s, <ent32>backlog) fait 
+    syscall 106, s, backlog;
+    renvoie sys_ret_;
+fin
+
 //#else
 //104	AUE_NULL	ALL	{ int nosys(void); }
 //105	AUE_NULL	ALL	{ int nosys(void); }
@@ -233,6 +248,11 @@ fin
 //#endif /* SOCKETS */
 //115	AUE_NULL	ALL	{ int nosys(void); }   { old vtrace }
 //116	AUE_GETTIMEOFDAY	ALL	{ int gettimeofday(struct timeval *tp, struct timezone *tzp); } 
+fonction <ent> gettimeofday(<*rien> timeval, <*rien> timezone) fait 
+    syscall 116, timeval, timezone;
+    renvoie sys_ret_;
+fin
+
 //117	AUE_GETRUSAGE	ALL	{ int getrusage(int who, struct rusage *rusage); } 
 //#if SOCKETS
 //118	AUE_GETSOCKOPT	ALL	{ int getsockopt(int s, int level, int name, caddr_t val, socklen_t *avalsize); } 

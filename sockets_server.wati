@@ -1,0 +1,56 @@
+
+%definis ENT_IMP
+%definis ENT8_IMP
+%definis ENT16_IMP
+%definis ENT32_IMP
+
+inclue "./std/syscall.wati";
+inclue "./std/mallom.wati";
+inclue "./std/entiers.wati";
+
+externe <ent32>_htonl(<ent32>);
+externe <ent16> _htons(<ent16>);
+externe <ent> _time(<*rien>);
+externe <ent> _sleep(<ent>);
+
+__INADDR_ANY = 0;
+
+classe serv_addr contient
+    <ent16> sin_family;
+    <ent16> sin_port;
+    <ent32> sin_addr;
+    <chr> char1;
+    <chr> char2;
+    <chr> char3;
+    <chr> char4;
+    <chr> char5;
+    <chr> char6;
+    <chr> char7;
+    <chr> char8;
+fin
+
+<[1025]chr> sendBuf;
+<*serv_addr> struct = <*serv_addr>!mallom(!taillede(<serv_addr>));
+!metmoire(<*rien>struct, '0',  !taillede(<serv_addr>));
+
+listenfd = !socket(__AF_INET, __SOCK_STREAM, 0);
+
+struct.sin_family = <ent16>__AF_INET;
+struct.sin_addr = !_htonl(<ent32>__INADDR_ANY);
+struct.sin_port = !_htons(<ent16>5000);
+
+!bind(<ent32>listenfd, <[_]chr>struct, <ent32>!taillede(<serv_addr>));
+!listen(<ent32>listenfd, <ent32>10);
+
+tant que Vrai fait 
+    connfd = !accept(listenfd, <[_]chr>0, <*ent>0);
+    a = !_time(<*rien> 0);
+    t = !ent_en_chaine(a);
+    pour i dans [0, !long(t)] fait 
+        sendBuf[i] = t[i];
+    fin
+    !println(sendBuf);
+    !write(connfd, sendBuf, !long(sendBuf));
+    !close(connfd);
+    !_sleep(1);
+fin

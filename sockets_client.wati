@@ -1,0 +1,51 @@
+
+%definis ENT_IMP
+%definis ENT8_IMP
+%definis ENT16_IMP
+%definis ENT32_IMP
+
+inclue "./std/syscall.wati";
+inclue "./std/mallom.wati";
+inclue "./std/entiers.wati";
+
+externe <ent32>_htonl(<ent32>);
+externe <ent16> _htons(<ent16>);
+externe <ent> _time(<*rien>);
+externe <ent> _inet_pton(<ent>, <[_]chr>, <*rien>);
+
+classe serv_addr contient
+    <ent16> sin_family;
+    <ent16> sin_port;
+    <ent32> sin_addr;
+    <chr> char1;
+    <chr> char2;
+    <chr> char3;
+    <chr> char4;
+    <chr> char5;
+    <chr> char6;
+    <chr> char7;
+    <chr> char8;
+fin
+
+
+<[1024]chr> recvBuff;
+!metmoire(<*rien>recvBuff, '0', 1024);
+sockfd = !socket(__AF_INET, __SOCK_STREAM, 0);
+
+<*serv_addr> struct = <*serv_addr>!mallom(!taillede(<serv_addr>));
+
+!metmoire(<*rien>struct, '0',  !taillede(<serv_addr>));
+
+struct.sin_family = <ent16>__AF_INET;
+struct.sin_port = !_htons(<ent16>5000);
+
+!println(struct.sin_addr);
+id = !_inet_pton(__AF_INET, "127.0.0.1", <*rien>(&struct.sin_addr));
+!println(struct.sin_addr);
+!println(id);
+!connect(sockfd, <*rien>struct, !taillede(<serv_addr>));
+
+n = 0;
+n = !read(sockfd, recvBuff, 1023);
+recvBuff[n] = <chr>0;
+!println(recvBuff);

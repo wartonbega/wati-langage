@@ -16,3 +16,10 @@ fin
 fonction <rien> libere(<*rien> taille) fait 
     !_free(taille);
 fin
+
+fonction <rien> metmoire (<*rien> ptr, <chr> val, <ent> taille) fait 
+    ptr_c = <[_]chr>ptr;
+    pour i dans [0, taille] fait 
+        ptr_c[i] = val;
+    fin
+fin
