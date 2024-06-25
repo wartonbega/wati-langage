@@ -2,7 +2,7 @@ inclue "entiers.wati";
 inclue "mallom.wati";
 inclue "io.wati";
 
-fonction <chr> "chr._plus" (<chr> soit, <ent> x) fait 
+fonction <chr> chr._plus (<chr> soit, <ent> x) fait 
     renvoie <chr>(<ent>(soit) + x);
 fin
 

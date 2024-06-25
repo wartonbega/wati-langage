@@ -489,7 +489,15 @@ funcdef = rls.r_sequence(
 funcdef_dec = rls.r_sequence(
     k_func,
     type_usage,
-    identifier,
+    rls.r_option(
+        rls.r_sequence(
+            identifier,
+            rls.r_character(".").ignore_token(),
+            identifier
+        ).set_name("funcdef-methode"),
+        identifier,
+        string
+    ),
     func_arguments,
     rls.r_character(";").ignore_token()
 ).set_name("function-declaration")
@@ -506,7 +514,7 @@ attributedef = rls.r_sequence(
     type_usage,
     identifier,
     rls.r_character(";").ignore_token().set_error("';' attendu")
-).set_name("vardef")
+).set_name("attributedef")
 
 class_scope.set_mid_patern(
     rls.r_sequence(

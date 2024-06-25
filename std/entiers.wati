@@ -21,7 +21,7 @@ nomenclature <type_t, type_t_2> entiers_impl_op dans fait
 fin
 
 nomenclature <type_t> entiers_impl_puiss dans fait 
-    fonction <type_t> type_t._negatif        (<type_t> soit)              fait renvoie <type_t>(    0 - <ent>(soit)    );   fin
+    fonction <type_t> type_t._negatif (<type_t> soit) fait renvoie <type_t>( 0 - <ent>(soit) ); fin
 fin
 
 nomenclature <type_t> entiers_impl dans fait

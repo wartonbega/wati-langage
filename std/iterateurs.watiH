@@ -1,0 +1,11 @@
+classe plage IT contient 
+    <ent> depart;
+    <ent> arrivee;
+    <ent> courant;
+fin
+
+fonction <*plage> "*plage.constructeur" (<*plage> soit, <ent> dep, <ent> arr);
+fonction <*plage> "*plage.constructeur" (<*plage> soit, <ent> arr);
+fonction <rien>   "*plage.debut" (<*plage> soit);
+fonction <bool>   "*plage.fin" (<*plage> soit);
+fonction <ent>    "*plage.suivant" (<*plage> soit);

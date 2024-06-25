@@ -102,21 +102,25 @@ class Classes:
 labels = LabelGenerator()
 
 class Generator:
-    def __init__(self, toks: list[tok.BasicToken], name=starting_label, end=basic_end, arg_num = 0, ret_type="rien", ref=""):
+    def __init__(self, toks: list[tok.BasicToken], name=starting_label, end=basic_end, arg_num = 0, ret_type="rien", ref="", shared_lib = False):
         self.toks = toks
         self.name = name
         self.real_name = ""
-        self.generation = [f"{name}:"]
+        self.generation = []
+        if shared_lib:
+            self.generation.append(f"global {name}")
+        self.generation.append(f"{name}: ")
         self.reference = ref
 
         self.used = True
+        self.shared_lib = shared_lib
         
         self.sim_stack = []
         self.scopes = [] # index in self.variables
         self.variables = [] # identifiers
-        self.variables_info = {} # identifier : (type, stack, allocated)
+        self.variables_info = {} # identifier : (type, stack, extern)
         self.global_vars = {} # identifiers : type
-        self.type_convertion = {} # type : type
+        self.sharded_library_imported = [] # name
         self.extern_functions = {}
         self.defined_types = {} # typename : size
         self.undetermined = {} # name : token
@@ -173,12 +177,16 @@ class Generator:
         if self.name == starting_label:
             while len(function_stack) != 0:
                 i = function_stack.pop(0)
-                if self.functions[i][0] != None and self.functions[i][0].used:
+                if self.functions[i][0] != None: #and self.functions[i][0].used:
                     c = copy.copy(self.functions)
                     self.functions[i][0].functions = c
                     #print(list(c.keys()))
+                    #if not self.functions[i][-1]:
+                    #    error(f"La fonction '{i}' a été uniquement déclarée, pas implémenté, et ne peut pas conséquent pas être liée", self.functions[i][0].reference)
+                    
                     if not self.functions[i][-1]:
-                        error(f"La fonction '{i}' a été uniquement déclarée, pas implémenté, et ne peut pas conséquent pas être liée", self.functions[i][0].reference)
+                        self.extern_functions[i] = self.nasm_footprint_name(i)
+                        continue
                     self.functions[i][0].generate_code()
                     potent = []
                     for j in c:
@@ -237,7 +245,10 @@ class Generator:
     
     def g_end(self, end):
         self.g_empty_vars()
-        self.gen(end)    
+        if not self.shared_lib:
+            self.gen(end)    
+        else:
+            self.gen("  ret")
 
     def begin_scope(self):
         self.scopes.append(len(self.variables))
@@ -361,28 +372,39 @@ class Generator:
         filename = ""
         for i in PATH:
             filename += i
+        if head.split(".")[-1].lower() == "watih" and self.name == starting_label: # Meaning a header
+            self.sharded_library_imported.append(filename + head.removesuffix(".watiH"))
+            self.gen(f"  call {head[:-1]}.shared_lib")
+            self.extern_functions[f"{head[:-1]}.shared_lib"] = f"{head[:-1]}.shared_lib"
+        
         filename += head
         if filename not in IMPORTED:
             IMPORTED.append(filename)
             doc = Document(filename=filename)
             toks = tokenise(basic_rulling, doc, True)
-            g = Generator(toks, name=filename)
+            g = Generator(toks, name=filename, shared_lib=self.shared_lib)
             g.sim_stack = self.sim_stack
             g.functions = self.functions
             g.classes = self.classes
             g.declared_string = self.declared_string
             g.variables = self.variables
             g.global_vars = self.global_vars
-            g.type_convertion = self.type_convertion
+            g.sharded_library_imported = self.sharded_library_imported
             g.variables_info = self.variables_info
             g.extern_functions = self.extern_functions
             g.undetermined = self.undetermined
             g.defined = self.defined
             
+            self.gen(f";; debut de {filename}")
             g.generate_code(True)
             information(f"Importé '{filename}'", token.reference)
-            for i in g.generation[1:]:
-                self.generation.append(i)
+            if g.shared_lib:
+                for i in g.generation[2:]:
+                    self.generation.append(i)
+            else:
+                for i in g.generation[1:]:
+                    self.generation.append(i)
+            self.gen(f";; fin de {filename}")
         for i in base:
             PATH.pop()
             PATH.pop()
@@ -444,7 +466,7 @@ class Generator:
             error(f"Type inconnu : '{name1}'", token.child[0].reference) 
         if name2 not in TYPES:
             error(f"Type inconnu : '{name2}'", token.child[1].reference) 
-        self.type_convertion[name1] = name2
+        
             
     def g_extern(self, token: tok.BasicToken):
         #token.print(0)
@@ -561,13 +583,13 @@ class Generator:
             scope = m.child[3]
             narg = len(args.child) if not isinstance(args.child[0], tok.t_empty) else 0
             
-            func = Generator(scope.child, f"{self.nasm_footprint_name(footprint_name)}", func_end, arg_num=narg, ret_type=ret_type)
+            func = Generator(scope.child, f"{self.nasm_footprint_name(footprint_name)}", func_end, arg_num=narg, ret_type=ret_type, shared_lib=self.shared_lib)
             func.real_name = footprint_name
             func.functions = self.functions
             func.classes = self.classes
             func.declared_string = self.declared_string
             func.global_vars = self.global_vars
-            func.type_convertion = self.type_convertion
+            func.sharded_library_imported = self.sharded_library_imported
             func.extern_functions = self.extern_functions
             func.undetermined = self.undetermined
             func.defined = self.defined
@@ -592,7 +614,14 @@ class Generator:
     def g_func_declaration(self, token: tok.BasicToken):
         ret_type = token.child[0]
         type_t = gettype(ret_type)
-        name = token.child[1].content
+        name = token.child[1]
+        name = token.child[1]
+        if name.get_rule() == string:
+            name = name.child[0].content
+        elif isinstance(name.get_rule(), rls.r_sequence):
+            name = name.child[0].content + "." + name.child[1].content
+        else:
+            name = name.content
         og_name = name
         args = token.child[2]
         name = self.footprint_name_def(name, args)
@@ -602,13 +631,13 @@ class Generator:
         if name in self.functions: # On a déjà le corp de la fonction, on ne va pas l'écraser avec "rien"
             return
         
-        func = Generator(tok.t_empty(True, None), f"{self.nasm_footprint_name(name)}", func_end, arg_num=arglen, ret_type=ret_type, ref=token.reference)
+        func = Generator(tok.t_empty(True, None), f"{self.nasm_footprint_name(name)}", func_end, arg_num=arglen, ret_type=ret_type, ref=token.reference, shared_lib=self.shared_lib)
         func.real_name = name
         func.functions = self.functions
         func.classes = self.classes
         func.declared_string = self.declared_string
         func.global_vars = self.global_vars
-        func.type_convertion = self.type_convertion
+        func.sharded_library_imported = self.sharded_library_imported
         func.extern_functions = self.extern_functions
         func.undetermined = self.undetermined
         func.defined = self.defined
@@ -625,7 +654,7 @@ class Generator:
             func.variables.append(i)
             func.variables_info[i] = (self.global_vars[i], 0, False)
         
-        self.add_function(name, (func, args.child, type_t, False))
+        self.add_function(name, (func, args.child, gettype(ret_type), False))
 
     def g_funcdef(self, token: tok.BasicToken):
         #if self.name != starting_label:
@@ -647,13 +676,13 @@ class Generator:
         
         # On copie les informations utiles au code
         # global_vars est passé en tant que tel pour que la liste puisse être modifiée
-        func = Generator(scope.child, f"{self.nasm_footprint_name(footprint_name)}", func_end, arg_num=arglen, ret_type=ret_type, ref=token.reference)
+        func = Generator(scope.child, f"{self.nasm_footprint_name(footprint_name)}", func_end, arg_num=arglen, ret_type=ret_type, ref=token.reference, shared_lib=self.shared_lib)
         func.real_name = footprint_name
         func.functions = self.functions
         func.classes = self.classes
         func.declared_string = self.declared_string
         func.global_vars = self.global_vars
-        func.type_convertion = self.type_convertion
+        func.sharded_library_imported = self.sharded_library_imported
         func.extern_functions = self.extern_functions
         func.undetermined = self.undetermined
         func.defined = self.defined
@@ -774,7 +803,7 @@ class Generator:
             error(f"Mauvais nombre de types indiqué pour l'utilisation", class_type_opt.reference)
         type_names = [t.content for t in names]
         token = token.child[2].modify(type_names, class_type_opt)
-        print(f"Généré : {name + following}")
+        information(f"Généré : {name + following}")
         self.g_scope(token)
         
     def generate_undetermined(self, name: str, class_type_opt: tok.BasicToken):
@@ -828,23 +857,23 @@ class Generator:
             footprint_name = self.footprint_name_methode("*" + name, footprint_name, args)
             
             if footprint_name not in self.functions:
-                error(f"Fonction non définie : {footprint_name}", token.reference)    
+                error(f"Fonction non définie : {footprint_name}", token.reference)
             func_gen, f_args, ret_type, _ = self.functions[footprint_name]
             func_gen.used = True
             if func_gen.arg_num - 1 != len(args):
                 error(f"Mauvais nombre d'arguments, {footprint_name} requiers {func_gen.arg_num - 1} argument{'s' if func_gen.arg_num > 2 else ''}", token.reference)
             if ret_type != f"*{name}":
                 error(f"Le constructeur devrait renvoyer '*{name}', pas '{ret_type}'", func_gen.reference)
-            f_args_name = [f_args[i].child[1].content for i in range(func_gen.arg_num - 1)]
+            f_args_name = [f_args[i].child[1].content for i in range(func_gen.arg_num)]
             f_args_type = [func_gen.args_type[i] for i in f_args_name]
             
             
-            for i, v in enumerate(args[1:]):
+            for i, v in enumerate(args):
                 type_t = type(v, self.variables_info, self.functions, self.classes, self.global_vars)
-                if type_t != f_args_type[i]:
-                    error(f"Mauvais type '{type_t}' pour l'arguement '{f_args_name[i]}', il devraît être de type '{f_args_type[i]}'", token.reference)
+                if type_t != f_args_type[i + 1]:
+                    error(f"Mauvais type '{type_t}' pour l'arguement '{f_args_name[i + 1]}', il devraît être de type '{f_args_type[i]}'", token.reference)
                 self.g_statement(v)
-            for i in range(len(args[1:])):
+            for i in range(len(args)):
                 self.pop(arg_register[func_gen.arg_num - i - 1])
             self.gen("  mov rax, 0") # Le pointeur doit être initialisé dans constructeur
             self.gen(f"  call {self.nasm_footprint_name(footprint_name)}") # Grossier
@@ -920,10 +949,11 @@ class Generator:
             clss: Classes = self.classes[type_t]
             if not clss.iterator:
                 error(f"L'objet doit être un itérateur", value.reference)
-            fname_deb = f"*{type_t}.debut()"
-            fname_svt = f"*{type_t}.suivant()"
-            fname_fin = f"*{type_t}.fin()"
+            fname_deb = f"*{type_t}.debut(*{type_t})"
+            fname_svt = f"*{type_t}.suivant(*{type_t})"
+            fname_fin = f"*{type_t}.fin(*{type_t})"
             if fname_deb not in self.functions or fname_fin not in self.functions or fname_svt not in self.functions:
+                print(fname_deb)
                 error(f"Un itérateur doit posséder une méthode '.debut()', une méthode '.suivant()' et une méthode '.fin()'", value.reference)
             
             f_debG: Generator; f_deb_rettype: str
@@ -933,7 +963,7 @@ class Generator:
             f_svtG, _, f_svt_rettype, _ = self.functions[fname_svt]
             f_finG, _, f_fin_rettype, _ = self.functions[fname_fin]
             if f_fin_rettype != "bool":
-                error(f"Le type de retour de la méthode '{fname_fin}' doit être 'bool'", value.reference)
+                error(f"Le type de retour de la méthode '{fname_fin}' doit être 'bool', pas '{f_fin_rettype}'", value.reference)
             if f_deb_rettype != "rien":
                 error(f"La méthode '{fname_deb}' doit être 'rien'", value.reference)
             if f_svt_rettype == "rien":
@@ -1515,7 +1545,7 @@ class Generator:
         else:
             self.push_reg("rax")
         self.variables.append(name)
-        self.variables_info[name] = (f"{l_type}", len(self.sim_stack), True)
+        self.variables_info[name] = (f"{l_type}", len(self.sim_stack), False)
     
     def g_array_modif(self, token: tok.BasicToken):
         #token.print()
@@ -1663,10 +1693,15 @@ class Generator:
             self.pop("rax")
             if name not in self.global_vars:
                 self.global_vars[name] = got_type
-            self.generation.append(f"  mov qword [{name}], rax")
-            if name not in self.variables:
-                self.variables.append(name)
-                self.variables_info[name] = (got_type, 0, False)
+            if not isinstance(content, tok.t_empty):
+                self.generation.append(f"  mov qword [{name}], rax")
+                if name not in self.variables:
+                    self.variables.append(name)
+                    self.variables_info[name] = (got_type, 0, True)
+            else:
+                if name not in self.variables:
+                    self.variables.append(name)
+                    self.variables_info[name] = (got_type, 0, False)
         elif name not in self.variables:
             if desired_type != "" and desired_type != got_type:
                 error(f"Le type désiré '{desired_type}' et le type obtenu '{got_type}' ne correspondent pas", token.reference)
@@ -1692,16 +1727,16 @@ class Generator:
             r += i + "\n"
         return r
     
-def generate(g :Generator, optimise: bool, defined: list[str]):
+def generate(g :Generator, optimise: bool, defined: list[str], shared: bool):
     g.used = True
     g.global_vars["__plateforme"] = "liste[chr]"
     g.variables.append("__plateforme")
     g.variables_info["__plateforme"] = ("liste[chr]", 0, False)
     g.defined.append(f"PLATEFORME_{sys.platform.upper()}")
-    print("Définis : ", f"PLATEFORME_{sys.platform.upper()}")
+    information("Définis : ", f"PLATEFORME_{sys.platform.upper()}")
     for d in defined:
         g.defined.append(d.upper())
-        print("Définis : ", d.upper())
+        information("Définis : ", d.upper())
     g.generate_code()
     g.generate_func()
     if optimise:
@@ -1713,22 +1748,36 @@ def generate(g :Generator, optimise: bool, defined: list[str]):
         g.generation.append(f"  msg{i}: db \"{msg}\", 0, 0, 0, 0, 0, 0, 0, 0")
     g.gen(f"  plateforme_name: db \"{sys.platform}\", 0, 0, 0, 0, 0, 0, 0, 0")
     for i, name in enumerate(g.global_vars):
-        g.generation.append(f"  {name}: dq 0")
+        if shared:
+            g.gen(f"  global {name}")
+            g.generation.append(f"  {name}: dq 0")
+        else:
+            if g.global_vars[name][-1]:
+                g.gen(f"  extern {name}")
+            else:
+                g.generation.append(f"  {name}: dq 0")
     g.generation.append("  newline: db 10")
     for e in g.extern_functions:
         g.generation.append(f"extern {g.extern_functions[e]}")
-    return basic + g.to_file()
+    return basic + g.to_file(), g.sharded_library_imported
     
-def run_code(filename, output_asm_name, optimise_asm = True, defined = []):
+def run_code(filename, output_asm_name, optimise_asm = True, defined = [], shared_lib = False):
+    global starting_label, basic
     doc = Document(filename=filename)
     filename = filename.split("/")
     for f in filename[:-1]:
         PATH.append(f)
         PATH.append("/")
     toks = tokenise(basic_rulling, doc, True)
-    g = Generator(toks)
-    IMPORTED.append(filename)
-    g_str = generate(g, optimise_asm, defined)
+    if shared_lib:
+        starting_label = filename[-1] + ".shared_lib"
+        basic = f"""
+default rel
+
+section .text
+"""
+    g = Generator(toks, name=starting_label, shared_lib = shared_lib)
+    g_str, shared = generate(g, optimise_asm, defined, shared_lib)
     with open(output_asm_name,'w') as file: 
         file.write(g_str)
-    
+    return shared

@@ -1,0 +1,6 @@
+externe <*rien> _malloc(<ent>);
+externe <rien> _free(<*rien>);
+
+fonction <*rien> mallom(<ent> taille);
+fonction <rien> libere(<*rien> taille);
+fonction <rien> metmoire (<*rien> ptr, <chr> val, <ent> taille);

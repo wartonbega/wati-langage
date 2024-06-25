@@ -1,0 +1,11 @@
+
+<ent> __stdin;
+<ent> __stdout;
+<ent> __stderr;
+
+fonction <rien> print(<chr> x);
+fonction <rien> println(<chr> x);
+fonction <rien> print(<[_]chr> x);
+fonction <rien> println(<[_]chr> x);
+fonction <rien> input(<[_]chr> tamp, <ent> taille);
+fonction <rien> exit(<ent> code);

@@ -1,0 +1,4 @@
+fonction <bool> "bool._egal" (<bool> soit, <ent> x);
+fonction <rien> println(<bool> x);
+fonction <rien> print(<bool> x);
+fonction <bool> "bool._pas" (<bool> x);

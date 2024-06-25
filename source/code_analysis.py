@@ -3,8 +3,7 @@ import numpy as np
 
 python_type = type
 
-global INFORMATIONS
-INFORMATIONS = True
+INFORMATIONS = False
 
 
 def error(message, reference):
@@ -12,9 +11,11 @@ def error(message, reference):
     print("\t\033[1m", message, "\033[0m")
     exit(1)
 
-def information(message, reference):
-    if False:
-        print("\033[95m", "Info", "\033[0m : ",'\033[1m', reference, '\033[0m', sep="")
+def information(message, reference:str|None=None):
+    if INFORMATIONS:
+        print("\033[95m", "Info", "\033[0m : ",'\033[1m', sep="", end="")
+        if reference:
+            print(reference, '\033[0m', sep="")
         print("\t\033[1m", message, "\033[0m")
 
 # "ent", "bool", "liste", "chr", "ptr"

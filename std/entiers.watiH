@@ -1,0 +1,64 @@
+
+
+deftype ent8 1;
+deftype ent16 2;
+deftype ent32 4;
+
+nomenclature <type_t, type_t_2> entiers_impl_op dans fait 
+    fonction <type_t> type_t._ou             (<type_t> soit, <type_t_2>x);
+    fonction <type_t> type_t._et             (<type_t> soit, <type_t_2>x);
+    fonction <bool> type_t._plus_petit_eg    (<type_t> soit, <type_t_2>x);
+    fonction <bool> type_t._plus_grand_eg    (<type_t> soit, <type_t_2>x);
+    fonction <bool> type_t._pas_eg           (<type_t> soit, <type_t_2>x);
+    fonction <bool> type_t._egal             (<type_t> soit, <type_t_2>x);
+    fonction <bool> type_t._plus_petit       (<type_t> soit, <type_t_2>x);
+    fonction <bool> type_t._plus_grand       (<type_t> soit, <type_t_2>x);
+    fonction <type_t> type_t._fois           (<type_t> soit, <type_t_2>x);
+    fonction <type_t> type_t._div            (<type_t> soit, <type_t_2>x);
+    fonction <type_t> type_t._plus           (<type_t> soit, <type_t_2>x);
+    fonction <type_t> type_t._moins          (<type_t> soit, <type_t_2>x);
+    fonction <type_t> type_t._modulo         (<type_t> soit, <type_t_2>x);
+fin
+
+nomenclature <type_t> entiers_impl_puiss dans fait 
+    fonction <type_t> type_t._negatif (<type_t> soit);
+fin
+
+nomenclature <type_t> entiers_impl dans fait
+    fonction <type_t> type_t._puissance (<type_t> soit, <ent> exp);
+    fonction <ent> puissance_dix(<type_t> x);
+    fonction <ent> puissance_seize(<type_t> x);
+    fonction <[_]chr> ent_en_chaine(<type_t> x);
+    fonction <[_]chr> hex(<type_t> x);
+    fonction <rien> print(<type_t> x);
+    fonction <rien> println(<type_t> x);
+    fonction <rien> type_t.print(<type_t> soit);
+    fonction <rien> type_t.println(<type_t> soit);
+fin
+
+%sidef ENT8_IMP fait
+    utilise <ent8, ent> entiers_impl_op;
+    utilise <ent8> entiers_impl_puiss;
+    utilise <ent8, ent8> entiers_impl_op;
+    utilise <ent8> entiers_impl;
+fin
+
+%sidef ENT16_IMP fait
+    utilise <ent16, ent> entiers_impl_op;
+    utilise <ent16> entiers_impl_puiss;
+    utilise <ent16, ent16> entiers_impl_op;
+    utilise <ent16> entiers_impl;
+fin
+
+%sidef ENT32_IMP fait
+    utilise <ent32, ent> entiers_impl_op;
+    utilise <ent32> entiers_impl_puiss;
+    utilise <ent32, ent32> entiers_impl_op;
+    utilise <ent32> entiers_impl;
+fin
+
+utilise <ent> entiers_impl_puiss;
+utilise <ent> entiers_impl;
+
+fonction <ent> chr_en_ent (<chr> x);
+fonction <ent> liste_en_ent(<[_]chr> liste);

@@ -1,0 +1,2 @@
+fonction <rien> chr.print(<chr> soit);
+fonction <rien> chr.println(<chr> soit);

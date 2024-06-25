@@ -1,5 +1,8 @@
-inclue "./std/std.wati";
+inclue "./std/std.watiH";
 
-externe <ent> _time(<*rien>);
+pour i dans plage(0, 10) fait
+    !println(i);
+fin
 
-a = !_time(<*rien> 0);
+!println(__gros_boutien);
+!println(__petit_boutien);

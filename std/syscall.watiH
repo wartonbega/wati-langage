@@ -1,0 +1,35 @@
+externe <*rien> _malloc(<ent>);
+
+fonction <rien> exit (<ent8> rval);
+fonction <ent> read(<ent> fd, <[_]chr> cbuf, <ent> nbyte);
+fonction <ent> write(<ent> fd, <[_]chr> cbuf, <ent> nbyte);
+fonction <ent> open(<[_]chr> path, <ent> flags, <ent> mode);
+fonction <ent> close(<ent> fd);
+
+fonction <ent> accept (<ent> s, <[_]chr> name, <*ent> anamelen);
+
+<ent> __AF_UNIX;
+<ent> __AF_INET;
+<ent> __AF_ISO;
+<ent> __AF_NS;
+<ent> __AF_IMPLINK;
+
+<ent> __SOCK_STREAM;
+<ent> __SOCK_DGRAM;
+<ent> __SOCK_RAW;
+<ent> __SOCK_SEQPACKET;
+<ent> __SOCK_RDM;
+
+fonction <ent> socket (<ent> domain, <ent> type, <ent> protocol);
+fonction <ent> connect (<ent> s, <*rien> name, <ent> namelen);
+fonction <ent> bind (<ent32> s, <[_]chr> name, <ent32> namelen);
+fonction <ent> listen (<ent32>s, <ent32>backlog);
+fonction <ent> gettimeofday(<*rien> timeval, <*rien> timezone);
+
+<ent> __PROT_READ;
+<ent> __PROT_WRITE;
+
+<ent> __MAP_SHARED;
+<ent> __MAP_ANON;
+
+fonction <*rien> mmap(<*rien> addr, <ent> len, <ent> prot, <ent> flags, <ent> fd, <ent> pos);
