@@ -1,4 +1,5 @@
-inclue "std.wati";
+inclue "syscall.wati";
+inclue "entiers.wati";
 
 __petit_boutien = Faux;
 __gros_boutien = Faux;
@@ -8,4 +9,12 @@ si <ent8>test_boutiennete == 0x12 fait
     __gros_boutien = Vrai;
 fin sinon fait 
     __petit_boutien = Vrai;
+fin
+
+fonction <ent> temps () fait 
+    <[_]ent> m = <[_]ent>!mallom(16);
+    !gettimeofday(<*rien>m, <*rien>0);
+    r = m[0];
+    !libere(<*rien> m);
+    renvoie r;
 fin

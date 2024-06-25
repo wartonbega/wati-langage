@@ -1,3 +1,5 @@
 
 <bool> __petit_boutien;
 <bool> __gros_boutien;
+
+fonction <ent> temps();

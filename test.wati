@@ -1,8 +1,4 @@
 inclue "./std/std.watiH";
 
-pour i dans plage(0, 10) fait
-    !println(i);
-fin
-
 !println(__gros_boutien);
 !println(__petit_boutien);

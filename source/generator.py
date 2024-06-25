@@ -380,7 +380,10 @@ class Generator:
         filename += head
         if filename not in IMPORTED:
             IMPORTED.append(filename)
-            doc = Document(filename=filename)
+            try:
+                doc = Document(filename=filename)
+            except FileNotFoundError:
+                error(f"Fichier non trouvé : {filename}", token.reference)
             toks = tokenise(basic_rulling, doc, True)
             g = Generator(toks, name=filename, shared_lib=self.shared_lib)
             g.sim_stack = self.sim_stack
