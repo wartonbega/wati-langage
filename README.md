@@ -5,36 +5,48 @@ Un langage de programmation tout en français.
 Bien qu'écrit en python, et sans optimisation de code, le wati langage peut être compilé : 
 `$ python3 main.py sourcefile.wati -o output`
 
+Puis : `$ ./output.out`.
+
+Pour compiler une bibliothèque wati : `$ python3 main.py sourcefile.wati -s -I`.
+L'argument `-s` permet de créer uniquement un fichier `.o` liable avec gcc, et `-I` permet de rendre le fichier indépendant, ce qui évite les redéfinitions pour le linker.
+
 # Syntaxe
+
 La syntaxe a bien changé, puisque le wati est maintenant complètement typé.
 
 ## Les types
+
 Les types de base : 
- - `ent` : les entiers signés, codés sur 8 octets
- - `bool` : les boolées, codés sur 1 octet
- - `chr` : les caractères, codés sur 1 octet
- - `*type` : les pointeur vers un type, codés sur 8 octets
- - `liste[type]` : les listes d'un type, codés sur 8 octets (les listes de base sont des pointeurs vers un bloc contigue de mémoire).
- - `rien` : rien (comme du void)
+
+- `ent` : les entiers signés, codés sur 8 octets
+- `bool` : les boolées, codés sur 1 octet
+- `chr` : les caractères, codés sur 1 octet
+- `*type` : les pointeur vers un type, codés sur 8 octets
+- `liste[type]` : les listes d'un type, codés sur 8 octets (les listes de base sont des pointeurs vers un bloc contigue de mémoire).
+- `rien` : rien (comme du void)
 
 Les types s'utilisent entre chevrons `<ent> x = 1;`...
 
 Exemple :
- - `<ent>` : un entier
- - `<[_]chr>` : le type général d'une liste de caractères (peut être utilisée comme chaîne de caractères)
- - `<*rien>` : un pointeur non typé
- - `<*chr>` : un pointeur vers un caractère
- - `<*<chr>>` : même chose
 
+- `<ent>` : un entier
+- `<[_]chr>` : le type général d'une liste de caractères (peut être utilisée comme chaîne de caractères)
+- `<*rien>` : un pointeur non typé
+- `<*chr>` : un pointeur vers un caractère
+- `<*<chr>>` : même chose
 
 Mais avec l'ajout des types vient la modification de la syntaxe d'appel des fonctions.
+
 ## Les fonctions
+
 Pour déclarer une fonction :
+
 ```wati
 fonction <ent> carre (<ent> x) fait
   renvoie x^2;
 fin
 ```
+
 Le type de retour est indiqué avant le nom de la fonction, et les types des arguments avec le nom de arguments.
 
 Le type de retour de la fonction ne permet pas de la différentier, si bien que `fonction <ent> toto () ...` et `fonction <bool> toto () ...` vont se redéfinir si les arguments sont les mêmes.
@@ -42,13 +54,15 @@ Le type de retour de la fonction ne permet pas de la différentier, si bien que 
 Pour appeler une fonction : `!fonction(args...)`
 
 ## Les variables
+
 Deux type d'implémentation d'une variable, si c'est une `liste` ou une variable simple que l'on définit : 
 
 Définition d'une liste de 10 éléments : 
 ```
 <[10] ent> liste; // Pas d'initialisation
 ```
-Le  type général d'une liste est `<[_]type>`. Par exemple : 
+
+Le  type général d'une liste est `<[_]type>`. Par exemple :
 ```
 <[10] ent> liste;
 <[_]ent> dup = liste;
@@ -58,7 +72,9 @@ Définition d'une variable simple :
 ```
 <ent> x = 1;
 ```
-ou 
+
+ou : 
+
 ```
 x = 1; // le type peut être implicite car le type de retour pour l'assignation est connu
 ```
@@ -71,6 +87,7 @@ La syntaxe avec des guillemets doubles invoque une chaine de caractère de type 
 ```
 
 ## La conversion de type
+
 On peut faire des castings en wati pour convertir une valeur d'un certain type en un autre tyoe, et en écrasant les données qui ne sont pas comprises dans la taille du type.
 
 Par exemple :
@@ -82,6 +99,7 @@ Deux syntaxes possibles :
 `y = <chr>x` ou `y = <chr>(x)`
 
 ## Les tests conditionnels
+
 Par l'exemple : 
 ```
 si cond1 fait
@@ -93,7 +111,16 @@ fin sinon fait
 fin
 ```
 
+On peut aussi avoir une valeur conditionnelle : 
+```
+<bool> x = Vrai;
+!println(? "Vrai" si x sinon "Faux");
+```
+
+Avec la syntaxe `? val2 si cond sinon val2`
+
 ## Boucles
+
 Deux types de boucles, les boucles `tant que ... fait ... fin` et `pour . dans ... fait ... fin`.
 
 Boucles `tant que` sont des classiques boucles conditionnelles. Exemple : 
@@ -148,11 +175,13 @@ fin
 ```
 
 # Erreurs fréquentes et incompréhensible si on a pas codé le wati-langage : 
+
 `pop from empty list` : J'ai pas implémenté encore
 
 `Not EOF and not rulled` : Y'a une erreur de syntaxe grossière dans ton code, si grossière que j'ai même pas envie de te dire où elle est.
 
 # Bibliothèque standard
+
 On peut importer la bibiliothèque standard :
 ```
 inclue "std.wati";
