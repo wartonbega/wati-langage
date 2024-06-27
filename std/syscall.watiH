@@ -3,6 +3,15 @@ externe <*rien> _malloc(<ent>);
 fonction <rien> exit (<ent8> rval);
 fonction <ent> read(<ent> fd, <[_]chr> cbuf, <ent> nbyte);
 fonction <ent> write(<ent> fd, <[_]chr> cbuf, <ent> nbyte);
+
+<ent> __O_RDONLY;
+<ent> __O_WRONLY;
+<ent> __O_RDWR;
+<ent> __O_ACCMODE;
+<ent> __O_CREAT;
+<ent> __O_TRUNC;
+<ent> __O_EXCL;
+
 fonction <ent> open(<[_]chr> path, <ent> flags, <ent> mode);
 fonction <ent> close(<ent> fd);
 

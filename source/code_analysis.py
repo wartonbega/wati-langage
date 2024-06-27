@@ -68,6 +68,22 @@ op_and = [
     [False, False, False, False, False]
 ]
 
+op_shift_left = [
+    ["ent", False, False, False, False],
+    [False, False, False, False, False],
+    [False, False, False, False, False],
+    [False, False, False, False, False],
+    [False, False, False, False, False]
+]
+
+op_shift_right = [
+    ["ent", False, False, False, False],
+    [False, False, False, False, False],
+    [False, False, False, False, False],
+    [False, False, False, False, False],
+    [False, False, False, False, False]
+]
+
 less = [
     ["bool", False, False, False, False],
     [False, False, False, False, False],
@@ -139,6 +155,8 @@ operators_type = {
     "==": equal_equal,
     "||": op_or,
     "&&": op_and,
+    ">>": op_shift_right,
+    "<<": op_shift_left,
     "<": less,
     ">": more,
     "^": power,
@@ -174,6 +192,8 @@ OP_FUNC = {
     "_egal": "==",
     "_ou": "||",
     "_et": "&&",
+    "_shift_droit" : ">>",
+    "_shift_gauche" : "<<",
     "_plus_petit": "<",
     "_plus_grand": ">",
     "_puissance": "^",
@@ -191,6 +211,8 @@ FUNC_OP = {
     "==" : "_egal",
     "||" : "_ou",
     "&&" : "_et",
+    ">>" : "_shift_droit",
+    "<<" : "_shift_gauche",
     "<"  : "_plus_petit",
     ">"  : "_plus_grand",
     "^"  : "_puissance",
@@ -392,9 +414,9 @@ def type(expression: tok.BasicToken, variables:dict, functions:dict, classes:dic
             type_t_bis = get_ptr_type(r)
             if type_t_bis not in classes:
                 error(f"Nom de classe ou d'objet inconnu : '{type_t_bis}'", expression.reference)
-            func_name = f"{r}.index(ent)"
+            func_name = f"{r}.index({r},ent)"
             if func_name not in functions:
-                error(f"Méthode inconnue : '{func_name}'. La classe doit contenir une méthode '.index(ent)' pour supporter l'indexation", expression.reference)
+                error(f"Méthode inconnue : '{func_name}'. La classe doit contenir une méthode '.index({r},ent)' pour supporter l'indexation", expression.reference)
             _, _, rettype, _ = functions[func_name]
             return rettype
         error(f"Type imcompatible avec une indexation, '{r}'", expression.reference)

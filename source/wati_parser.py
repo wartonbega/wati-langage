@@ -4,16 +4,20 @@ ch.BASIC_CHARACTERS.append("_")
 
 def get_prec(operator: str) -> int:
     if operator in ["||", "&&"]:
+        return 7
+    if operator in ["<", ">", "<=", ">=", "==", "!="]:
         return 6
-    if operator in ["<", ">", "<=", ">=", "=="]:
+    if operator in ["+", "-"]:
         return 5
-    if operator in ["**", "^"]:
-        return 2
+    if operator in ["%"]:
+        return 4
     if operator in ["*", "/", "%"]:
         return 3
-    if operator in ["+", "-"]:
-        return 4
-    return 5 # ignored
+    if operator in ["**", "^"]:
+        return 2
+    if operator in [">>", "<<"]:
+        return 1
+    assert False, operator
 
 def calcul_rearangement(t:tok.BasicToken) -> tok.BasicToken:
     # should look like 'value1 operator value2 operator ... operator valueN
@@ -24,7 +28,7 @@ def calcul_rearangement(t:tok.BasicToken) -> tok.BasicToken:
     for i, c in enumerate(t.child):
         if c.content in ch.OPERATORS:
             prec = get_prec(c.content)
-            if max <= prec:
+            if max < prec:
                 max = prec
                 index = i
 
@@ -510,6 +514,14 @@ methodedef = rls.r_sequence(
     scope
 ).set_name("methdef")
 
+methodedef_dec = rls.r_sequence(
+    k_methode,
+    type_usage,
+    identifier,
+    func_arguments,
+    rls.r_character(";").ignore_token()
+).set_name("methdef-declaration")
+
 attributedef = rls.r_sequence(
     type_usage,
     identifier,
@@ -518,11 +530,13 @@ attributedef = rls.r_sequence(
 
 class_scope.set_mid_patern(
     rls.r_sequence(
-        rls.r_optional(rls.r_patern_repetition(comment)).ignore_token(),
         rls.r_optional(rls.r_patern_repetition(attributedef).set_name("attributes")),
-        rls.r_optional(rls.r_patern_repetition(comment)).ignore_token(),
-        rls.r_optional(rls.r_patern_repetition(methodedef).set_name("methodes")),
-        rls.r_optional(rls.r_patern_repetition(comment)).ignore_token(),
+        rls.r_optional(rls.r_patern_repetition(
+            rls.r_option(
+                methodedef,
+                methodedef_dec
+            )
+        ).set_name("methodes")),
     ).ignore_token()
 )
 

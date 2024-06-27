@@ -1,0 +1,16 @@
+classe <Type> dliste contient
+    <ent> taille;
+    <ent> max;
+    <[_]Type> mem;
+
+    methode <*dliste<Type>> constructeur (<*dliste<Type>> soit);
+    methode <rien> remaniement (<*dliste<Type>> soit, <ent> max);
+    methode <rien> ajoute(<*dliste<Type>> soit, <Type> x);
+    methode <Type> pop (<*dliste<Type>> soit, <ent> index);
+    methode <Type> index (<*dliste<Type>> soit, <ent> index);
+    methode <rien> assigne_index(<*dliste<Type>> soit, <ent> index, <Type> x);
+    methode <rien> println(<*dliste<Type>> soit);
+fin
+
+utilise <ent> dliste;
+utilise <chr> dliste;

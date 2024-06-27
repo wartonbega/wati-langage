@@ -20,8 +20,10 @@ nomenclature <type_t, type_t_2> entiers_impl_op dans fait
     fonction <type_t> type_t._modulo         (<type_t> soit, <type_t_2>x);
 fin
 
-nomenclature <type_t> entiers_impl_puiss dans fait 
+nomenclature <type_t> entiers_impl_dyn_op dans fait 
     fonction <type_t> type_t._negatif (<type_t> soit);
+    fonction <type_t> type_t._shift_droit(<type_t> soit, <type_t>x);
+    fonction <type_t> type_t._shift_gauche(<type_t> soit, <type_t>x);
 fin
 
 nomenclature <type_t> entiers_impl dans fait
@@ -30,6 +32,8 @@ nomenclature <type_t> entiers_impl dans fait
     fonction <ent> puissance_seize(<type_t> x);
     fonction <[_]chr> ent_en_chaine(<type_t> x);
     fonction <[_]chr> hex(<type_t> x);
+    fonction <[_]chr> bin(<type_t> x);
+    fonction <[_]chr> base(<type_t> x, <ent> base);
     fonction <rien> print(<type_t> x);
     fonction <rien> println(<type_t> x);
     fonction <rien> type_t.print(<type_t> soit);
@@ -38,26 +42,26 @@ fin
 
 %sidef ENT8_IMP fait
     utilise <ent8, ent> entiers_impl_op;
-    utilise <ent8> entiers_impl_puiss;
+    utilise <ent8> entiers_impl_dyn_op;
     utilise <ent8, ent8> entiers_impl_op;
     utilise <ent8> entiers_impl;
 fin
 
 %sidef ENT16_IMP fait
     utilise <ent16, ent> entiers_impl_op;
-    utilise <ent16> entiers_impl_puiss;
+    utilise <ent16> entiers_impl_dyn_op;
     utilise <ent16, ent16> entiers_impl_op;
     utilise <ent16> entiers_impl;
 fin
 
 %sidef ENT32_IMP fait
     utilise <ent32, ent> entiers_impl_op;
-    utilise <ent32> entiers_impl_puiss;
+    utilise <ent32> entiers_impl_dyn_op;
     utilise <ent32, ent32> entiers_impl_op;
     utilise <ent32> entiers_impl;
 fin
 
-utilise <ent> entiers_impl_puiss;
+utilise <ent> entiers_impl_dyn_op;
 utilise <ent> entiers_impl;
 
 fonction <ent> chr_en_ent (<chr> x);

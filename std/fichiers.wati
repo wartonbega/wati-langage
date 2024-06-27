@@ -1,9 +1,0 @@
-inclue "syscall.wati";
-
-fd = !open("/Desktop/wati-langage-2/test69.wati", __O_RDWR || __O_CREAT || __O_EXCL, 0777);
-buf = "caca";
-
-r = !write(fd, buf, 5);
-!println(fd);
-!println(r);
-!close(fd);

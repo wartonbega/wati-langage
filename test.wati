@@ -1,4 +1,72 @@
 inclue "./std/std.watiH";
+inclue "./std/listes_amorties.wati";
 
-!println(__gros_boutien);
-!println(__petit_boutien);
+__COL = 21;
+__LIG = 7;
+
+__FONT_COL = 3;
+__FONT_LIG = 5;
+
+l = <ent>dliste();
+
+l = <ent>dliste();
+!l.ajoute(31599);
+!l.ajoute(19812);
+!l.ajoute(14479);
+!l.ajoute(31207);
+!l.ajoute(23524);
+!l.ajoute(29411);
+!l.ajoute(29679);
+!l.ajoute(30866);
+!l.ajoute(31727);
+!l.ajoute(31719);
+!l.ajoute(1040);
+
+<[__COL * __LIG]chr> __buf_rend;
+
+fonction <rien> met (<ent> x, <ent> y, <chr> c) fait 
+    i = y * __COL + x;
+    si i >= __LIG * __COL fait 
+        renvoie;
+    fin
+    __buf_rend[i] = c;
+fin
+
+fonction <rien> affiche_nbr (<ent> x, <ent> y, <ent> c) fait 
+    pour i dans [0, __FONT_LIG] fait 
+        pour j dans [0, __FONT_COL] fait 
+            si <bool>((c >> ((__FONT_LIG - i + 1) * __FONT_COL + j))&&1) fait 
+                !met(j + x, i + y, '#');
+            fin sinon fait 
+                !met(j + x, i + y, ' ');
+            fin
+        fin
+    fin
+fin
+
+fonction <rien> affiche_buf () fait 
+    pour i dans [0, __COL] fait 
+        !print(i);
+        !print(' ');
+        !print( ? ' ' si i < 10 sinon ''); // >
+    fin
+    !println('');
+    pour i dans [0, __COL * __LIG] fait 
+        si __buf_rend[i] != '' fait 
+            !print(__buf_rend[i]); !print(' '); !print(' ');
+        fin sinon fait 
+            !print(' '); !print(' '); !print(' ');
+        fin
+        si i % __COL == __COL  - 1 fait 
+            !print('|');!print(i/__COL);!print('\n');
+        fin
+    fin
+fin
+
+
+
+//!met(1, 1, '1');
+//!met(10, 5, '2');
+!println(!bin(l[1]));
+!affiche_nbr(1, 1, l[1]);
+!affiche_buf();

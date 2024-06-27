@@ -20,8 +20,10 @@ nomenclature <type_t, type_t_2> entiers_impl_op dans fait
     fonction <type_t> type_t._modulo         (<type_t> soit, <type_t_2>x) fait renvoie <type_t>( <type_t_2>(soit) %  x );   fin
 fin
 
-nomenclature <type_t> entiers_impl_puiss dans fait 
+nomenclature <type_t> entiers_impl_dyn_op dans fait 
     fonction <type_t> type_t._negatif (<type_t> soit) fait renvoie <type_t>( 0 - <ent>(soit) ); fin
+    fonction <type_t> type_t._shift_droit    (<type_t> soit, <type_t> x) fait pour i dans [0, x] fait soit = soit / 2; fin renvoie soit; fin
+    fonction <type_t> type_t._shift_gauche   (<type_t> soit, <type_t> x) fait pour i dans [0, x] fait soit = soit * 2; fin renvoie soit; fin
 fin
 
 nomenclature <type_t> entiers_impl dans fait
@@ -54,6 +56,16 @@ nomenclature <type_t> entiers_impl dans fait
         renvoie c;
     fin
 
+    fonction <ent> puissance_base(<type_t> x, <ent> b) fait 
+        <ent> l = 1;
+        <ent> c = 0;
+        tant que x / l > 0 fait 
+            l = l * b;
+            c = c + 1;
+        fin
+        renvoie c;
+    fin
+
     fonction <[_]chr> ent_en_chaine(<type_t> x) fait 
         si x == 0 fait 
             <[_] chr> g = <[_]chr>!mallom(1);
@@ -62,7 +74,6 @@ nomenclature <type_t> entiers_impl dans fait
         fin
         puiss = !puissance_dix(x);
         max_puiss = puiss;
-        
         <[_]chr> g = !init_liste(puiss);
         tant que puiss > 0 fait 
             reste = x / 10;
@@ -91,6 +102,50 @@ nomenclature <type_t> entiers_impl dans fait
                 g[puiss + 2] = <chr>(prime + 97 - 10);
             fin sinon fait
                 g[puiss + 2] = <chr>(prime + 48);
+            fin
+            x = reste;
+        fin
+        renvoie g;
+    fin
+    
+    fonction <[_]chr> bin(<type_t> x) fait 
+        si x == 0 fait 
+            renvoie "0";
+        fin
+        puiss = !puissance_base(x, 2);
+        max_puiss = puiss;
+        <[_]chr> g = !init_liste(puiss);
+        tant que puiss > 0 fait 
+            reste = x / 2;
+            prime = x % 2;
+            puiss = puiss - 1;
+            g[puiss] = <chr>(prime + 48);
+            x = reste;
+        fin
+        renvoie g;
+    fin
+
+    fonction <[_]chr> base(<type_t> x, <ent> base) fait 
+        si x == 0 fait 
+            renvoie "0";
+        fin
+        puiss = !puissance_base(x, base);
+        max_puiss = puiss;
+        b = !ent_en_chaine(base);
+        long_base = !long(b);
+        <[_]chr> g = !init_liste(puiss + 3 + long_base);
+        g[0] = '[';
+        !copie(1, g, b);
+        g[1 + long_base] = ']';
+        decal = 2 + long_base;
+        tant que puiss > 0 fait 
+            reste = x / base;
+            prime = x % base;
+            puiss = puiss - 1;
+            si prime >= 10 fait
+                g[puiss + decal] = <chr>(prime + 97 - 10);
+            fin sinon fait
+                g[puiss + decal] = <chr>(prime + 48);
             fin
             x = reste;
         fin
@@ -125,26 +180,26 @@ fin
 
 %sidef ENT8_IMP fait
     utilise <ent8, ent> entiers_impl_op;
-    utilise <ent8> entiers_impl_puiss;
+    utilise <ent8> entiers_impl_dyn_op;
     utilise <ent8, ent8> entiers_impl_op;
     utilise <ent8> entiers_impl;
 fin
 
 %sidef ENT16_IMP fait
     utilise <ent16, ent> entiers_impl_op;
-    utilise <ent16> entiers_impl_puiss;
+    utilise <ent16> entiers_impl_dyn_op;
     utilise <ent16, ent16> entiers_impl_op;
     utilise <ent16> entiers_impl;
 fin
 
 %sidef ENT32_IMP fait
     utilise <ent32, ent> entiers_impl_op;
-    utilise <ent32> entiers_impl_puiss;
+    utilise <ent32> entiers_impl_dyn_op;
     utilise <ent32, ent32> entiers_impl_op;
     utilise <ent32> entiers_impl;
 fin
 
-utilise <ent> entiers_impl_puiss;
+utilise <ent> entiers_impl_dyn_op;
 utilise <ent> entiers_impl;
 
 fonction <ent> chr_en_ent (<chr> x) fait 

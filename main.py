@@ -7,6 +7,7 @@ filename = ""
 rm_asm = True
 optimise_asm = False
 shared_lib = False
+inde = False
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -15,6 +16,7 @@ if __name__ == "__main__":
         epilog="Merci de vous référer à la documentation du Wati-langage",
         
     )
+    int
     parser.add_argument("filename")
     parser.add_argument("-o", "--output", required=False, help="Précise le nom du fichier de sortie (initialement le nom du fichier de départ)")
     parser.add_argument("-i", "--informations", choices=["o", "n"], required=False, help="Affiche les message d'information")
@@ -22,6 +24,7 @@ if __name__ == "__main__":
     parser.add_argument("-O", "--optimiseAsm", const=True, nargs="?", help="Optimise l'assembleur")
     parser.add_argument("-d", "--definis", nargs='+', help="Ajoute un mot-clef à définir lors de la compilation")
     parser.add_argument("-s", "--shared-lib", const=True, nargs="?", help="Compile en tant que librairie partagée")
+    parser.add_argument("-I", "--independant", const=True, nargs="?", help="Permet de créer une librairie partagée indépendante (pratique pour le liage)")
     parser.add_argument("--x11", const=True, nargs="?", help="Liage avec la librairie x11")
     args = parser.parse_args()
     if args.informations == None or args.informations == "n":
@@ -50,10 +53,12 @@ if __name__ == "__main__":
         optimise_asm = False
     if args.shared_lib:
         shared_lib = True
+    if args.independant:
+        inde = True
     args.definis = [] if not args.definis else args.definis
         
     filename = args.filename
-    shared: list[str] = generator.run_code(filename, output_name + ".asm", optimise_asm=optimise_asm, defined=args.definis, shared_lib=shared_lib)
+    shared: list[str] = generator.run_code(filename, output_name + ".asm", optimise_asm=optimise_asm, defined=args.definis, shared_lib=shared_lib, independant = inde)
     print("Compilé en assembleur !")
     print(f"nasm -f{'macho64' if sys.platform == 'darwin' else 'elf64'} -o {output_name}.o {output_name}.asm")
     os.system(f"nasm -f{'macho64' if sys.platform == 'darwin' else 'elf64'} -o {output_name}.o {output_name}.asm")

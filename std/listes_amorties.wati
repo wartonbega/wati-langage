@@ -1,15 +1,19 @@
-inclue "std.wati";
+inclue "mallom.watiH";
+inclue "io.watiH";
+inclue "listes.watiH";
 
-classe <Type> dliste contient
+classe <Type> dliste IT contient
     <ent> taille;
     <ent> max;
     <[_]Type> mem;
+    <ent> courant;
 
     methode <*dliste<Type>> constructeur (<*dliste<Type>> soit) fait 
         soit = <*dliste<Type>>!mallom(!taillede(<dliste<Type>>));
         soit.taille = 0;
         soit.max = 8;
-        soit.mem = <[_]Type> !mallom(!taillede(<Type>) * soit.max);
+        soit.mem = <[_]Type>!mallom(!taillede(<Type>) * soit.max);
+        soit.courant = 0;
         renvoie soit;
     fin
 
@@ -48,7 +52,7 @@ classe <Type> dliste contient
         renvoie r;
     fin
 
-    methode <Type> index (<*dliste<Type>> soit, <ent> index) fait 
+    methode <Type> index (<*dliste<Type>> soit, <ent> index) fait
         si index >= soit.taille fait 
             !erreur("!dliste.index : L'index est plus grand que la taille de la liste");
         fin
@@ -63,7 +67,7 @@ classe <Type> dliste contient
     fin
 
     methode <rien> println(<*dliste<Type>> soit) fait 
-        !print("[ ");
+        !print('[');!print(' ');
         pour i dans [0, soit.taille] fait
             si !methode_existe(soit.mem[i], "print") fait
                 e = soit.mem[i];
@@ -76,8 +80,17 @@ classe <Type> dliste contient
         !println(']');
     fin
 
+    methode <rien> debut(<*dliste<Type>> soit) fait 
+        soit.courant = 0;
+    fin
+
+    methode <Type> suivant (<*dliste<Type>> soit) fait 
+        r = soit.courant;
+        soit.courant = soit.courant + 1;
+        renvoie soit.mem[r];
+    fin
+
+    methode <bool> fin (<*dliste<Type>> soit) fait 
+        renvoie soit.taille == soit.courant;
+    fin
 fin
-
-
-utilise <ent> dliste;
-utilise <chr> dliste;
