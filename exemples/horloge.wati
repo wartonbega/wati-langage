@@ -1,0 +1,110 @@
+inclue "./std/std.watiH";
+inclue "./std/listes_amorties.wati";
+
+<bool> __retro = Faux;
+
+__COL = 34;
+__LIG = 7;
+
+__FONT_COL = 3;
+__FONT_LIG = 5;
+
+l = <ent>dliste();
+!l.ajoute(31599);
+!l.ajoute(19812);
+!l.ajoute(14479);
+!l.ajoute(31207);
+!l.ajoute(23524);
+!l.ajoute(29411);
+!l.ajoute(29679);
+!l.ajoute(30866);
+!l.ajoute(31727);
+!l.ajoute(31719);
+!l.ajoute(1040);
+
+<[__COL * __LIG]chr> __buf_rend;
+
+fonction <rien> affiche_buf () fait 
+    pour i dans [0, __COL * __LIG] fait 
+        si __buf_rend[i] != '' fait 
+            si __retro fait 
+                !print(__buf_rend[i]); !print(__buf_rend[i]); !print(__buf_rend[i]);
+            fin sinon fait 
+                !print(__buf_rend[i]); !print(__buf_rend[i]);
+            fin
+        fin sinon fait 
+            si __retro fait 
+                !print(' '); !print(' '); !print(' ');
+            fin sinon fait
+                !print(' '); !print(' ');
+            fin
+        fin
+        si i % __COL == __COL  - 1 fait 
+            !print('\n');
+        fin
+    fin
+fin
+
+fonction <rien> vide_buff () fait 
+    pour i dans [0, __COL * __LIG] fait 
+        __buf_rend[i] = '';
+    fin
+fin
+
+fonction <rien> met (<ent> x, <ent> y, <chr> c) fait 
+    i = y * __COL + x;
+    si i >= __LIG * __COL fait 
+        renvoie;
+    fin
+    __buf_rend[i] = c;
+fin
+
+fonction <rien> affiche_nbr (<ent> x, <ent> y, <ent> c) fait 
+    pour i dans [0, __FONT_LIG] fait 
+        pour j dans [0, __FONT_COL] fait 
+            si <bool>((c >> ((__FONT_LIG - i + 1) * __FONT_COL + j))&&1) fait 
+                !met(j + x, i + y, '#');
+            fin sinon fait 
+                !met(j + x, i + y, ' ');
+            fin
+        fin
+    fin
+fin
+
+fonction <rien> met_nombre(<ent> pos, <ent> num, <*dliste<ent>> table) fait 
+    si num == -1 fait 
+        !affiche_nbr(pos * (__FONT_COL + 1), 1, table[10]);
+        renvoie;
+    fin
+    p = <[_]chr>!mallom(2);
+    si num < 10 fait // >
+        p[0] = '0';
+        p[1] = <chr>('0' + num);
+    fin sinon fait
+        p[0]= <chr>('0' + num/10);
+        p[1]= <chr>('0' + num%10);
+    fin
+    pour i dans [0, !long(p)] fait
+        n = !chr_en_ent(p[i]); 
+        !affiche_nbr((i + pos) * (__FONT_COL + 1), 1, table[n]);
+    fin
+    !libere(<*rien>p);
+fin
+
+temps = <*struct_temps>!mallom(!taillede(<struct_temps>));
+lt = temps.secondes;
+tant que Vrai fait
+    !temps_jour(temps);
+    si lt != temps.secondes fait
+        lt = temps.secondes;
+        !met_nombre(0, temps.heures, l);
+        !met_nombre(2, -1, l);
+        !met_nombre(3, temps.minutes, l);
+        !met_nombre(5, -1, l);
+        !met_nombre(6, temps.secondes, l);
+        !efface();
+        !affiche_buf();
+        !vide_buff();
+    fin
+    !dors(1);
+fin

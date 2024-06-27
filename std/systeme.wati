@@ -1,6 +1,8 @@
 inclue "syscall.wati";
 inclue "entiers.wati";
 
+externe <rien>_sleep(<ent>);
+
 __petit_boutien = Faux;
 __gros_boutien = Faux;
 
@@ -11,10 +13,34 @@ fin sinon fait
     __petit_boutien = Vrai;
 fin
 
+classe struct_temps contient
+    <ent> heures;
+    <ent> minutes;
+    <ent> secondes;
+fin
+
 fonction <ent> temps () fait 
-    <[_]ent> m = <[_]ent>!mallom(16);
+    <[_]ent> m = <[_]ent>!mallom(2 * 8);
     !gettimeofday(<*rien>m, <*rien>0);
     r = m[0];
+    m[0] = 0;
+    m[1] = 0;
     !libere(<*rien> m);
     renvoie r;
+fin
+
+fonction <rien> temps_jour (<*struct_temps> s) fait 
+    r = !temps();
+    r = r % (24 * 60 * 60);
+    s.heures = r / (60 * 60) + 2; // On rajoute 2 h car WATI 
+    s.minutes = (r % (60 * 60)) / 60;
+    s.secondes = r % 60;
+fin
+
+fonction <rien> dors(<ent> temps) fait 
+    !_sleep(temps);
+fin
+
+fonction <rien> efface() fait 
+    !println("`\033[2J\033[H`");
 fin

@@ -14,9 +14,7 @@ if __name__ == "__main__":
         prog="Compilateur pour Wati-langage",
         description="Compile le wati-langage",
         epilog="Merci de vous référer à la documentation du Wati-langage",
-        
     )
-    int
     parser.add_argument("filename")
     parser.add_argument("-o", "--output", required=False, help="Précise le nom du fichier de sortie (initialement le nom du fichier de départ)")
     parser.add_argument("-i", "--informations", choices=["o", "n"], required=False, help="Affiche les message d'information")

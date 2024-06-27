@@ -1,3 +1,2 @@
 inclue "./std/std.watiH";
 
-!println(12 >> (1));

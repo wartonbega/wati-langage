@@ -87,9 +87,6 @@ type_names = rls.r_option(
 ).set_name("TypeN")
 array_dec_brackets = rls.r_enclosure("[", "]").set_name("brackets")
 
-# <[10]ent> g;  —> *liste[ent]     <[_] ent> = *liste[ent]
-# <[10]&ent> g; —> *liste[ent]     <[_] ent> =  liste[ent]
-
 type_array_declaration: rls.r_sequence = rls.r_sequence(
     array_dec_brackets,
     #rls.r_optional(rls.r_character("&")),

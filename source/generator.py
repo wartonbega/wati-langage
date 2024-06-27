@@ -278,9 +278,6 @@ class Generator:
         self.name = name
         self.real_name = ""
         self.generation = []
-        if shared_lib:
-            self.generation.append(f"global {name}")
-        self.generation.append(f"{name}: ")
         self.reference = ref
 
         self.used = True
@@ -298,10 +295,7 @@ class Generator:
         self.undetermined = {}  # name : token
         self.undetermined_nomenclature = {}  # name : token
         self.defined = []
-
-        self.functions: dict[str : Tuple[Generator, list[tok.BasicToken], str, bool]] = (
-            {}
-        )  # . . return type, <bool> generated
+        self.functions: dict[str : Tuple[Generator, list[tok.BasicToken], str, bool]] = {}
 
         self.basic_end = end
 
@@ -313,6 +307,10 @@ class Generator:
 
         self.classes: dict[str, Classes] = {}
 
+        if shared_lib:
+            self.generation.append(f"global {name}")
+        self.generation.append(f"{name}: ")
+        
     def gen(self, stm):
         self.generation.append(stm)
 
@@ -2375,12 +2373,14 @@ class Generator:
 def generate(
     g: Generator, optimise: bool, defined: list[str], shared: bool, independant: bool
 ):
+    clear_str = "`\\033[2J\\033[H`"
     g.used = True
     g.inde = independant
     g.global_vars["__plateforme"] = "liste[chr]"
     g.variables.append("__plateforme")
     g.variables_info["__plateforme"] = ("liste[chr]", 0, True, True)
     g.defined.append(f"PLATEFORME_{sys.platform.upper()}")
+    g.declared_string.append(clear_str)
     information("Définis : ", f"PLATEFORME_{sys.platform.upper()}")
     for d in defined:
         g.defined.append(d.upper())
@@ -2393,7 +2393,10 @@ def generate(
     g.generation.append("section .data")
     g.generation.append("  chr_buffer:  times 10 db 0")
     for i, msg in enumerate(g.declared_string):
-        g.generation.append(f'  msg{i}: db "{msg}", 0, 0, 0, 0, 0, 0, 0, 0')
+        if msg == clear_str:
+            g.generation.append(f'  msg{i}: db {clear_str}, 0, 0, 0, 0, 0, 0, 0, 0')
+        else:
+            g.generation.append(f'  msg{i}: db "{msg}", 0, 0, 0, 0, 0, 0, 0, 0')
     g.gen(f'  plateforme_name: db "{sys.platform}", 0, 0, 0, 0, 0, 0, 0, 0')
     for i, name in enumerate(g.global_vars):
         if shared:

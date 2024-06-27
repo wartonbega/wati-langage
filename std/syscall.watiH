@@ -16,7 +16,7 @@ fonction <ent> open(<[_]chr> path, <ent> flags, <ent> mode);
 fonction <ent> close(<ent> fd);
 
 fonction <ent> accept (<ent> s, <[_]chr> name, <*ent> anamelen);
-
+fonction <ent> execve(<[_]chr> fname, <[_]<[_]chr>> argp, <[_]<[_]chr>> envp);
 <ent> __AF_UNIX;
 <ent> __AF_INET;
 <ent> __AF_ISO;

@@ -2,4 +2,13 @@
 <bool> __petit_boutien;
 <bool> __gros_boutien;
 
+classe struct_temps contient
+    <ent> heures;
+    <ent> minutes;
+    <ent> secondes;
+fin
+
 fonction <ent> temps();
+fonction <rien> temps_jour(<*struct_temps> s);
+fonction <rien> dors(<ent> temps);
+fonction <rien> efface();

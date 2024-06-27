@@ -135,6 +135,10 @@ fin
 //57	AUE_SYMLINK	ALL	{ int symlink(char *path, char *link); } 
 //58	AUE_READLINK	ALL	{ int readlink(char *path, char *buf, int count); } 
 //59	AUE_EXECVE	ALL	{ int execve(char *fname, char **argp, char **envp); } 
+fonction <ent> execve(<[_]chr> fname, <[_]<[_]chr>> argp, <[_]<[_]chr>> envp) fait 
+    syscall 59, fname, argp, envp;
+    renvoie sys_ret_;
+fin
 //60	AUE_UMASK	ALL	{ int umask(int newmask); } 
 //61	AUE_CHROOT	ALL	{ int chroot(user_addr_t path); } 
 //62	AUE_NULL	ALL	{ int nosys(void); }   { old fstat }
