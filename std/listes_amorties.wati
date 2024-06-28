@@ -53,6 +53,12 @@ classe <Type> dliste IT contient
     fin
 
     methode <Type> index (<*dliste<Type>> soit, <ent> index) fait
+        si index < 0 fait // >
+            index = soit.taille + index;
+            si index < 0 fait // >
+                !erreur("!dliste.index : L'index est plus grand que la taille de la liste");
+            fin
+        fin
         si index >= soit.taille fait 
             !erreur("!dliste.index : L'index est plus grand que la taille de la liste");
         fin

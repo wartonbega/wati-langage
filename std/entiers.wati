@@ -202,27 +202,11 @@ fin
 utilise <ent> entiers_impl_dyn_op;
 utilise <ent> entiers_impl;
 
-fonction <ent> chr_en_ent (<chr> x) fait 
-    si x == '1' fait 
-        renvoie 1;
-    fin sinonsi x == '2' fait 
-        renvoie 2;
-    fin sinonsi x == '3' fait 
-        renvoie 3;
-    fin sinonsi x == '4' fait 
-        renvoie 4;
-    fin sinonsi x == '5' fait 
-        renvoie 5;
-    fin sinonsi x == '6' fait 
-        renvoie 6;
-    fin sinonsi x == '7' fait 
-        renvoie 7;
-    fin sinonsi x == '8' fait 
-        renvoie 8;
-    fin sinonsi x == '9' fait 
-        renvoie 9;
-    fin
-    renvoie 0;
+fonction <ent> chr_en_ent(<chr> x) fait 
+    si <ent>x > <ent>'9' fait 
+        !erreur("!chr_en_ent : Le nombre demandé est en dehors de la plage définie [0, 9]");
+    fin 
+    renvoie <ent>x - <ent>'0';
 fin
 
 fonction <ent> liste_en_ent(<[_]chr> liste) fait 

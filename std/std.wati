@@ -6,6 +6,7 @@
 inclue "syscall.wati";
 inclue "mallom.wati";
 inclue "io.wati";
+inclue "listes.wati";
 inclue "entiers.wati";
 inclue "char.wati";
 inclue "bool.wati";

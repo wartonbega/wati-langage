@@ -1,6 +1,6 @@
 fonction <chr> chr._plus (<chr> soit, <ent> x);
 fonction <[_]chr> init_liste (<ent> longueure);
-fonction <ent> long (<[_]chr> array);
+fonction <ent> long (<[_]chr> arr);
 fonction <rien> println (<[_]chr> arr);
 fonction <[_]chr> copie (<ent> index, <[_]chr> dest, <[_]chr> source);
 fonction <rien> chr_copie (<ent> taille, <[_]chr> dest, <[_]chr> source);

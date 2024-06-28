@@ -1,5 +1,5 @@
-inclue "mallom.wati";
-inclue "io.wati";
+inclue "mallom.watiH";
+inclue "io.watiH";
 
 classe <type> noeud_pile contient
     <type> contenu;
@@ -11,6 +11,14 @@ classe <type> noeud_pile contient
         soit.prec = soit;
         renvoie soit;
     fin
+
+    methode <rien> print(<*noeud_pile<type>> soit) fait 
+        si soit.prec == soit fait 
+            renvoie;
+        fin
+        !print(' '); !print(soit.contenu);
+        !soit.prec.print();
+    fin
 fin
 
 classe <type> pile contient
@@ -20,6 +28,7 @@ classe <type> pile contient
 
     methode <*pile<type>> constructeur(<*pile<type>> soit) fait 
         soit = <*pile<type>>!mallom(16);
+        soit.debut = <type>noeud_pile(<type>0);
         soit.taille = 0;
         renvoie soit;
     fin
@@ -27,14 +36,12 @@ classe <type> pile contient
     methode <rien> ajoute(<*pile<type>> soit, <type> x) fait 
         soit.taille = soit.taille + 1;
         n = <type>noeud_pile(x);
-        si soit.debut != 0 fait
-            n.prec = soit.debut;
-        fin
+        n.prec = soit.debut;
         soit.debut = n;
     fin
 
     methode <type> pop (<*pile<type>> soit) fait 
-        si soit.taille <= 0 fait 
+        si soit.taille <= 0 fait // >
             !erreur("!pile.pop : Ne peut pas popper d'une pile vide");
         fin
         soit.taille = soit.taille - 1;
@@ -44,7 +51,14 @@ classe <type> pile contient
         !libere(<*rien>d);
         renvoie c;
     fin
+
+    methode <rien> println(<*pile<type>> soit) fait 
+        !print('[');
+        !soit.debut.print();
+        !println(" ]");
+    fin
 fin
+
 
 // Deux utilastions courrantes du stack
 utilise <ent>pile;

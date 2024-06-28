@@ -3,6 +3,7 @@
 inclue "syscall.watiH";
 inclue "mallom.watiH";
 inclue "io.watiH";
+inclue "listes.watiH";
 inclue "entiers.watiH";
 inclue "char.watiH";
 inclue "bool.watiH";

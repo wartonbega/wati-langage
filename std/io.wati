@@ -20,7 +20,6 @@ fonction <*rien> mallom (<ent> taille);
 
 fonction <rien> print(<chr> x) fait 
     __chr_tampon[0] = x;
-
     !write(__stdout, __chr_tampon, 1);
 fin
 
