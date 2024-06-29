@@ -193,7 +193,10 @@ funcall = rls.r_sequence(
 sizeof_funcall = rls.r_sequence(
     rls.r_character("!").ignore_token(),
     rls.r_char_sequence("taillede").ignore_token(),
-    rls.r_enclosure("(", ")").set_mid_patern(type_usage)
+    rls.r_enclosure("(", ")").set_mid_patern(rls.r_option(
+        type_usage,
+        string
+    ))
 ).set_name("taillede")
 
 typeof_funcall = rls.r_sequence(

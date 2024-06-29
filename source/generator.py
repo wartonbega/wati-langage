@@ -1827,7 +1827,14 @@ class Generator:
             return self.g_funcall(token)
         if token.get_rule() == sizeof_funcall:
             t = token.child[0].child[0]
-            type_t = gettype(t)
+            if t.get_rule() == string:
+                type_t = t.child[0].content.replace(" ", "").replace("\t", "").replace("\n", "")
+            else:
+                type_t = gettype(t)
+            if is_ptr(type_t):
+                type_t = "ptr"
+            elif is_liste(type_t):
+                type_t = "liste"
             size = TYPES_SIZE[type_t]
             self.gen(f"  mov rax, {size}")
             self.push_reg("rax")
