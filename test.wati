@@ -12,13 +12,13 @@ fonction <bool> est_commande(<[_]chr> tamp) fait
 fin
 
 fonction <ent> opere (<ent> a, <ent> b, <chr> op) fait 
-    si op == '+' fait 
+    si op == '+' fait
         renvoie a + b;
-    fin sinonsi op == '-' fait 
+    fin sinonsi op == '-' fait
         renvoie a - b;
-    fin sinonsi op == '*' fait 
+    fin sinonsi op == '*' fait
         renvoie a * b;
-    fin sinonsi op == '/' fait 
+    fin sinonsi op == '/' fait
         renvoie a / b;
     fin
     renvoie 0;

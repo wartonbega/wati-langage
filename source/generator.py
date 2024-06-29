@@ -2442,7 +2442,6 @@ def run_code(
         starting_label = full + ".shared_lib"
         basic = f"""
 default rel
-
 section .text
 """
     g = Generator(toks, name=starting_label, shared_lib=shared_lib)
