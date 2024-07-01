@@ -89,7 +89,7 @@ array_dec_brackets = rls.r_enclosure("[", "]").set_name("brackets")
 
 type_array_declaration: rls.r_sequence = rls.r_sequence(
     array_dec_brackets,
-    #rls.r_optional(rls.r_character("&")),
+    rls.r_optional(rls.r_character("&")),
     type_names
 ).set_name("array-dec")
 
@@ -234,9 +234,9 @@ classcall = rls.r_sequence(
         class_type_opt
     ),
     identifier,
-    #rls.r_optional(
-    #    rls.r_character("&")  
-    #),
+    rls.r_optional(
+        rls.r_character("&")  
+    ),
     parenthesis
 ).set_name("calsscall")
 

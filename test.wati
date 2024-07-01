@@ -1,4 +1,33 @@
 inclue "./std/std.watiH";
-inclue "./std/pile.wati";
 
-!println(!taillede("liste[chr]"));
+classe caca contient
+    <ent> caca;
+    methode <*caca> constructeur(<*caca> soit) fait 
+        soit = <*caca>!mallom(!taillede(<caca>));
+        soit.caca = 1024;
+        renvoie soit;
+    fin
+fin
+
+
+classe test contient
+    <ent> a;
+    <ent> b;
+
+    methode <*test> constructeur(<*test> soit, <ent> a, <ent> b) fait 
+        soit = <*test>!mallom(!taillede(<test>));
+        soit.a = a;
+        soit.b = b;
+        renvoie soit;
+    fin
+    
+    methode <*test> constructeur_pile(<*test> soit, <ent> a, <ent> b) fait 
+        // 'soit' est déjà alloué sur le stack
+        soit.a = a;
+        soit.b = b;
+        renvoie soit;
+    fin
+fin
+
+p = test&(3, 4);
+!print(p.a);

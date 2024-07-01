@@ -285,7 +285,7 @@ class Generator:
         self.shared_lib = shared_lib
 
         self.sim_stack = []
-        self.scopes = []  # index in self.variables
+        self.scopes = [(0, 0)]  # index in self.variables
         self.variables = []  # identifiers
         self.variables_info = {}  # identifier : (type, stack, extern)
         self.global_vars = {}  # identifiers : type
@@ -398,11 +398,15 @@ class Generator:
         if size != 8:
             register_ind = reg_size[size].index(register)
             register = reg_size[8][register_ind]
-        self.gen(f"  pop {register}")
         assert (
             len(self.sim_stack) != 0
         ), f"Le stack est vide {self.reference}, {self.name}, {self.sim_stack}"
-        self.sim_stack.pop()
+        s = self.sim_stack.pop()
+        if s == 8:
+            self.gen(f"  pop {register}")
+        else:
+            self.gen(f"  lea rsp, [rsp - {s}]")
+        
 
     def push_reg(self, register: str):
         size = self.get_reg_size(register)
@@ -418,15 +422,20 @@ class Generator:
         return 8
 
     def g_empty_vars(self):
-        #if self.name == starting_label:
-        #    print(self.variables)
-        for _ in range(len(self.variables)):
+        n, s = self.scopes.pop()
+        size = 0
+        names = ""
+        for i in range(n, len(self.variables)):
             name = self.variables.pop()
-            if name not in self.global_vars:
-                #if self.name == starting_label:
-                #    print(name)
-                self.pop()
+            if not name in self.global_vars:
                 self.variables_info.__delitem__(name)
+        for i in range(s, len(self.sim_stack)):
+            q = self.sim_stack.pop()
+            size += q
+            names += str(q) + ", "
+        if size != 0:
+            self.generation.append(f"  lea rsp, [rsp + {size}]")
+            self.gen(f"  ;; {names}")
 
     def g_end(self, end):
         self.g_empty_vars()
@@ -436,18 +445,19 @@ class Generator:
             self.gen("  ret")
 
     def begin_scope(self):
-        self.scopes.append(len(self.variables))
+        self.scopes.append((len(self.variables), len(self.sim_stack)))
 
     def end_scope(self):
-        n = self.scopes.pop()
+        n, s = self.scopes.pop()
         size = 0
         for i in range(n, len(self.variables)):
             name = self.variables.pop()
             if not name in self.global_vars:
-                size += self.sim_stack.pop()
                 self.variables_info.__delitem__(name)
+        for i in range(s, len(self.sim_stack)):
+            size += self.sim_stack.pop()
         if size != 0:
-            self.generation.append(f"  add rsp, {size}")
+            self.generation.append(f"  lea rsp, [rsp + {size}]")
 
     def g_instruction(self, tok: tok.BasicToken):
         #if self.name == starting_label:
@@ -1171,27 +1181,84 @@ class Generator:
         #    token.print(0)
         class_type_opt = token.child[0]
         name = token.child[1].content
+        
         if (
             name in self.undetermined
             and name + get_class_type(class_type_opt) not in self.classes
         ):
             self.generate_undetermined(name, class_type_opt)
+        
         if (
             not isinstance(class_type_opt, tok.t_empty)
             and name + get_class_type(class_type_opt) in self.classes
         ):
             name = name + get_class_type(class_type_opt)
 
-        # stack_alloced = not isinstance(token.child[2], tok.t_empty)
-        if False:
-            assert False, "Pas implémenté"
-        else:
-            args = token.child[2]
-            if name not in self.classes:
-                error(f"Nom de classe inconnue : '{name}'", token.child[1].reference)
-            clss = self.classes[name]
-            size = sum([type_size(t) for t in clss.att_type])
+        stack_alloced = not isinstance(token.child[2], tok.t_empty)
+    
+        args = token.child[3]
+        if name not in self.classes:
+            error(f"Nom de classe inconnue : '{name}'", token.child[1].reference)
+        clss = self.classes[name]
+        size = sum([type_size(t) for t in clss.att_type])
+            
+        if stack_alloced:
+            footprint_name = f"*{name}.constructeur_pile"
+            if args.child[0].get_rule() != listed_value:
+                args = [args.child[0]]
+            elif isinstance(args.child[0], tok.t_empty):
+                args = []
+            else:
+                args = args.child[0].child
+                
+            footprint_name = self.footprint_name_methode(
+                "*" + name, footprint_name, args
+            )
+            if footprint_name not in self.functions:
+                error(f"Fonction non définie : {footprint_name}", token.reference)
+            func_gen, f_args, ret_type, _ = self.functions[footprint_name]
+            func_gen.used = True
+            if func_gen.arg_num - 1 != len(args):
+                error(
+                    f"Mauvais nombre d'arguments, {footprint_name} requiers {func_gen.arg_num - 1} argument{'s' if func_gen.arg_num > 2 else ''}",
+                    token.reference,
+                )
+            if ret_type != f"*{name}":
+                error(
+                    f"Le constructeur devrait renvoyer '*{name}', pas '{ret_type}'",
+                    func_gen.reference,
+                )
+            f_args_name = [f_args[i].child[1].content for i in range(func_gen.arg_num)]
+            f_args_type = [func_gen.args_type[i] for i in f_args_name]
 
+            classe_size = sum([type_size(a) for a in clss.att_type])
+            
+            self.gen(f"  lea rsp, [rsp - {classe_size}]")
+            self.gen( "  mov rax, rsp")
+            self.sim_stack.append(classe_size)
+            self.push_reg("rax")
+            
+            for i, v in enumerate(args):
+                type_t = type(
+                    v,
+                    self.variables_info,
+                    self.functions,
+                    self.classes,
+                    self.global_vars,
+                )
+                if type_t != f_args_type[i + 1]:
+                    error(
+                        f"Mauvais type '{type_t}' pour l'arguement '{f_args_name[i + 1]}', il devraît être de type '{f_args_type[i]}'",
+                        token.reference,
+                    )
+                self.g_statement(v)
+            for i in range(len(args)):
+                self.pop(arg_register[func_gen.arg_num - i - 1])
+            self.pop("rax") # Normalement c'est 'soit'
+            self.gen(f"  call {self.nasm_footprint_name(footprint_name)}")  # Grossier
+            self.push_reg("rax")
+            return 8  # La taille d'un pointeur
+        else:
             footprint_name = f"*{name}.constructeur"
             if args.child[0].get_rule() != listed_value:
                 args = [args.child[0]]
@@ -1199,11 +1266,9 @@ class Generator:
                 args = []
             else:
                 args = args.child[0].child
-
             footprint_name = self.footprint_name_methode(
                 "*" + name, footprint_name, args
             )
-
             if footprint_name not in self.functions:
                 error(f"Fonction non définie : {footprint_name}", token.reference)
             func_gen, f_args, ret_type, _ = self.functions[footprint_name]
@@ -1463,7 +1528,8 @@ class Generator:
         shift = 0
         for i in self.sim_stack[pos:]:
             shift += i
-        self.push_gen(f"qword [rsp + {shift}]")
+        #print("-->", shift, n, pos, self.sim_stack)
+        self.push_gen(f"qword [rsp + {shift}] ;; variable '{n}'")
         return type_size(type_t)
 
     def g_operator_add(self, float=False):
@@ -2087,8 +2153,8 @@ class Generator:
         array_def = token.child[0]
         l_type = gettype(array_def)
         length = array_def.child[0].child[0]
-        # stack_alloc = not isinstance(token.child[1], tok.t_empty)
-        name = token.child[1].content
+        stack_alloc = not isinstance(token.child[1], tok.t_empty)
+        name = token.child[2].content
         type_t_length = type(
             length, self.variables_info, self.functions, self.classes, self.global_vars
         )
@@ -2301,6 +2367,7 @@ class Generator:
             if not isinstance(opt_type_usage, tok.t_empty)
             else ""
         )
+        
         if not isinstance(content, tok.t_empty):
             reg_size_t = self.g_statement(content)
             got_type = type(
@@ -2324,6 +2391,7 @@ class Generator:
                 error(
                     f"Ne peut pas déclarer une variable déjà existante", token.reference
                 )
+        
         if len(name) >= 3 and name[:2] == "__":
             if not is_ptr(got_type) and type_size(got_type) > 8:
                 error(

@@ -469,7 +469,7 @@ def gettype(token: tok.BasicToken) -> str:
     if len(token.child) > 1 and not isinstance(token.child[1], tok.t_empty) and token.child[1].get_rule() == class_type_opt:
         following += get_class_type(token.child[1])
     if token == type_array_declaration:
-        r = f"liste[{gettype(token.child[1])}]"
+        r = f"liste[{gettype(token.child[2])}]"
         return r + following
     elif token == ptr_type:
         return f"*{gettype(token.child[0])}" + following
