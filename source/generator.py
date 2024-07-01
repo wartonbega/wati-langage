@@ -435,7 +435,6 @@ class Generator:
             names += str(q) + ", "
         if size != 0:
             self.generation.append(f"  lea rsp, [rsp + {size}]")
-            self.gen(f"  ;; {names}")
 
     def g_end(self, end):
         self.g_empty_vars()
@@ -2036,7 +2035,7 @@ class Generator:
                 self.push_reg(f"rax")
                 return 8
             if token.child[0] == attribute_identifier:
-                self.g_attribute_identifier(
+                self.g_attribute_identifier_place(
                     token.child[0].child[0], token.child[0].child[1:]
                 )
                 return 8  # un pointeur
@@ -2115,7 +2114,7 @@ class Generator:
             return type_size(type1)
         assert False, "Pas implémenté"
 
-    def g_attribute_identifier(self, name: tok.BasicToken, attributes: list[tok.BasicToken]):
+    def g_attribute_identifier_place(self, name: tok.BasicToken, attributes: list[tok.BasicToken]):
         name_t = type(
             name, self.variables_info, self.functions, self.classes, self.global_vars
         )
@@ -2140,12 +2139,21 @@ class Generator:
                 self.generation.append(f"  add rax, {decal_size}")
             size = type_size(r.att_type[i])
             if j == len(attributes) - 1:
-                self.gen("  xor rbx, rbx")
-                self.gen(f"  mov {reg_size[size][1]}, {word_size[size]} [rax]")
-                self.push_reg("rbx")
+                self.push_reg("rax")
             else:
                 self.push_gen("qword [rax]")
             name_t = r.att_type[i]
+        return name_t
+        
+
+    def g_attribute_identifier(self, name: tok.BasicToken, attributes: list[tok.BasicToken]):
+        name_t = self.g_attribute_identifier_place(name, attributes)
+        size = type_size(name_t)
+        print(f"--> {name_t}")
+        self.pop("rax")
+        self.gen("  xor rbx, rbx")
+        self.gen(f"  mov rbx, {word_size[size]} [rax]")
+        self.push_reg("rbx")
         return name_t
 
     def g_arraydef(self, token: tok.BasicToken):

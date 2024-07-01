@@ -1,15 +1,5 @@
 inclue "./std/std.watiH";
 
-classe caca contient
-    <ent> caca;
-    methode <*caca> constructeur(<*caca> soit) fait 
-        soit = <*caca>!mallom(!taillede(<caca>));
-        soit.caca = 1024;
-        renvoie soit;
-    fin
-fin
-
-
 classe test contient
     <ent> a;
     <ent> b;
@@ -29,5 +19,3 @@ classe test contient
     fin
 fin
 
-p = test&(3, 4);
-!print(p.a);
