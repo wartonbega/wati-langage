@@ -455,6 +455,7 @@ array_def = rls.r_sequence(
         type_array_declaration,
         rls.r_character(">").ignore_token()
     ).ignore_token(),
+    
     identifier,
     rls.r_character(";").ignore_token().set_error("';' attendu")
 ).set_name("array-def")

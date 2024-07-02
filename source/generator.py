@@ -1116,7 +1116,7 @@ class Generator:
         soit_bis = copy.copy(soit)
         soit_bis.child = copy.copy(soit.child)
         soit_bis.child.pop()
-        
+        soit_bis = soit_bis.child[0]
         self.g_statement(soit_bis)
         self.pop(arg_register[0])
         for i in range(len(args)):
@@ -1822,6 +1822,7 @@ class Generator:
             return type_size("ent")
         if token.get_rule() == char:
             content = token.child[0].content
+            content = content.replace("\\e", chr(27))
             if len(content) > 1:
                 error(
                     f"La définition de 'chr' doit être de longeure 1 ou 0",
@@ -1837,17 +1838,19 @@ class Generator:
             content = token.child[0].content
             l = len(content)
             # content = bytes(content, "utf-8").decode("unicode_escape")
+            content = content.replace("\\e", chr(27))
             if not content.replace("\n", '", 10 ,"') in self.declared_string:
                 self.declared_string.append(content.replace("\n", '", 10 ,"'))
             g = self.declared_string.index(content.replace("\n", '", 10 ,"'))
-            self.gen(f"  mov rax, qword msg{g}")
-            self.push_reg("rax")
-            # self.gen(f"  mov rdx, {l + 2}") # +2 encore une fois, jsp pourquoi
-            # self.g_malloc("rdx")
-            # self.gen(f"  mov rdi, rax")
-            # self.pop(f"rsi")
-            # self.push_reg(f"rdi")
-            # self.gen(f"  call chr_copy")
+            #self.gen(f"  mov rdx, {l + 2}") # +2 encore une fois, jsp pourquoi
+            
+            self.gen(f"  lea rsp, [rsp - {l + 2}]")
+            self.gen(f"  mov rax, rsp")
+            self.sim_stack.append(l + 2)
+            self.push_reg(f"rax")
+            self.gen(f"  mov rdi, rax")
+            self.gen(f"  mov rsi, qword msg{g}")
+            self.gen(f"  call chr_copy")
             return 8  # C'est un pointeur
         if token.get_rule() == t_bool:
             self.gen("  xor rax, rax")
@@ -2161,8 +2164,8 @@ class Generator:
         array_def = token.child[0]
         l_type = gettype(array_def)
         length = array_def.child[0].child[0]
-        stack_alloc = not isinstance(token.child[1], tok.t_empty)
-        name = token.child[2].content
+        #stack_alloc = not isinstance(token.child[1], tok.t_empty)
+        name = token.child[1].content
         type_t_length = type(
             length, self.variables_info, self.functions, self.classes, self.global_vars
         )
