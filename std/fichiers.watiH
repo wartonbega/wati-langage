@@ -1,0 +1,3 @@
+
+fonction <ent> lit_fichier(<[_]chr> nom, <[_]chr> tampon, <ent> taille);
+fonction <rien> ecrit_fichier(<[_]chr> nom, <[_]chr> contenu);

@@ -5,3 +5,4 @@ line_counter.py
 *.asm
 *.out
 __pycache/*.pyc
+test3.wati

@@ -1,0 +1,37 @@
+inclue "./std.watiH";
+
+fonction <ent> lit_fichier(<[_]chr> nom, <[_]chr> tampon, <ent> taille) fait
+    flags = __O_RDWR;
+    permission = 0777;
+    fd = !open(nom, flags, permission);
+    si fd == -1 fait 
+        !errno();
+    fin
+    <ent> r = !read(fd, tampon, taille);
+    si r == -1 fait 
+        !errno();
+    fin
+    cl = !close(fd);
+    si cl == -1 fait 
+        !errno();
+    fin
+    renvoie r;
+fin
+
+fonction <rien> ecrit_fichier(<[_]chr> nom, <[_]chr> contenu) fait 
+    flags = (__O_RDWR || __O_CREAT);
+    permission = 0777;
+    fd = !open(nom, flags, permission);
+    si fd == -1 fait
+        !errno();
+    fin
+    taille = !long(contenu);
+    <ent> r = !write(fd, contenu, taille);
+    si r == -1 fait
+        !errno();
+    fin
+    r = !close(fd);
+    si r == -1 fait
+        !errno();
+    fin
+fin
