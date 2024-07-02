@@ -5,21 +5,22 @@ inclue "bool.wati";
 externe <*rien> _malloc(<ent>); // Utile pour allouer de la mémoire grossièrement à 
 externe <rien> _free(<*rien>);
 
-fonction <*rien> mallom(<ent> taille) fait 
-    <*rien> r = !_malloc(taille);
-    si <ent>r == 0 fait 
-        !erreur("Impossible d'allouer le bloc de taille demandée");
-    fin
-    renvoie r;
-fin
-
-fonction <rien> libere(<*rien> taille) fait 
-    !_free(taille);
-fin
-
 fonction <rien> metmoire (<*rien> ptr, <chr> val, <ent> taille) fait 
     ptr_c = <[_]chr>ptr;
     pour i dans [0, taille] fait 
         ptr_c[i] = val;
     fin
+fin
+
+fonction <*rien> mallom(<ent> taille) fait 
+    <*rien> r = !_malloc(taille);
+    si <ent>r == 0 fait 
+        !erreur("Impossible d'allouer le bloc de taille demandée");
+    fin
+    !metmoire(r, '', taille);
+    renvoie r;
+fin
+
+fonction <rien> libere(<*rien> taille) fait 
+    !_free(taille);
 fin

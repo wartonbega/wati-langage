@@ -47,13 +47,13 @@ fonction <ent> write(<ent> fd, <[_]chr> cbuf, <ent> nbyte) fait
     renvoie sys_ret_;
 fin
 
-<ent> __O_RDONLY =  0x0000;
-<ent> __O_WRONLY =  0x0001;
-<ent> __O_RDWR =    0x0002;
-<ent> __O_ACCMODE = 0x0003;
-<ent> __O_CREAT =   0x0200;
-<ent> __O_TRUNC =   0x0400;
-<ent> __O_EXCL =    0x0800;
+<ent> __O_RDONLY =  0x0000; // Lecture seule
+<ent> __O_WRONLY =  0x0001; // Ecriture seule
+<ent> __O_RDWR =    0x0002; // Lecture et ecriture
+<ent> __O_ACCMODE = 0x0003; // Mask pour les modes au dessus
+<ent> __O_CREAT =   0x0200; // Crée le fichier si non existant
+<ent> __O_TRUNC =   0x0400; // Troncature à longueur nulle
+<ent> __O_EXCL =    0x0800; // Erreur si le fichier existe 
 
 //5	AUE_OPEN_RWTC	ALL	{ int open(user_addr_t path, int flags, int mode); } 
 fonction <ent> open(<[_]chr> path, <ent> flags, <ent> mode) fait 
