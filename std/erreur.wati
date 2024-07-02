@@ -1,7 +1,330 @@
 inclue "syscall.wati";
 inclue "listes.wati";
+inclue "entiers.wati";
+
+externe <*ent16> ___error();
 
 fonction <rien> erreur (<[_]chr> x) fait 
     !println(x);
     !exit(0);
+fin
+
+<ent> __EPERM = 1;
+<ent> __ENOENT = 2;
+<ent> __ESRCH = 3;
+<ent> __EINTR = 4;
+<ent> __EIO = 5;
+<ent> __ENXIO = 6;
+<ent> __E2BIG = 7;
+<ent> __ENOEXEC = 8;
+<ent> __EBADF = 9;
+<ent> __ECHILD = 10;
+<ent> __EDEADLK = 11;
+<ent> __ENOMEM = 12;
+<ent> __EACCES = 13;
+<ent> __EFAULT = 14;
+<ent> __ENOTBLK = 15;
+<ent> __EBUSY = 16;
+<ent> __EEXIST = 17;
+<ent> __EXDEV = 18;
+<ent> __ENODEV = 19;
+<ent> __ENOTDIR = 20;
+<ent> __EISDIR = 21;
+<ent> __EINVAL = 22;
+<ent> __ENFILE = 23;
+<ent> __EMFILE = 24;
+<ent> __ENOTTY = 25;
+<ent> __ETXTBSY = 26;
+<ent> __EFBIG = 27;
+<ent> __ENOSPC = 28;
+<ent> __ESPIPE = 29;
+<ent> __EROFS = 30;
+<ent> __EMLINK = 31;
+<ent> __EPIPE = 32;
+<ent> __EDOM = 33;
+<ent> __ERANGE = 34;
+<ent> __EAGAIN = 35;
+<ent> __EWOULDBLOCK = __EAGAIN;
+<ent> __EINPROGRESS = 36;
+<ent> __EALREADY = 37;
+<ent> __ENOTSOCK = 38;
+<ent> __EDESTADDRREQ = 39;
+<ent> __EMSGSIZE = 40;
+<ent> __EPROTOTYPE = 41;
+<ent> __ENOPROTOOPT = 42;
+<ent> __EPROTONOSUPPORT = 43;
+<ent> __ESOCKTNOSUPPORT = 44;
+<ent> __ENOTSUP = 45;
+<ent> __EOPNOTSUPP = __ENOTSUP;
+<ent> __EPFNOSUPPORT = 46;
+<ent> __EAFNOSUPPORT = 47;
+<ent> __EADDRINUSE = 48;
+<ent> __EADDRNOTAVAIL = 49;
+<ent> __ENETDOWN = 50;
+<ent> __ENETUNREACH = 51;
+<ent> __ENETRESET = 52;
+<ent> __ECONNABORTED = 53;
+<ent> __ECONNRESET = 54;
+<ent> __ENOBUFS = 55;
+<ent> __EISCONN = 56;
+<ent> __ENOTCONN = 57;
+<ent> __ESHUTDOWN = 58;
+<ent> __ETOOMANYREFS = 59;
+<ent> __ETIMEDOUT = 60;
+<ent> __ECONNREFUSED = 61;
+<ent> __ELOOP = 62;
+<ent> __ENAMETOOLONG = 63;
+<ent> __EHOSTDOWN = 64;
+<ent> __EHOSTUNREACH = 65;
+<ent> __ENOTEMPTY = 66;
+<ent> __EPROCLIM = 67;
+<ent> __EUSERS = 68;
+<ent> __EDQUOT = 69;
+<ent> __ESTALE = 70;
+<ent> __EREMOTE = 71;
+<ent> __EBADRPC = 72;
+<ent> __ERPCMISMATCH = 73;
+<ent> __EPROGUNAVAIL = 74;
+<ent> __EPROGMISMATCH = 75;
+<ent> __EPROCUNAVAIL = 76;
+<ent> __ENOLCK = 77;
+<ent> __ENOSYS = 78;
+<ent> __EFTYPE = 79;
+<ent> __EAUTH = 80;
+<ent> __ENEEDAUTH = 81;
+<ent> __EPWROFF = 82;
+<ent> __EDEVERR = 83;
+<ent> __EOVERFLOW = 84;
+<ent> __EBADEXEC = 85;
+<ent> __EBADARCH = 86;
+<ent> __ESHLIBVERS = 87;
+<ent> __EBADMACHO = 88;
+<ent> __ECANCELED = 89;
+<ent> __EIDRM = 90;
+<ent> __ENOMSG = 91;
+<ent> __EILSEQ = 92;
+<ent> __ENOATTR = 93;
+<ent> __EBADMSG = 94;
+<ent> __EMULTIHOP = 95;
+<ent> __ENODATA = 96;
+<ent> __ENOLINK = 97;
+<ent> __ENOSR = 98;
+<ent> __ENOSTR = 99;
+<ent> __EPROTO = 100;
+<ent> __ETIME = 101;
+<ent> __EOPNOTSUPP = 102;
+<ent> __ELAST = 102;
+<ent> __ERESTART = <ent>(<ent16>(-1));
+<ent> __EJUSTRETURN = <ent>(<ent16>(-2));
+
+fonction <rien> errno() fait 
+    pe = !___error();
+    e = *pe;
+    *pe = <ent16>0; // On le remet à 0
+
+    si e == __EPERM fait 
+        !erreur("Opération non permise");
+    fin sinonsi e == __ENOENT fait 
+        !erreur("Pas de tel fichier ou répertoire"); 
+    fin sinonsi e == __ESRCH fait 
+        !erreur("Pas de tel processus"); 
+    fin sinonsi e == __EINTR fait 
+        !erreur("Appel de système interrompu"); 
+    fin sinonsi e == __EIO fait 
+        !erreur("Erreur d'input/output"); 
+    fin sinonsi e == __ENXIO fait 
+        !erreur("Apareil non configuré"); 
+    fin sinonsi e == __E2BIG fait 
+        !erreur("Liste d'arguments trop grosse"); 
+    fin sinonsi e == __ENOEXEC fait 
+        !erreur("Erreur du format d'exec"); 
+    fin sinonsi e == __EBADF fait 
+        !erreur("Mauvais descripteur de fichier"); 
+    fin sinonsi e == __ECHILD fait 
+        !erreur("Pas de processus enfant"); 
+    fin sinonsi e == __EDEADLK fait 
+        !erreur("Resource deadlock évitée"); 
+    fin sinonsi e == __ENOMEM fait 
+        !erreur("Ne peut pas allouer de la mémoire"); 
+    fin sinonsi e == __EACCES fait 
+        !erreur("Prermission refusée"); 
+    fin sinonsi e == __EFAULT fait 
+        !erreur("Adresse invalide"); 
+    fin sinonsi e == __ENOTBLK fait 
+        !erreur("Block device required"); 
+    fin sinonsi e == __EBUSY fait 
+        !erreur("Appareil déjà occupé"); 
+    fin sinonsi e == __EEXIST fait 
+        !erreur("Le fichier existe"); 
+    fin sinonsi e == __EXDEV fait 
+        !erreur("Cross-device link"); 
+    fin sinonsi e == __ENODEV fait 
+        !erreur("L'opération n'est pas supportée par l'appareil"); 
+    fin sinonsi e == __ENOTDIR fait 
+        !erreur("N'est pas un répertoire"); 
+    fin sinonsi e == __EISDIR fait 
+        !erreur("Est un répertoire"); 
+    fin sinonsi e == __EINVAL fait 
+        !erreur("Argument invalide"); 
+    fin sinonsi e == __ENFILE fait 
+        !erreur("Trop de fichiers ouverts dans le système");
+    fin sinonsi e == __EMFILE fait 
+        !erreur("Trop de fichiers ouverts");
+    fin sinonsi e == __ENOTTY fait 
+        !erreur("IOCTL innaproprié pour l'appareil");
+    fin sinonsi e == __ETXTBSY fait 
+        !erreur("Fichier de text déjà occupé");
+    fin sinonsi e == __EFBIG fait 
+        !erreur("Fichier trop volumineux");
+    fin sinonsi e == __ENOSPC fait 
+        !erreur("Pas assez d'espace libre sur l'appareil");
+    fin sinonsi e == __ESPIPE fait 
+        !erreur("Seeking illégal");
+    fin sinonsi e == __EROFS fait 
+        !erreur("Le systeme de fichier est en lecture seul (RO)");
+    fin sinonsi e == __EMLINK fait 
+        !erreur("Trop de liens");
+    fin sinonsi e == __EPIPE fait 
+        !erreur("Tunnelage cassé (broken pipe)");
+    fin sinonsi e == __EDOM fait 
+        !erreur("Argument numérique en dehors du domaine");
+    fin sinonsi e == __ERANGE fait 
+        !erreur("Resultat trop large");
+    fin sinonsi e == __EAGAIN fait 
+        !erreur("Ressource temporairement indisponible");
+    fin sinonsi e == __EWOULDBLOCK fait 
+        !erreur("L'opération serait bloquée");
+    fin sinonsi e == __EINPROGRESS fait 
+        !erreur("Opération en cours pour le moment (now in progress)");
+    fin sinonsi e == __EALREADY fait 
+        !erreur("Opération déjà en cours");
+    fin sinonsi e == __ENOTSOCK fait 
+        !erreur("Opération de socket sur un non-socket");
+    fin sinonsi e == __EDESTADDRREQ fait 
+        !erreur("L'adresse de destination est requise");
+    fin sinonsi e == __EMSGSIZE fait 
+        !erreur("Message trop long");
+    fin sinonsi e == __EPROTOTYPE fait 
+        !erreur("Mauvais type de protocole pour des sockets");
+    fin sinonsi e == __ENOPROTOOPT fait 
+        !erreur("Protocole non disponnible");
+    fin sinonsi e == __EPROTONOSUPPORT fait 
+        !erreur("Protocole non supporté");
+    fin sinonsi e == __ESOCKTNOSUPPORT fait 
+        !erreur("Type de socket non supporté");
+    fin sinonsi e == __EOPNOTSUPP fait 
+        !erreur("Opération non supportée pour un socket");
+    fin sinonsi e == __EAFNOSUPPORT fait 
+        !erreur("Adresse de famille non supportée par le protocole de la famille");
+    fin sinonsi e == __EADDRINUSE fait 
+        !erreur("Adresse déjà utilisée");
+    fin sinonsi e == __EADDRNOTAVAIL fait 
+        !erreur("Ne peut pas assigné d'adresse assignée (requested address)");
+    fin sinonsi e == __ENETDOWN fait 
+        !erreur("Le network est down");
+    fin sinonsi e == __ENETUNREACH fait 
+        !erreur("Le newtwork est inaccessible");
+    fin sinonsi e == __ENETRESET fait 
+        !erreur("Le network a perdu la connection avec un reset");
+    fin sinonsi e == __ECONNABORTED fait 
+        !erreur("Le logiciel a avorté la connexion");
+    fin sinonsi e == __ECONNRESET fait 
+        !erreur("Connection remise à zéro par un pair");
+    fin sinonsi e == __ENOBUFS fait 
+        !erreur("Plus de place dans la mémoire tampon");
+    fin sinonsi e == __EISCONN fait 
+        !erreur("Le socket est déjà connecté");
+    fin sinonsi e == __ENOTCONN fait 
+        !erreur("Le socket n'est pas connecté");
+    fin sinonsi e == __ESHUTDOWN fait 
+        !erreur("Ne peut rien envoyer après que le socket ai été éteint");
+    fin sinonsi e == __ETOOMANYREFS fait 
+        !erreur("Trop de référence : ne peut pas splice");
+    fin sinonsi e == __ETIMEDOUT fait 
+        !erreur("L'opération a time-out");
+    fin sinonsi e == __ECONNREFUSED fait 
+        !erreur("Connection refusée");
+    fin sinonsi e == __ELOOP fait 
+        !erreur("Trop de couches de liens symboliques");
+    fin sinonsi e == __ENAMETOOLONG fait 
+        !erreur("Nom de fichier trop long");
+    fin sinonsi e == __EHOSTDOWN fait 
+        !erreur("L'hôte est down");
+    fin sinonsi e == __EHOSTUNREACH fait 
+        !erreur("Pas de chemin jusqu'à l'hôte");
+    fin sinonsi e == __ENOTEMPTY fait 
+        !erreur("Le répertoire n'est pas vide");
+    fin sinonsi e == __EPROCLIM fait 
+        !erreur("Trop de processus en cours");
+    fin sinonsi e == __EUSERS fait 
+        !erreur("Trop d'utilisateurs");
+    fin sinonsi e == __EDQUOT fait 
+        !erreur("Le quota du disc est dépassé");
+    fin sinonsi e == __ESTALE fait 
+        !erreur("Stale NFS file handle");
+    fin sinonsi e == __EREMOTE fait 
+        !erreur("Trop de niveaux de remote dans le chemin");
+    fin sinonsi e == __EBADRPC fait 
+        !erreur("La struct du RPC est invalide");
+    fin sinonsi e == __ERPCMISMATCH fait 
+        !erreur("La version du RPC est mauvaise");
+    fin sinonsi e == __EPROGUNAVAIL fait 
+        !erreur("Programme du RPC non disponnible");
+    fin sinonsi e == __ENOLCK fait 
+        !erreur("Pas de verrou disponnible");
+    fin sinonsi e == __ENOSYS fait 
+        !erreur("Fontion non implémentée");
+    fin sinonsi e == __EFTYPE fait 
+        !erreur("Type ou format de fichier innaproprié");
+    fin sinonsi e == __EAUTH fait 
+        !erreur("Erreur d'authentification");
+    fin sinonsi e == __ENEEDAUTH fait 
+        !erreur("Requiers une authentification");
+    fin sinonsi e == __EPWROFF fait 
+        !erreur("Device power is off");
+    fin sinonsi e == __EDEVERR fait 
+        !erreur("Erreur d'appareil (genre paper out)");
+    fin sinonsi e == __EOVERFLOW fait 
+        !erreur("Valeur trop importante pour être stockée dans un type de donnée");
+    fin sinonsi e == __EBADEXEC fait 
+        !erreur("Mauvais executable");
+    fin sinonsi e == __EBADARCH fait 
+        !erreur("Mauvais type de CPU dans dans l'executable");
+    fin sinonsi e == __ESHLIBVERS fait 
+        !erreur("Mauvaise version de librairie partagée");
+    fin sinonsi e == __EBADMACHO fait 
+        !erreur("Fichier Macho malformée");
+    fin sinonsi e == __ECANCELED fait 
+        !erreur("Opération arrêtée");
+    fin sinonsi e == __EIDRM fait 
+        !erreur("Identifiant enlevé");
+    fin sinonsi e == __ENOMSG fait 
+        !erreur("Message invalide");
+    fin sinonsi e == __EILSEQ fait 
+        !erreur("Suite de bytes illégale");
+    fin sinonsi e == __ENOATTR fait 
+        !erreur("Attribut non-trouvé");
+    fin sinonsi e == __EBADMSG fait 
+        !erreur("Mauvais message");
+    fin sinonsi e == __EMULTIHOP fait 
+        !erreur("Reservé");
+    fin sinonsi e == __ENODATA fait 
+        !erreur("Pas de message disponnible sur le courant (on STREAM)");
+    fin sinonsi e == __ENOLINK fait 
+        !erreur("Pas de ressource STREAM");
+    fin sinonsi e == __ENOSTR fait 
+        !erreur("Pas un STREAM");
+    fin sinonsi e == __EPROTO fait 
+        !erreur("Erreur de protocol");
+    fin sinonsi e == __ETIME fait 
+        !erreur("ioctl de STREAM time-out");
+    fin sinonsi e == __EOPNOTSUPP fait 
+        !erreur("Opération non supportée sur un socket");
+    fin sinonsi e == __ELAST fait 
+        !erreur("Doit être égal au plus gros message errno");
+    fin sinonsi e == __ERESTART fait 
+        !erreur("Syscall redemmaré");
+    fin sinonsi e == __EJUSTRETURN fait 
+        !erreur("Ne modifie pas les registers, juste renvoie");
+    fin
 fin

@@ -13,6 +13,7 @@ fonction <ent> write(<ent> fd, <[_]chr> cbuf, <ent> nbyte);
 <ent> __O_EXCL;
 
 fonction <ent> open(<[_]chr> path, <ent> flags, <ent> mode);
+fonction <ent> open(<[_]chr> path, <ent> flags);
 fonction <ent> close(<ent> fd);
 
 fonction <ent> accept (<ent> s, <[_]chr> name, <*ent> anamelen);

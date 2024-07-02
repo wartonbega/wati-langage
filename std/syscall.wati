@@ -60,6 +60,10 @@ fonction <ent> open(<[_]chr> path, <ent> flags, <ent> mode) fait
     syscall __syscall_open, path, flags, mode;
     renvoie sys_ret_;
 fin
+fonction <ent> open(<[_]chr> path, <ent> flags) fait 
+    syscall __syscall_open, path, flags;
+    renvoie sys_ret_;
+fin
 
 //6	AUE_CLOSE	ALL	{ int close(int fd); } 
 fonction <ent> close(<ent> fd) fait 
