@@ -1036,7 +1036,6 @@ class Generator:
             if footprint_name in self.functions and self.functions[footprint_name][-1] in ["func", "dec"] :
                 order = arg_register[: len(args)]
             else:
-                print(footprint_name)
                 order = ["rdi", "rsi", "rdx", "r10", "r8", "r9"][: len(args)]
             order.reverse()
             if len(args) > len(order):
@@ -1878,6 +1877,7 @@ class Generator:
                 self.global_vars,
             )
             if not type_exists(type_t_dest):
+                print(TYPES)
                 error(f"Type inconnu : '{type_t_dest}'", token.reference)
             size = type_size(type_t_dest)
             self.g_statement(token.child[1])
@@ -2149,7 +2149,7 @@ class Generator:
     def g_attribute_identifier(self, name: tok.BasicToken, attributes: list[tok.BasicToken]):
         name_t = self.g_attribute_identifier_place(name, attributes)
         size = type_size(name_t)
-        print(f"--> {name_t}")
+        #print(f"--> {name_t}")
         self.pop("rax")
         self.gen("  xor rbx, rbx")
         self.gen(f"  mov rbx, {word_size[size]} [rax]")
@@ -2333,7 +2333,7 @@ class Generator:
         )
         if c_type != get_ptr_type(type_t):
             error(
-                f"Mauvais type pour l'assignement, on attendais '{get_ptr_type(type_t)}', et on a eut '{c_type}'"
+                f"Mauvais type pour l'assignement, on attendais '{get_ptr_type(type_t)}', et on a eut '{c_type}'", statement.reference
             )
         self.g_statement(statement)
         self.pop("rbx")

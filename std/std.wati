@@ -1,6 +1,6 @@
-//%definis ENT8_IMP
-//%definis ENT16_IMP
-//%definis ENT32_IMP
+%definis ENT8_IMP
+%definis ENT16_IMP
+%definis ENT32_IMP
 %definis ENT_IMP
 
 inclue "syscall.wati";

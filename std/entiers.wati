@@ -1,8 +1,9 @@
-inclue "listes.wati";
 
 deftype ent8 1;
 deftype ent16 2;
 deftype ent32 4;
+
+inclue "listes.wati";
 
 nomenclature <type_t, type_t_2> entiers_impl_op dans fait 
     fonction <type_t> type_t._ou             (<type_t> soit, <type_t_2>x) fait renvoie <type_t>( <type_t_2>(soit) || x );   fin
@@ -22,8 +23,8 @@ fin
 
 nomenclature <type_t> entiers_impl_dyn_op dans fait 
     fonction <type_t> type_t._negatif (<type_t> soit) fait renvoie <type_t>( 0 - <ent>(soit) ); fin
-    fonction <type_t> type_t._shift_droit    (<type_t> soit, <type_t> x) fait pour i dans [0, x] fait soit = soit / 2; fin renvoie soit; fin
-    fonction <type_t> type_t._shift_gauche   (<type_t> soit, <type_t> x) fait pour i dans [0, x] fait soit = soit * 2; fin renvoie soit; fin
+    fonction <type_t> type_t._shift_droit    (<type_t> soit, <type_t> x) fait pour i dans [0, <ent>x] fait soit = soit / 2; fin renvoie soit; fin
+    fonction <type_t> type_t._shift_gauche   (<type_t> soit, <type_t> x) fait pour i dans [0, <ent>x] fait soit = soit * 2; fin renvoie soit; fin
 fin
 
 nomenclature <type_t> entiers_impl dans fait
