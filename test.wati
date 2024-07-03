@@ -1,7 +1,1 @@
 inclue "./std/std.watiH";
-inclue "./std/fichiers.watiH";
-
-<[_]chr> contenu = <[_]chr>!mallom(1024);
-r = !lit_fichier("test.wati", contenu, 1024);
-!print("Octets luts : "); !println(r);
-!ecrit_fichier("test3.wati", "Bonjour gros caca\n");

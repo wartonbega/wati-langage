@@ -1,0 +1,185 @@
+inclue "./std/std.watiH";
+
+<[_]chr> __noir         = "\e[1;30m";
+<[_]chr> __fond_noir    = "\e[1;40m";
+<[_]chr> __rouge        = "\e[1;31m";
+<[_]chr> __fond_rouge   = "\e[1;41m";
+<[_]chr> __vert         = "\e[1;32m";
+<[_]chr> __fond_vert    = "\e[1;42m";
+<[_]chr> __jaune        = "\e[1;33m";
+<[_]chr> __fond_jaune   = "\e[1;43m";
+<[_]chr> __bleue        = "\e[1;34m";
+<[_]chr> __fond_bleue   = "\e[1;44m";
+<[_]chr> __magenta      = "\e[1;35m";
+<[_]chr> __fond_magenta = "\e[1;45m";
+<[_]chr> __cyan         = "\e[1;36m";
+<[_]chr> __fond_cyan    = "\e[1;46m";
+<[_]chr> __blanc        = "\e[1;37m";
+<[_]chr> __fond_blanc   = "\e[1;47m";
+<[_]chr> __defaut       = "\e[1;39m";
+<[_]chr> __fond_defaut  = "\e[1;49m";
+<[_]chr> __zero         = "\e[1;0m";
+<[_]chr> __fond_zero    = "\e[1;0m";
+
+<[_]chr> __noir_brillant         = "\e[1;90m";
+<[_]chr> __fond_noir_brillant    = "\e[1;100m";
+<[_]chr> __rouge_brillant        = "\e[1;91m";
+<[_]chr> __fond_rouge_brillant   = "\e[1;101m";
+<[_]chr> __vert_brillant         = "\e[1;92m";
+<[_]chr> __fond_vert_brillant    = "\e[1;102m";
+<[_]chr> __jaune_brillant        = "\e[1;93m";
+<[_]chr> __fond_jaune_brillant   = "\e[1;103m";
+<[_]chr> __bleu_brillant         = "\e[1;94m";
+<[_]chr> __fond_bleu_brillant    = "\e[1;104m";
+<[_]chr> __magenta_brillant      = "\e[1;95m";
+<[_]chr> __fond_magenta_brillant = "\e[1;105m";
+<[_]chr> __cyan_brillant         = "\e[1;96m";
+<[_]chr> __fond_cyan_brillant    = "\e[1;106m";
+<[_]chr> __blanc_brillant        = "\e[1;97m";
+<[_]chr> __fond_blanc_brillant   = "\e[1;107m";
+
+<[_]chr> __double_souligne = "\e[21m"; //
+<[_]chr> __reset = "\e[0m";     //  reset all modes (styles and colors)
+<[_]chr> __gras = "\e[1m";      //	(ESC[22m) set bold mode.
+<[_]chr> __diminue = "\e[2m";   //	(ESC[22m) set dim/faint mode.
+<[_]chr> __italic = "\e[3m";    //	(ESC[23m) set italic mode.
+<[_]chr> __souligne = "\e[4m";  //	(ESC[24m) set underline mode.
+<[_]chr> __clignotte = "\e[5m"; //	(ESC[25m) set blinking mode
+<[_]chr> __inverse = "\e[7m";   //	(ESC[27m) set inverse/reverse mode
+<[_]chr> __invisible = "\e[8m"; //	(ESC[28m) set hidden/invisible mode
+<[_]chr> __barre = "\e[9m";  //	(ESC[29m) set strikethrough mode.
+
+<[_]chr> __home = "\e[H";
+
+fonction <rien> ansi(<[_]chr> dest, <ent> arg, <chr> commande) fait 
+    c_arg = !ent_en_chaine(arg);
+    l = !long(c_arg);
+    dest[0] = '\e';
+    dest[1] = '[';
+    !copie(2, dest, c_arg);
+    dest[2 + l] = commande;
+    !libere(<*rien> c_arg);
+fin
+
+fonction <rien> ansi(<[_]chr> dest, <ent> arg1, <ent> arg2, <chr> commande) fait 
+    c_arg1 = !ent_en_chaine(arg1);
+    c_arg2 = !ent_en_chaine(arg2);
+    l1 = !long(c_arg1);
+    l2 = !long(c_arg2);
+    dest[0] = '\e';
+    dest[1] = '[';
+    !copie(2, dest, c_arg1);
+    dest[2 + l1] = ';';
+    !copie(3 + l1, dest, c_arg2);
+    dest[3 + l1 + l2] = commande;
+    !libere(<*rien> c_arg1);
+    !libere(<*rien> c_arg2);
+fin
+
+fonction <rien> ansi(<[_]chr> dest, <ent> arg1, <ent> arg2, <ent> arg3, <chr> commande) fait 
+    c_arg1 = !ent_en_chaine(arg1);
+    c_arg2 = !ent_en_chaine(arg2);
+    c_arg3 = !ent_en_chaine(arg3);
+    l1 = !long(c_arg1);
+    l2 = !long(c_arg2);
+    l3 = !long(c_arg3);
+    dest[0] = '\e';
+    dest[1] = '[';
+
+    !copie(2, dest, c_arg1);
+    dest[2 + l1] = ';';
+    
+    !copie(3 + l1, dest, c_arg2);
+    dest[3 + l1 + l2] = ';';
+    
+    !copie(4 + l1 + l2, dest, c_arg3);
+    dest[4 + l1 + l2 + l3] = commande;
+    
+    !libere(<*rien> c_arg1);
+    !libere(<*rien> c_arg2);
+fin
+
+fonction <rien> positionner_curseur (<ent> x, <ent> y) fait 
+    // ESC[{line};{column}H
+    <[_]chr> code = <[_]chr>!mallom(1024);
+    !ansi(code, x, y, 'H');
+    !print(code);
+    !libere(<*rien>code);
+fin
+
+fonction <rien> curseur_monte(<ent> n) fait 
+    // ESC[#A
+    <[_]chr> code = <[_]chr>!mallom(1024);
+    !ansi(code, n, 'A');
+    !print(code);
+    !libere(<*rien>code);
+fin
+
+fonction <rien> curseur_descend(<ent> n) fait 
+    // ESC[#A
+    <[_]chr> code = <[_]chr>!mallom(1024);
+    !ansi(code, n, 'B');
+    !print(code);
+    !libere(<*rien>code);
+fin
+
+fonction <rien> curseur_droite(<ent> n) fait 
+    // ESC[#C
+    <[_]chr> code = <[_]chr>!mallom(1024);
+    !ansi(code, n, 'C');
+    !print(code);
+    !libere(<*rien>code);
+fin
+
+fonction <rien> curseur_gauche(<ent> n) fait 
+    // ESC[#D
+    <[_]chr> code = <[_]chr>!mallom(1024);
+    !ansi(code, n, 'D');
+    !print(code);
+    !libere(<*rien>code);
+fin
+
+fonction <rien> curseur_lignes_apres(<ent> n) fait 
+    // ESC[#E
+    <[_]chr> code = <[_]chr>!mallom(1024);
+    !ansi(code, n, 'E');
+    !print(code);
+    !libere(<*rien>code);
+fin
+
+fonction <rien> curseur_lignes_avant(<ent> n) fait 
+    // ESC[#F
+    <[_]chr> code = <[_]chr>!mallom(1024);
+    !ansi(code, n, 'F');
+    !print(code);
+    !libere(<*rien>code);
+fin
+
+fonction <rien> curseur_monte() fait 
+    // ESC M
+    !print("\e M");
+fin
+
+fonction <rien> curseur_colonne(<ent> n) fait 
+    // ESC[#G
+    <[_]chr> code = <[_]chr>!mallom(1024);
+    !ansi(code, n, 'G');
+    !print(code);
+    !libere(<*rien>code);
+fin
+
+fonction <rien> couleur256(<ent> n) fait 
+    // ESC[38;5;{ID}m
+    <[_]chr> code = <[_]chr>!mallom(1024);
+    !ansi(code, 38, 5, n, 'm');
+    !print(code);
+    !libere(<*rien>code);
+fin
+
+fonction <rien> couleur_fond_256(<ent> n) fait 
+    // ESC[48;5;{ID}m
+    <[_]chr> code = <[_]chr>!mallom(1024);
+    !ansi(code, 48, 5, n, 'm');
+    !print(code);
+    !libere(<*rien>code);
+fin
