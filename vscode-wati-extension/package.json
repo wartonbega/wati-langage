@@ -1,0 +1,25 @@
+{
+    "name": "wati",
+    "displayName": "wati-lang",
+    "description": "",
+    "version": "0.0.1",
+    "engines": {
+        "vscode": "^1.70.0"
+    },
+    "categories": [
+        "Programming Languages"
+    ],
+    "contributes": {
+        "languages": [{
+            "id": "wati",
+            "aliases": ["wati-lang", "wati"],
+            "extensions": [".wati", ".watiH", ".watih"],
+            "configuration": "./language-configuration.json"
+        }],
+        "grammars": [{
+            "language": "wati",
+            "scopeName": "source.wati",
+            "path": "./syntaxes/wati2.tmLanguage.json"
+        }]
+    }
+}

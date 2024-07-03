@@ -1,0 +1,16 @@
+"editor.tokenColorCustomizations": {
+    "textMateRules": [
+        {
+            "scope": "entity.name.function.wati",
+            "settings": {
+                "foreground": "#FFA500"  // Couleur pour les appels de fonctions
+            }
+        },
+        {
+            "scope": "keyword.wati",
+            "settings": {
+                "foreground": "#008000"  // Couleur pour les mots-clés réservés
+            }
+        }
+    ]
+}

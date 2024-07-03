@@ -1,0 +1,173 @@
+{
+    "scopeName": "source.wati",
+    "name": "Wati",
+    "patterns": [
+        {
+            "include": "#keywords-control"
+        },
+        {
+            "include": "#keywords-others"
+        },
+        {
+            "include": "#types"
+        },
+        {
+            "include": "#functions"
+        },
+        {
+            "include": "#function-calls"
+        },
+        {
+            "include": "#variables"
+        },
+        {
+            "include": "#variable-definitions"
+        },
+        {
+            "include": "#strings"
+        },
+        {
+            "include": "#comments"
+        },
+        {
+            "include": "#operators"
+        },
+        {
+            "include": "#control-structures"
+        },
+        {
+            "include": "#numbers"
+        },
+        {
+            "include": "#syntax-correction"
+        },
+        {
+            "include": "#special-identifiers"
+        },
+        {
+            "include": "#listed-types"
+        },
+        {
+            "include": "#boolean-values"
+        }
+    ],
+    "repository": {
+        "keywords-control": {
+            "patterns": [
+                {
+                    "match": "\\b(si|sinonsi|sinon|tant que|fait|fin|pour|dans|fonction|classe|contient|methode|sidef|definis)\\b",
+                    "name": "keyword.control.wati"
+                }
+            ]
+        },
+        "keywords-others": {
+            "patterns": [
+                {
+                    "match": "\\b(inclue|renvoie|deftype|nomenclature|utilise|externe|syscall)\\b",
+                    "name": "keyword.other.wati"
+                }
+            ]
+        },
+        "special-identifiers": {
+            "patterns": [
+                {
+                    "match": "\\bsoit\\b",
+                    "name": "variable.language.wati"
+                }
+            ]
+        },
+        "types": {
+            "patterns": [
+                {
+                    "match": "(?<=<)((\\[_\\])*(\\w+)(,\\s)*)*(?=>)",
+                    "name": "keyword.type.wati"
+                }
+            ]
+        },
+        "function-calls": {
+            "patterns": [
+                {
+                    "match": "!(\\w+)\\s*\\(",
+                    "captures": {
+                        "1": {
+                            "name": "keyword.function-name.wati"
+                        }
+                    }
+                }
+            ]
+        },
+        "variables": {
+            "patterns": [
+                {
+                    "match": "\\b[\\w]+\\b\\s*(?==)",
+                    "name": "variable.wati",
+                    "captures": {
+                        "0": {
+                            "name": "variable.name.wati"
+                        }
+                    }
+                }
+            ]
+        },
+        "strings": {
+            "patterns": [
+                {
+                    "match": "\"(?:\\\\\"|[^\"])*\"",
+                    "name": "string.wati"
+                },
+                {
+                    "match": "'([^']*|[\\\\])+'",
+                    "name": "string.wati"
+                }
+            ]
+        },
+        "comments": {
+            "patterns": [
+                {
+                    "match": "//.*$",
+                    "name": "comment.line.wati"
+                }
+            ]
+        },
+        "operators": {
+            "patterns": [
+                {
+                    "match": "[+-/*^~]",
+                    "name": "keyword.operator.wati"
+                },
+                {
+                    "match": "\\|\\||&&",
+                    "name": "keyword.operator.logical.wati"
+                }
+            ]
+        },
+        "control-structures": {
+            "patterns": [
+                {
+                    "match": "\\b(si|sinonsi|sinon|tant que|fin)\\b",
+                    "name": "keyword.control.wati"
+                }
+            ]
+        },
+        "numbers": {
+            "patterns": [
+                {
+                    "match": "\\b0[xX][0-9a-fA-F]+\\b",
+                    "name": "constant.numeric.hex.wati"
+                },
+                {
+                    "match": "\\b\\d+\\b",
+                    "name": "constant.numeric.decimal.wati"
+                }
+            ]
+        },
+        "boolean-values": {
+            "patterns": [
+                {
+                    "match": "\\b(Vrai|Faux)\\b",
+                    "name": "constant.language.boolean.wati"
+                }
+            ]
+        }
+    }
+}
