@@ -1,14 +1,6 @@
 
 
 print_func = """
-malloc:
-  ;; in rdx, there is the size needed to the alloc
-  mov rdi, rdx
-  push rdx
-  call _malloc
-  pop rdx
-  ret
-
 memcopy_stack:
   ;; the source is in rsi, destination in rdi, size in rdx (modifies rsi, rdi)
   test rdx, rdx

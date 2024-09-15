@@ -41,8 +41,6 @@ exit_end = f"""
 
 IMPORTED = []
 
-MALLOC_NAME = "malloc"
-# FREE_NAME = "_free"
 
 LEA_INST = "lea"
 
@@ -556,8 +554,6 @@ class Generator:
         #   tok.print(0)
         if tok.get_rule() == vardef:
             self.g_vardef(tok)
-        elif tok.get_rule() == array_def:
-            self.g_arraydef(tok)
         elif tok.get_rule() == scope:
             self.g_scope(tok)
         elif tok.get_rule() == ifstmt:
@@ -632,10 +628,6 @@ class Generator:
             pass
         else:
             pass
-
-    def g_malloc(self, size: str):
-        self.gen(f"  mov rdx, {size}")
-        self.gen(f"  call {MALLOC_NAME}")
 
     def g_define(self, token: tok.BasicToken):
         name = token.child[0].content
@@ -2436,42 +2428,6 @@ class Generator:
             self.gen(f"  mov {reg_size[size][1]}, {word_size[size]} [rax]")
         self.push_reg("rbx", name_t)
         return name_t
-
-    def g_arraydef(self, token: tok.BasicToken):
-        # assert False, f"Déprécié {token.reference}"
-        array_def = token.child[0]
-        l_type = gettype(array_def)
-        length = array_def.child[0].child[0]
-        # stack_alloc = not isinstance(token.child[1], tok.t_empty)
-        name = token.child[1].content
-        type_t_length = type(
-            length, self.variables_info, self.functions, self.classes, self.global_vars
-        )
-        if type_t_length != "ent":
-            error(
-                f"La longueur de la liste doit être indiquée par un 'ent', pas '{type_t_length}'",
-                token.reference,
-            )
-        t = self.g_statement(length)
-        self.pop("rdx", t)
-        self.gen(
-            f"  {LEA_INST} rdx, [(rdx + 2) * {type_size(l_type)}]"
-        )  # Le +2 résoud un bug d'affichage pour les chaines de caractère ...
-        self.g_malloc("rdx")
-        if name in self.variables:
-            error(
-                f"'{name}' a déjà été défini et ne peut pas être réécris par une liste",
-                token.reference,
-            )
-        if name[:2] == "__":
-            self.gen(f"  mov qword [{name}], rax")
-            self.global_vars[name] = l_type
-            self.variables.append(name)
-            self.variables_info[name] = (f"{l_type}", len(self.sim_stack), False, True)
-        else:
-            self.push_reg("rax", l_type)
-            self.variables.append(name)
-            self.variables_info[name] = (f"{l_type}", len(self.sim_stack), False, False)
 
     def g_array_modif(self, token: tok.BasicToken):
         self.gen("\n  ;; Modification d'une valeur dans un 'array'")
