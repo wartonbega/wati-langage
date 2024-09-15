@@ -37,9 +37,18 @@ fonction <rien> temps_jour (<*struct_temps> s) fait
     s.secondes = r % 60;
 fin
 
-fonction <rien> dors(<ent> temps) fait 
-    !_sleep(temps);
+%sidef PLATEFORME_MACOS fait
+    fonction <rien> dors(<ent> temps) fait 
+        !_sleep(temps);
+    fin
 fin
+
+%sidef PLATEFORME_LINUX fait
+    fonction <rien> dors(<ent> temps) fait 
+        !sleep(temps);
+    fin
+fin
+
 
 fonction <rien> efface() fait 
     !println("`\033[2J\033[H`");

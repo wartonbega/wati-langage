@@ -2,7 +2,12 @@ inclue "syscall.wati";
 inclue "listes.wati";
 inclue "entiers.wati";
 
-externe <*ent16> ___error();
+%sidef PLATEFORME_MACOS fait
+    externe <*ent16> ___error();
+fin
+%sidef PLATEFORME_LINUX fait
+    externe <*ent16> __error();
+fin
 
 fonction <rien> erreur (<[_]chr> x) fait 
     !println(x);
