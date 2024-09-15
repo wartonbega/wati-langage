@@ -63,17 +63,20 @@ if __name__ == "__main__":
     os.system(f"nasm -f{'macho64' if sys.platform == 'darwin' else 'elf64'} -o {output_name}.o {output_name}.asm")
     if not shared_lib:
         print("Liage de l'assembleur !")
+        shared_arg = ""
+        for i in shared:
+            shared_arg += f" {i}.o"
         if sys.platform == 'darwin':
-            shared_arg = ""
-            for i in shared:
-                shared_arg += f" {i}.o"
             raylib_flags = "libraylib.a -framework OpenGL -framework Cocoa -framework IOKit -framework CoreVideo" 
-            commande = f"gcc {('-e ' + generator.starting_label) if sys.platform == 'darwin' else ''} {output_name}.o {shared_arg} -lc -m64  -o {output_name}.out -Wl,-no_pie"
+            commande = f"gcc {output_name}.o {shared_arg} -lc -m64  -o {output_name}.out -Wl,-no_pie"
             print(commande)
             os.system(commande)
         else:
-            print(f"gcc {output_name}.o -L/usr/lib/gcc/x86_64-linux-gnu/9/ -lc -m64 -o {output_name}.out -Wl,-no_pie")
-            os.system(f"gcc -e {generator.starting_label} {output_name}.o -lc -m64 -o {output_name}.out -Wl,-no_pie")
+            commande = f"gcc -e {generator.starting_label} {output_name}.o -lc -o {output_name}.out -Wl,-no-pie" 
+            print(commande)
+            os.system(commande)
+            # print(f"gcc {output_name}.o -L/usr/lib/gcc/x86_64-linux-gnu/9/ -lc -m64 -o {output_name}.out -Wl,-no_pie")
+            #os.system(f"gcc -e {generator.starting_label} {output_name}.o -lc -m64 -o {output_name}.out -Wl,-no_pie")
         os.system(f"rm {output_name}.o")
         print(f"Écrit : {output_name}.out")
     if rm_asm:
