@@ -72,7 +72,7 @@ if __name__ == "__main__":
             print(commande)
             os.system(commande)
         else:
-            commande = f"gcc -e {generator.starting_label} {output_name}.o -static-libgcc -o {output_name}.out -ldl -lc -Wl,-no-pie" 
+            commande = f"gcc -e {generator.starting_label} {output_name}.o -static-libgcc -o {output_name}.out -ldl -lc -no-pie" 
             print(commande)
             os.system(commande)
         os.system(f"rm {output_name}.o")
