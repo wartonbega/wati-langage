@@ -1,4 +1,9 @@
-externe <*rien> _malloc(<ent>);
+%sidef PLATEFORME_DARWIN fait
+    externe <*rien> _malloc(<ent>);
+fin
+%sidef PLATEFORME_LINUX fait 
+    externe <*rien> malloc(<ent>);
+fin
 
 fonction <rien> exit (<ent8> rval);
 fonction <ent> read(<ent> fd, <[_]chr> cbuf, <ent> nbyte);

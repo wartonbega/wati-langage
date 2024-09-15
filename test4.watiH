@@ -1,3 +1,1 @@
-externe <*rien> _malloc(<ent>);
 
-fonction <ent> plus (<ent> x, <ent> y);

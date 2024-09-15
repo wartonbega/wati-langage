@@ -1,5 +1,12 @@
-externe <*rien> _malloc(<ent>);
-externe <rien> _free(<*rien>);
+
+%sidef PLATEFORME_DARWIN fait
+    externe <*rien> _malloc(<ent>);
+    externe <rien> _free(<*rien>);
+fin
+%sidef PLATEFORME_LINUX fait
+    externe <*rien> malloc(<ent>);
+    externe <rien> free(<*rien>);
+fin
 
 fonction <*rien> mallom(<ent> taille);
 fonction <rien> libere(<*rien> taille);

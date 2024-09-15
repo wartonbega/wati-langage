@@ -1,8 +1,12 @@
 inclue "entiers.wati";
 inclue "listes.wati";
 
-externe <*rien> _malloc(<ent>);
-
+%sidef PLATEFORME_DARWIN fait
+    externe <*rien> _malloc(<ent>);
+fin
+%sidef PLATEFORME_LINUX fait 
+    externe <*rien> malloc(<ent>);
+fin
 //0	AUE_NULL	ALL	{ int nosys(void); }   { indirect syscall }
 
 <ent> __EXIT_FAILURE = 1;
