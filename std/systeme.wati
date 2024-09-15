@@ -1,7 +1,12 @@
 inclue "syscall.wati";
 inclue "entiers.wati";
 
-externe <rien>_sleep(<ent>);
+%sidef PLATEFORME_MACOS fait
+    externe <rien> _sleep(<ent>);
+fin
+%sidef PLATEFORME_LINUX fait
+    externe <rien> sleep(<ent>);
+fin
 
 __petit_boutien = Faux;
 __gros_boutien = Faux;
