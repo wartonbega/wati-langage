@@ -22,6 +22,8 @@ fin
 %sidef PLATEFORME_LINUX fait 
     __syscall_read = 0;
     __syscall_write = 1;
+    __syscall_open = 2;
+    __syscall_close = 3;
     __syscall_socket = 41;
     __syscall_connect = 42;
     __syscall_mmap = 9;

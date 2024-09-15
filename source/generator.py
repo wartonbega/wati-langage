@@ -24,7 +24,7 @@ section .text
 """
 
 basic_end = f"""
-  mov rax, {0x2000001 if macos else 1} ;; exit
+  mov rax, {0x2000001 if macos else 60} ;; exit
   mov rdi, 0 ;; exit success
   syscall
 """
@@ -34,7 +34,7 @@ func_end = """
 """
 
 exit_end = f"""
-  mov rax, {0x2000001 if macos else 1} ;; exit
+  mov rax, {0x2000001 if macos else 60} ;; exit
   pop rdi
   syscall
 """
