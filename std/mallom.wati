@@ -31,7 +31,7 @@ fin
 
 %sidef PLATEFORME_LINUX fait
     fonction <*rien> mallom(<ent> taille) fait 
-        <*rien> r = !_malloc(taille);
+        <*rien> r = !malloc(taille);
         si <ent>r == 0 fait 
             !erreur("Impossible d'allouer le bloc de taille demandée");
         fin
@@ -40,6 +40,14 @@ fin
     fin
 fin
 
-fonction <rien> libere(<*rien> taille) fait 
-    !_free(taille);
+%sidef PLATEFORME_DARWIN fait
+    fonction <rien> libere(<*rien> taille) fait 
+        !_free(taille);
+    fin
+fin
+
+%sidef PLATEFORME_LINUX fait
+    fonction <rien> libere(<*rien> taille) fait 
+        !free(taille);
+    fin
 fin
