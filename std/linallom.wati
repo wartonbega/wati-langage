@@ -1,0 +1,15 @@
+inclue "std.watiH";
+
+
+<ent> __max_linmem = 10000;
+<[_]chr> __linmem = <[_]chr>(!mallom(__max_linmem));
+<ent> __linmem_index = 0;
+
+fonction <*rien> linallom (<ent> taille) fait 
+    r = <ent>__linmem + __linmem_index;
+    __linmem_index = __linmem_index + taille;
+    si __linmem_index > __max_linmem fait 
+        !erreur("!linallom : La taille de mémoire qui est demandée est supérieur à la taille maximum");
+    fin
+    renvoie <*rien>r;
+fin

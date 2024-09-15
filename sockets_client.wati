@@ -4,9 +4,7 @@
 %definis ENT16_IMP
 %definis ENT32_IMP
 
-inclue "./std/syscall.wati";
-inclue "./std/mallom.wati";
-inclue "./std/entiers.wati";
+inclue "./std/std.watiH";
 
 externe <ent32>_htonl(<ent32>);
 externe <ent16> _htons(<ent16>);
@@ -32,7 +30,7 @@ fin
 !metmoire(<*rien>recvBuff, '0', 1024);
 sockfd = !socket(__AF_INET, __SOCK_STREAM, 0);
 
-<*serv_addr> struct = <*serv_addr>!mallom(!taillede(<serv_addr>));
+<*serv_addr> struct = <*serv_addr>(!mallom(!taillede(<serv_addr>)));
 
 !metmoire(<*rien>struct, '0',  !taillede(<serv_addr>));
 

@@ -2,10 +2,18 @@
 inclue "mallom.wati";
 inclue "io.wati";
 
-fonction <rien> chr.print(<chr> soit) fait 
+fonction <rien> "chr.print"(<chr> soit) fait 
     !print(soit);
 fin 
 
-fonction <rien> chr.println(<chr> soit) fait 
+fonction <rien> "chr.println"(<chr> soit) fait 
     !println(soit);
 fin 
+
+fonction <bool> "chr._plus_petit_eg" (<chr> soit, <chr> autre) fait 
+    renvoie <ent> soit <= <ent> autre;
+fin
+
+fonction <bool> "chr._plus_grand_eg" (<chr> soit, <chr> autre) fait 
+    renvoie <ent> soit >= <ent> autre;
+fin

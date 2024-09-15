@@ -52,7 +52,7 @@ inclue "./std/std.watiH";
 <[_]chr> __home = "\e[H";
 
 fonction <rien> ansi(<[_]chr> dest, <ent> arg, <chr> commande) fait 
-    c_arg = !ent_en_chaine(arg);
+    c_arg = !ent_en_listechr(arg);
     l = !long(c_arg);
     dest[0] = '\e';
     dest[1] = '[';
@@ -62,8 +62,8 @@ fonction <rien> ansi(<[_]chr> dest, <ent> arg, <chr> commande) fait
 fin
 
 fonction <rien> ansi(<[_]chr> dest, <ent> arg1, <ent> arg2, <chr> commande) fait 
-    c_arg1 = !ent_en_chaine(arg1);
-    c_arg2 = !ent_en_chaine(arg2);
+    c_arg1 = !ent_en_listechr(arg1);
+    c_arg2 = !ent_en_listechr(arg2);
     l1 = !long(c_arg1);
     l2 = !long(c_arg2);
     dest[0] = '\e';
@@ -77,9 +77,9 @@ fonction <rien> ansi(<[_]chr> dest, <ent> arg1, <ent> arg2, <chr> commande) fait
 fin
 
 fonction <rien> ansi(<[_]chr> dest, <ent> arg1, <ent> arg2, <ent> arg3, <chr> commande) fait 
-    c_arg1 = !ent_en_chaine(arg1);
-    c_arg2 = !ent_en_chaine(arg2);
-    c_arg3 = !ent_en_chaine(arg3);
+    c_arg1 = !ent_en_listechr(arg1);
+    c_arg2 = !ent_en_listechr(arg2);
+    c_arg3 = !ent_en_listechr(arg3);
     l1 = !long(c_arg1);
     l2 = !long(c_arg2);
     l3 = !long(c_arg3);
@@ -100,16 +100,17 @@ fonction <rien> ansi(<[_]chr> dest, <ent> arg1, <ent> arg2, <ent> arg3, <chr> co
 fin
 
 fonction <rien> positionner_curseur (<ent> x, <ent> y) fait 
+    // Met le curseur en (X, Y)
     // ESC[{line};{column}H
-    <[_]chr> code = <[_]chr>!mallom(1024);
-    !ansi(code, x, y, 'H');
+    <[_]chr> code = <[_]chr>(!mallom(1024));
+    !ansi(code, y, x, 'H');
     !print(code);
     !libere(<*rien>code);
 fin
 
 fonction <rien> curseur_monte(<ent> n) fait 
     // ESC[#A
-    <[_]chr> code = <[_]chr>!mallom(1024);
+    <[_]chr> code = <[_]chr>(!mallom(1024));
     !ansi(code, n, 'A');
     !print(code);
     !libere(<*rien>code);
@@ -117,7 +118,7 @@ fin
 
 fonction <rien> curseur_descend(<ent> n) fait 
     // ESC[#A
-    <[_]chr> code = <[_]chr>!mallom(1024);
+    <[_]chr> code = <[_]chr>(!mallom(1024));
     !ansi(code, n, 'B');
     !print(code);
     !libere(<*rien>code);
@@ -125,7 +126,7 @@ fin
 
 fonction <rien> curseur_droite(<ent> n) fait 
     // ESC[#C
-    <[_]chr> code = <[_]chr>!mallom(1024);
+    <[_]chr> code = <[_]chr>(!mallom(1024));
     !ansi(code, n, 'C');
     !print(code);
     !libere(<*rien>code);
@@ -133,7 +134,7 @@ fin
 
 fonction <rien> curseur_gauche(<ent> n) fait 
     // ESC[#D
-    <[_]chr> code = <[_]chr>!mallom(1024);
+    <[_]chr> code = <[_]chr>(!mallom(1024));
     !ansi(code, n, 'D');
     !print(code);
     !libere(<*rien>code);
@@ -141,7 +142,7 @@ fin
 
 fonction <rien> curseur_lignes_apres(<ent> n) fait 
     // ESC[#E
-    <[_]chr> code = <[_]chr>!mallom(1024);
+    <[_]chr> code = <[_]chr>(!mallom(1024));
     !ansi(code, n, 'E');
     !print(code);
     !libere(<*rien>code);
@@ -149,20 +150,20 @@ fin
 
 fonction <rien> curseur_lignes_avant(<ent> n) fait 
     // ESC[#F
-    <[_]chr> code = <[_]chr>!mallom(1024);
+    <[_]chr> code = <[_]chr>(!mallom(1024));
     !ansi(code, n, 'F');
     !print(code);
     !libere(<*rien>code);
 fin
 
-fonction <rien> curseur_monte() fait 
-    // ESC M
-    !print("\e M");
-fin
+//fonction <rien> curseur_monte() fait 
+//    // ESC M
+//    !print("\e M");
+//fin
 
 fonction <rien> curseur_colonne(<ent> n) fait 
     // ESC[#G
-    <[_]chr> code = <[_]chr>!mallom(1024);
+    <[_]chr> code = <[_]chr>(!mallom(1024));
     !ansi(code, n, 'G');
     !print(code);
     !libere(<*rien>code);
@@ -170,7 +171,7 @@ fin
 
 fonction <rien> couleur256(<ent> n) fait 
     // ESC[38;5;{ID}m
-    <[_]chr> code = <[_]chr>!mallom(1024);
+    <[_]chr> code = <[_]chr>(!mallom(1024));
     !ansi(code, 38, 5, n, 'm');
     !print(code);
     !libere(<*rien>code);
@@ -178,7 +179,7 @@ fin
 
 fonction <rien> couleur_fond_256(<ent> n) fait 
     // ESC[48;5;{ID}m
-    <[_]chr> code = <[_]chr>!mallom(1024);
+    <[_]chr> code = <[_]chr>(!mallom(1024));
     !ansi(code, 48, 5, n, 'm');
     !print(code);
     !libere(<*rien>code);

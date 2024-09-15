@@ -76,7 +76,7 @@ fonction <rien> met_nombre(<ent> pos, <ent> num, <*dliste<ent>> table) fait
         !affiche_nbr(pos * (__FONT_COL + 1), 1, table[10]);
         renvoie;
     fin
-    p = <[_]chr>!mallom(2);
+    p = <[_]chr>(!mallom(2));
     si num < 10 fait // >
         p[0] = '0';
         p[1] = <chr>('0' + num);
@@ -91,7 +91,7 @@ fonction <rien> met_nombre(<ent> pos, <ent> num, <*dliste<ent>> table) fait
     !libere(<*rien>p);
 fin
 
-temps = <*struct_temps>!mallom(!taillede(<struct_temps>));
+temps = <*struct_temps>(!mallom(!taillede(<struct_temps>)));
 lt = temps.secondes;
 tant que Vrai fait
     !temps_jour(temps);

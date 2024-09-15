@@ -249,6 +249,9 @@ class r_enclosure(Rule):
         self.evaluation = False
         self.whitespace_ig = False
 
+    def disable_unknown(self):
+        ...
+
     def set_mid_patern(self, mid: Rule):
         self.mid = mid
         self.whitespace_ig = True

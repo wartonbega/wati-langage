@@ -8,7 +8,7 @@ classe plage IT contient
     <ent> courant;
 
     methode <*plage> constructeur (<*plage> soit, <ent> dep, <ent> arr) fait 
-        soit = <*plage>!mallom(!taillede(<plage>));
+        soit = <*plage>(!mallom(!taillede(<plage>)));
         soit.depart = dep;
         soit.arrivee = arr;
         soit.courant = dep;
@@ -16,7 +16,7 @@ classe plage IT contient
     fin
     
     methode <*plage> constructeur (<*plage> soit, <ent> arr) fait 
-        soit = <*plage>!mallom(!taillede(<plage>));
+        soit = <*plage>(!mallom(!taillede(<plage>)));
         soit.depart = 0;
         soit.arrivee = arr;
         soit.courant = 0;

@@ -6,3 +6,4 @@ fonction <[_]chr> copie (<ent> index, <[_]chr> dest, <[_]chr> source);
 fonction <rien> chr_copie (<ent> taille, <[_]chr> dest, <[_]chr> source);
 fonction <bool> "liste[chr]._egal" (<[_]chr> soit, <[_]chr> x);
 fonction <[_]chr> "listes[chr]._plus" (<[_]chr> soit, <[_]chr> x);
+fonction <bool> est_nombre (<chr> c);

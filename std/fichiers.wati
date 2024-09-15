@@ -1,4 +1,6 @@
-inclue "./std.watiH";
+inclue "std.watiH";
+
+externe <ent>_write(<ent>, <[_]chr>, <ent>);
 
 fonction <ent> lit_fichier(<[_]chr> nom, <[_]chr> tampon, <ent> taille) fait
     flags = __O_RDWR;
@@ -19,14 +21,35 @@ fonction <ent> lit_fichier(<[_]chr> nom, <[_]chr> tampon, <ent> taille) fait
 fin
 
 fonction <rien> ecrit_fichier(<[_]chr> nom, <[_]chr> contenu) fait 
-    flags = (__O_RDWR || __O_CREAT);
+    flags = __O_RDWR || __O_CREAT;
     permission = 0777;
     fd = !open(nom, flags, permission);
     si fd == -1 fait
         !errno();
     fin
     taille = !long(contenu);
-    <ent> r = !write(fd, contenu, taille);
+    <ent> r = !_write(fd, contenu, taille);
+    si r == -1 fait
+        !errno();
+    fin
+    r = !close(fd);
+    si r == -1 fait
+        !errno();
+    fin
+fin
+
+fonction <rien> ecrit_fichier(<[_]chr> nom, <[_]chr> contenu, <bool> ajoute) fait 
+    flags = __O_RDWR || __O_CREAT;
+    si ajoute fait 
+        flags = flags || __O_APPEND;
+    fin
+    permission = 0777;
+    fd = !open(nom, flags, permission);
+    si fd == -1 fait
+        !errno();
+    fin
+    taille = !long(contenu);
+    <ent> r = !_write(fd, contenu, taille);
     si r == -1 fait
         !errno();
     fin

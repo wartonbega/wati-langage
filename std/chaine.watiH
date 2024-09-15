@@ -1,0 +1,29 @@
+fonction <rien> print(<chaine> x);
+
+fonction <rien> println(<chaine> x);
+
+fonction <ent> long(<chaine> x);
+
+fonction <rien> erreur(<chaine>x);
+
+fonction <bool> chaine._egal(<chaine> soit, <chaine> x);
+
+fonction <bool> chaine._pas_eg(<chaine> soit, <chaine> x);
+
+fonction <chaine> chaine._plus(<chaine> soit, <chaine> x);
+
+fonction <chaine> chaine._fois(<chaine> soit, <ent> x);
+
+fonction <rien> chaine.assigne_index(<*chaine> soit, <ent> index, <chr> valeur);
+
+fonction <chaine> ent_en_chaine(<ent> x);
+
+fonction <chr> chaine.index(<*chaine> soit, <ent> index);
+
+fonction <chaine> decoupe_inf(<chaine> soit, <ent> index);
+
+fonction <chaine> decoupe_sup(<chaine> soit, <ent> index);
+
+fonction <chaine> remplace (<chaine> soit, <ent> x);
+
+fonction <chaine> remplace (<chaine> soit, <chaine> x);

@@ -1,4 +1,4 @@
-from source.wati_parser import *
+from source.syntax import *
 import numpy as np
 
 python_type = type
@@ -7,9 +7,14 @@ INFORMATIONS = False
 
 
 def error(message, reference):
-    print('\033[91m', '\033[1m', "Erreur : ", '\033[0m', '\033[1m', reference, '\033[0m', sep="")
+    print('\033[91m', '\033[1m', "Erreur", '\033[0m', '\033[1m', ' : ', reference, '\033[0m', sep="")
     print("\t\033[1m", message, "\033[0m")
     exit(1)
+
+def warning(message, reference):
+    # 92
+    print('\033[95m', '\033[1m', "Attention", '\033[0m', '\033[1m', ' : ', reference, '\033[0m', sep="")
+    print("\t\033[1m", message, "\033[0m")
 
 def information(message, reference:str|None=None):
     if INFORMATIONS:
@@ -18,134 +23,150 @@ def information(message, reference:str|None=None):
             print(reference, '\033[0m', sep="")
         print("\t\033[1m", message, "\033[0m")
 
-# "ent", "bool", "liste", "chr", "ptr"
+# "ent", "bool", "liste", "chr", "ptr", "chaine"
 
 less_equal = [
-    ["bool", False, False, False, False],
-    [False, False, False, False, False],
-    [False, False, False, False, False],
-    [False, False, False, False, False],
-    [False, False, False, False, False]
+    ["bool", False, False, False, False, False],
+    [False , False, False, False, False, False],
+    [False , False, False, False, False, False],
+    [False , False, False, False, False, False],
+    [False , False, False, False, False, False],
+    [False , False, False, False, False, False]
 ]
 
 more_equal = [
-    ["bool", False, False, False, False],
-    [False, False, False, False, False],
-    [False, False, False, False, False],
-    [False, False, False, False, False],
-    [False, False, False, False, False]
+    ["bool", False, False, False, False, False],
+    [False , False, False, False, False, False],
+    [False , False, False, False, False, False],
+    [False , False, False, False, False, False],
+    [False , False, False, False, False, False],
+    [False , False, False, False, False, False]
 ]
 
 not_equal = [
-    ["bool", "bool", "bool", "bool", "bool"],
-    ["bool", "bool", "bool", "bool", "bool"],
-    ["bool", "bool", "bool", "bool", "bool"],
-    ["bool", "bool", "bool", "bool", "bool"],
-    ["bool", "bool", "bool", "bool", "bool"],
+    ["bool", "bool", "bool", "bool", "bool", "bool"],
+    ["bool", "bool", "bool", "bool", "bool", "bool"],
+    ["bool", "bool", "bool", "bool", "bool", "bool"],
+    ["bool", "bool", "bool", "bool", "bool", "bool"],
+    ["bool", "bool", "bool", "bool", "bool", "bool"],
+    ["bool", "bool", "bool", "bool", "bool", "bool"],
 ]
 
 equal_equal = [
-    ["bool", "bool", "bool", "bool", "bool"],
-    ["bool", "bool", "bool", "bool", "bool"],
-    ["bool", "bool", "bool", "bool", "bool"],
-    ["bool", "bool", "bool", "bool", "bool"],
-    ["bool", "bool", "bool", "bool", "bool"],
+    ["bool", "bool", "bool", "bool", "bool", "bool"],
+    ["bool", "bool", "bool", "bool", "bool", "bool"],
+    ["bool", "bool", "bool", "bool", "bool", "bool"],
+    ["bool", "bool", "bool", "bool", "bool", "bool"],
+    ["bool", "bool", "bool", "bool", "bool", "bool"],
+    ["bool", "bool", "bool", "bool", "bool", "bool"],
 ]
 
 op_or = [
-    ["ent", False, False, False, False],
-    [False, "bool", False, False, False],
-    [False, False, False, False, False],
-    [False, False, False, False, False],
-    [False, False, False, False, False]
+    ["ent", False , False, False, False, False],
+    [False, "bool", False, False, False, False],
+    [False, False , False, False, False, False],
+    [False, False , False, False, False, False],
+    [False, False , False, False, False, False],
+    [False, False , False, False, False, False],
 ]
 
 op_and = [
-    ["ent", False, False, False, False],
-    [False, "bool", False, False, False],
-    [False, False, False, False, False],
-    [False, False, False, False, False],
-    [False, False, False, False, False]
+    ["ent", False , False, False, False, False],
+    [False, "bool", False, False, False, False],
+    [False, False , False, False, False, False],
+    [False, False , False, False, False, False],
+    [False, False , False, False, False, False],
+    [False, False , False, False, False, False],
 ]
 
 op_shift_left = [
-    ["ent", False, False, False, False],
-    [False, False, False, False, False],
-    [False, False, False, False, False],
-    [False, False, False, False, False],
-    [False, False, False, False, False]
+    ["ent", False, False, False, False, False],
+    [False, False, False, False, False, False],
+    [False, False, False, False, False, False],
+    [False, False, False, False, False, False],
+    [False, False, False, False, False, False],
+    [False, False, False, False, False, False],
 ]
 
 op_shift_right = [
-    ["ent", False, False, False, False],
-    [False, False, False, False, False],
-    [False, False, False, False, False],
-    [False, False, False, False, False],
-    [False, False, False, False, False]
+    ["ent", False, False, False, False, False],
+    [False, False, False, False, False, False],
+    [False, False, False, False, False, False],
+    [False, False, False, False, False, False],
+    [False, False, False, False, False, False],
+    [False, False, False, False, False, False],
 ]
 
 less = [
-    ["bool", False, False, False, False],
-    [False, False, False, False, False],
-    [False, False, False, False, False],
-    [False, False, False, False, False],
-    [False, False, False, False, False]
+    ["bool", False, False, False, False, False],
+    [False , False, False, False, False, False],
+    [False , False, False, False, False, False],
+    [False , False, False, False, False, False],
+    [False , False, False, False, False, False],
+    [False , False, False, False, False, False],
 ]
 
 more = [
-    ["bool", False, False, False, False],
-    [False, False, False, False, False],
-    [False, False, False, False, False],
-    [False, False, False, False, False],
-    [False, False, False, False, False]
+    ["bool", False, False, False, False, False],
+    [False , False, False, False, False, False],
+    [False , False, False, False, False, False],
+    [False , False, False, False, False, False],
+    [False , False, False, False, False, False],
+    [False , False, False, False, False, False],
 ]
 
 power = [
-    ["ent", False, False, False, False],
-    [False, False, False, False, False],
-    [False, False, False, False, False],
-    [False, False, False, False, False],
-    [False, False, False, False, False]
+    ["ent", False, False, False, False, False],
+    [False, False, False, False, False, False],
+    [False, False, False, False, False, False],
+    [False, False, False, False, False, False],
+    [False, False, False, False, False, False],
+    [False, False, False, False, False, False],
 ]
 
 times = [
-    ["ent", False, False, False, False],
-    [False, False, False, False, False],
-    [False, False, False, False, False],
-    [False, False, False, False, False],
-    [False, False, False, False, False]
+    ["ent", False, False, False, False, False],
+    [False, False, False, False, False, False],
+    [False, False, False, False, False, False],
+    [False, False, False, False, False, False],
+    [False, False, False, False, False, False],
+    [False, False, False, False, False, False],
 ]
 
 div = [
-    ["ent", False, False, False, False],
-    [False, False, False, False, False],
-    [False, False, False, False, False],
-    [False, False, False, False, False],
-    [False, False, False, False, False]
+    ["ent", False, False, False, False, False],
+    [False, False, False, False, False, False],
+    [False, False, False, False, False, False],
+    [False, False, False, False, False, False],
+    [False, False, False, False, False, False],
+    [False, False, False, False, False, False],
 ]
 
 plus = [
-    ["ent", False, False, "chr", "ptr"],
-    [False, False, False, False, False],
-    [False, False, False, False, False],
-    ["chr", False, False, "chr", False],
-    ["ptr", False, False, False, False]
+    ["ent", False, False, "chr", "ptr", False],
+    [False, False, False, False, False, False],
+    [False, False, False, False, False, False],
+    ["chr", False, False, "chr", False, False],
+    ["ptr", False, False, False, False, False],
+    [False, False, False, False, False, False],
 ]
 
 op_minus = [
-    ["ent", False, False, False, "ptr"],
-    [False, False, False, False, False],
-    [False, False, False, False, False],
-    [False, False, False, False, False],
-    ["ptr", False, False, False, False]
+    ["ent", False, False, False, "ptr", False],
+    [False, False, False, False, False, False],
+    [False, False, False, False, False, False],
+    [False, False, False, False, False, False],
+    ["ptr", False, False, False, False, False],
+    [False, False, False, False, False, False],
 ]
 
 modulo = [
-    ["ent", False, False, False, False],
-    [False, False, False, False, False],
-    [False, False, False, False, False],
-    [False, False, False, False, False],
-    [False, False, False, False, False]
+    ["ent", False, False, False, False, False],
+    [False, False, False, False, False, False],
+    [False, False, False, False, False, False],
+    [False, False, False, False, False, False],
+    [False, False, False, False, False, False],
+    [False, False, False, False, False, False],
 ]
 
 operators_type = {
@@ -182,8 +203,21 @@ def is_ptr(l):
         return True
     return False
 
-TYPES = ["ent", "bool", "liste", "chr", "ptr"]
-TYPES_SIZE = {"ent":8, "bool":1, "liste":8, "chr":1, "ptr": 8, "rien": 0}
+TYPES = ["ent", "bool", "liste", "chr", "ptr", "chaine"]
+
+TYPES_INFO = { # Information de création sur les types
+              # à savoir si ils sont considérés comme des structures
+              # et doivent être mis dans un mutisize-register
+    "ent"    : False,
+    "bool"   : False, 
+    "liste"  : False, # TODO: modifier
+    "chaine" : True,
+    "chr"    : False, 
+    "ptr"    : False,
+    "rien"   : False
+}
+
+TYPES_SIZE = {"ent":8, "bool":1, "liste":8, "chaine":128, "chr":1, "ptr": 8, "rien": 0}
 
 OP_FUNC = {
     "_plus_petit_eg": "<=",
@@ -254,6 +288,10 @@ def operator_type(op, type_1, type_2):
     t1, t2 = type_int(type_1), type_int(type_2)
     return operators_type[op][t1][t2]
 
+def authorize_casting(orgn_type, dest_type, ref):
+    if orgn_type == "chaine" and dest_type == "liste[chr]":
+        warning("La conversion de type entre 'chaine' et 'liste[chr]' est déconseillée, préférez la conversion entre une référence vers une chaine et 'liste[chr]' : *chaine -> liste[chr]", ref)
+
 def get_funcall_name(tok: tok.BasicToken, variables, functions, classes, global_vars) -> str:
     name = tok.child[0].content
     args = tok.child[1]
@@ -289,16 +327,25 @@ def get_methcall_name_caca(tok: tok.BasicToken, variables, functions, classes, g
 
 def get_methcall_name(tok: tok.BasicToken, variables, functions, classes, global_vars) -> str:
     name_t = type(tok.child[0].child[0], variables, functions, classes, global_vars)
+    
+    if is_ptr(name_t):
+        name_t = get_ptr_type(name_t)
+    if name_t not in classes:
+        error(f"Classe inconnue : {name_t} (ou n'a jamais été initialisé)", tok.reference)
+    
     for c in tok.child[0].child[1:-1]:
         att_name = c.child[0].content
-        if name_t[1:] not in classes:
-            error(f"Classe inconnue : {name_t} (ou n'a jamais été initialisé)", c.reference)
-        r = classes[name_t[1:]]
+        r = classes[name_t]
         if att_name not in r.att_name:
             error(f"Attribut inconnu : {att_name}", c.reference)
         i = r.att_name.index(att_name)
         name_t = r.att_type[i]
         ret = (i, r)
+        if is_ptr(name_t):
+            name_t = get_ptr_type(name_t)
+        if name_t not in classes:
+            error(f"Classe inconnue : {name_t} (ou n'a jamais été initialisé)", c.reference)
+    
     final = tok.child[0].child[-1].child[0].content
     name = name_t + "." + final
     args = tok.child[1]
@@ -306,7 +353,10 @@ def get_methcall_name(tok: tok.BasicToken, variables, functions, classes, global
         args = [args.child[0]]
     else:
         args = args.child[0].child
-    args_type_name = "(" + name_t + ("," if len(args) != 0 else "")
+    if get_type_info_stack(name_t):
+        args_type_name = "(" + "*"+name_t + ("," if len(args) != 0 else "")
+    else:
+        args_type_name = "(" + name_t + ("," if len(args) != 0 else "")
     for i, v in enumerate(args):
         type_t = type(v, variables, functions, classes, global_vars)
         args_type_name += f"{type_t}," if i + 1 != len(args) else f"{type_t}"
@@ -314,6 +364,13 @@ def get_methcall_name(tok: tok.BasicToken, variables, functions, classes, global
     name += args_type_name
     return name
 
+def get_type_info_stack(type: str):
+    if is_ptr(type):
+        return TYPES_INFO["ptr"]
+    if is_liste(type):
+        return TYPES_INFO["liste"]
+    else:
+        return TYPES_INFO[type]
 
 def get_liste_type(type: str):
     t = type[len("liste["): -1]
@@ -356,9 +413,14 @@ def type(expression: tok.BasicToken, variables:dict, functions:dict, classes:dic
         if type0 == "rien" or type1 == "rien":
             error(f"Ne peut pas appliquer l'opérateur '{expression.content}' avec 'rien'", expression.reference)
         r = operator_type(expression.content, type0, type1)
-        f = f"{type0}.{FUNC_OP[expression.content]}({type0},{type1})"
+        
+        f = f = f"{type0}."
+            
+        
+        f += f"{FUNC_OP[expression.content]}({type0},{type1})"
         if not r and f not in functions:
-            error(f"Types incompatibles ({type0}, {type1}) avec l'opérateur '{expression.content}'", expression.reference)
+            print(list(functions.keys()))
+            error(f"Types incompatibles ({type0}, {type1}) avec l'opérateur '{expression.content}', la fonction '{f}' n'existe pas", expression.reference)
         if f in functions:
             return functions[f][2]
         return r
@@ -394,8 +456,10 @@ def type(expression: tok.BasicToken, variables:dict, functions:dict, classes:dic
         return "ent"
     if expression.get_rule() == float:
         return "flot"
+    if expression.get_rule() == cstring:
+        return "chaine"
     if expression.get_rule() == string:
-        return "liste[chr]" # may change to ','
+        return "liste[chr]"
     if expression.get_rule() == char:
         return "chr" 
     if expression.get_rule() == t_bool:
@@ -414,31 +478,50 @@ def type(expression: tok.BasicToken, variables:dict, functions:dict, classes:dic
             type_t_bis = get_ptr_type(r)
             if type_t_bis not in classes:
                 error(f"Nom de classe ou d'objet inconnu : '{type_t_bis}'", expression.reference)
-            func_name = f"{r}.index({r},ent)"
+            func_name = f"{type_t_bis}.index({r},ent)"
             if func_name not in functions:
                 error(f"Méthode inconnue : '{func_name}'. La classe doit contenir une méthode '.index({r},ent)' pour supporter l'indexation", expression.reference)
             _, _, rettype, _ = functions[func_name]
             return rettype
-        error(f"Type imcompatible avec une indexation, '{r}'", expression.reference)
+        if get_type_info_stack(r):
+            fname = f"{r}.index(*{r},ent)"
+            if not fname in functions:
+                error(f"Type imcompatible avec une indexation, '{r}'. Manque peut être une fonction {fname}", expression.reference)
+            _, _, rettype, _ = functions[fname]
+            return rettype
+        else:
+            fname = f"{r}.index({r},ent)"
+            if not fname in functions:
+                error(f"Type imcompatible avec une indexation, '{r}'. Manque peut être une fonction {fname}", expression.reference)
+            _, _, rettype, _ = functions[fname]
+            return rettype
     if expression.get_rule() == classcall:
         following = ""
+        stack_alloced = not isinstance(expression.child[2], tok.t_empty)
         if not isinstance(expression.child[0], tok.t_empty):
             following = get_class_type(expression.child[0])
+        if stack_alloced:
+            return f"{expression.child[1].content}" + following
         return f"*{expression.child[1].content}" + following
     if expression.get_rule() == attribute_identifier:
         name_t = type(expression.child[0], variables, functions, classes, global_vars)
-        name_t = name_t[1:] # BUG
-        ret = (0, 0)
+        if is_ptr(name_t):
+            name_t = get_ptr_type(name_t)
+        if name_t not in classes:
+            error(f"Classe inconnue : {name_t} (ou n'a jamais été initialisé)", c.reference)
+        ret = (0, classes[name_t])
         for c in expression.child[1:]:
-            att_name = c.child[0].content 
+            att_name = c.child[0].content
             if name_t not in classes:
-                print(list(classes.keys()))
                 error(f"Classe inconnue : {name_t} (ou n'a jamais été initialisé)", c.reference)
             r = classes[name_t]
             if att_name not in r.att_name:
-                error(f"Attribut inconnu : {att_name}", c.reference)
+                error(f"Attribut inconnu à la classe '{name_t}' : {att_name}", c.reference)
             i = r.att_name.index(att_name)
-            name_t = r.att_type[i][1:]
+            if is_ptr(r.att_type[i]):
+                name_t = get_ptr_type(r.att_type[i])
+            else:
+                name_t = r.att_type[i]
             ret = (i, r)
         return ret[1].att_type[ret[0]]
     if expression.get_rule() == ptr_access:
@@ -468,6 +551,9 @@ def gettype(token: tok.BasicToken) -> str:
     following = ""
     if len(token.child) > 1 and not isinstance(token.child[1], tok.t_empty) and token.child[1].get_rule() == class_type_opt:
         following += get_class_type(token.child[1])
+    if token == type_array_declaration_explicit:
+        r = f"liste[{gettype(token.child[2])}]"
+        return r + following
     if token == type_array_declaration:
         r = f"liste[{gettype(token.child[2])}]"
         return r + following

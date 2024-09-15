@@ -8,6 +8,7 @@ fonction <ent> write(<ent> fd, <[_]chr> cbuf, <ent> nbyte);
 <ent> __O_WRONLY;
 <ent> __O_RDWR;
 <ent> __O_ACCMODE;
+<ent> __O_APPEND;
 <ent> __O_CREAT;
 <ent> __O_TRUNC;
 <ent> __O_EXCL;

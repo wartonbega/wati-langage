@@ -1,0 +1,3 @@
+<[_]chr> __linmem;
+<ent> __linmem_index;
+fonction <*rien> linallom (<ent> taille);

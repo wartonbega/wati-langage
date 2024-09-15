@@ -5,21 +5,23 @@ inclue "listes.watiH";
 classe <Type> dliste IT contient
     <ent> taille;
     <ent> max;
-    <[_]Type> mem;
     <ent> courant;
+    <[_]Type> mem;
 
     methode <*dliste<Type>> constructeur (<*dliste<Type>> soit) fait 
-        soit = <*dliste<Type>>!mallom(!taillede(<dliste<Type>>));
+        soit = <*dliste<Type>>(!mallom(!taillede(<dliste<Type>>)));
+        
+        !println(!hex(<ent>soit));
         soit.taille = 0;
         soit.max = 8;
-        soit.mem = <[_]Type>!mallom(!taillede(<Type>) * soit.max);
+        soit.mem = <[_]Type>(!mallom(!taillede(<Type>) * soit.max));
         soit.courant = 0;
         renvoie soit;
     fin
 
     methode <rien> remaniement (<*dliste<Type>> soit, <ent> max) fait 
         soit.max = max;
-        <[_]Type> nouv = <[_]Type> !mallom(!taillede(<Type>) * (soit.max + 1)); // on prend un de plus pour éviter les débordement de mémoire
+        <[_]Type> nouv = <[_]Type>(!mallom(!taillede(<Type>) * (soit.max + 1))); // on prend un de plus pour éviter les débordement de mémoire
         pour i dans [0, soit.taille] fait 
             nouv[i] = soit.mem[i];
             soit.mem[i] = <Type>0;
@@ -29,6 +31,7 @@ classe <Type> dliste IT contient
     fin
 
     methode <rien> ajoute(<*dliste<Type>> soit, <Type> x) fait
+        !println(!hex(<ent>soit));
         si soit.taille + 1 == soit.max fait 
             !soit.remaniement(soit.max * 2);
         fin
@@ -67,6 +70,8 @@ classe <Type> dliste IT contient
 
     methode <rien> assigne_index(<*dliste<Type>> soit, <ent> index, <Type> x) fait 
         si index >= soit.taille fait 
+            !print("Taille = "); !println(soit.taille);
+            !print("Index = "); !println(index);
             !erreur("!dliste.assigne_index : L'index est plus grand que la taille de la liste");
         fin
         soit.mem[index] = x;
@@ -75,12 +80,8 @@ classe <Type> dliste IT contient
     methode <rien> println(<*dliste<Type>> soit) fait 
         !print('[');!print(' ');
         pour i dans [0, soit.taille] fait
-            si !methode_existe(soit.mem[i], "print") fait
-                e = soit.mem[i];
-                !e.print();
-            fin sinon fait
-                !print(!hex(<ent>(soit.mem[i])));
-            fin
+            e = soit.mem[i];
+            !print(e);
             !print(' ');
         fin
         !println(']');

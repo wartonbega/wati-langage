@@ -4,5 +4,9 @@
 line_counter.py
 *.asm
 *.out
+*.o
 __pycache/*.pyc
 test3.wati
+test4.wati
+test.c
+testC

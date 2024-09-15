@@ -28,7 +28,7 @@ def calcul_rearangement(t:tok.BasicToken) -> tok.BasicToken:
     for i, c in enumerate(t.child):
         if c.content in ch.OPERATORS:
             prec = get_prec(c.content)
-            if max < prec:
+            if max <= prec:
                 max = prec
                 index = i
 
@@ -63,6 +63,7 @@ k_sinonsi = rls.r_char_sequence("sinonsi").ignore_token()
 k_sinon = rls.r_char_sequence("sinon").ignore_token()
 
 k_return = rls.r_char_sequence("renvoie").ignore_token()
+k_break = rls.r_char_sequence("casse").ignore_token()
 k_include = rls.r_char_sequence("inclue").ignore_token()
 k_typedef = rls.r_char_sequence("deftype").ignore_token()
 k_type_convert = rls.r_char_sequence("convertype").ignore_token()
@@ -86,12 +87,19 @@ type_names = rls.r_option(
     rls.r_identifier()
 ).set_name("TypeN")
 array_dec_brackets = rls.r_enclosure("[", "]").set_name("brackets")
+array_dec_brackets_explicit = rls.r_enclosure("[", "]").set_name("brackets")
 
 type_array_declaration: rls.r_sequence = rls.r_sequence(
     array_dec_brackets,
     rls.r_optional(rls.r_character("&")),
     type_names
 ).set_name("array-dec")
+
+type_array_declaration_explicit: rls.r_sequence = rls.r_sequence(
+    array_dec_brackets_explicit,
+    rls.r_optional(rls.r_character("&")),
+    type_names
+).set_name("array-dec-explicit")
 
 ptr_type = rls.r_sequence(
     rls.r_char_sequence("*").ignore_token(),
@@ -114,7 +122,7 @@ class_type_opt = rls.r_sequence(
             ).ignore_token()
         ).ignore_token()
     ),
-    rls.r_identifier().set_error("Expected identifier"),
+    type_t_name_dec,
     rls.r_character(">").ignore_token()
 ).set_name("class-type-opt")
 
@@ -131,8 +139,6 @@ type_usage = rls.r_sequence(
 type_names.add_option(type_usage)
 
 
-
-
 # enclosures
 scope = rls.r_enclosure("fait", "fin").set_name("scope{}")
 class_scope = rls.r_enclosure("contient", "fin").set_name("classe-scope{}")
@@ -140,8 +146,12 @@ parenthesis = rls.r_enclosure("(", ")")
 func_arguments = rls.r_enclosure("(", ")")
 casting_args = rls.r_enclosure("(", ")").set_name("casting-arg()")
 brackets = rls.r_enclosure("[", "]")
-string = rls.r_enclosure("\"", "\"").set_name("string-def")
-char = rls.r_enclosure("'", "'").set_name("char-def")
+string = rls.r_enclosure("\"", "\"", mid=rls.r_optional(rls.r_setlist(ch.c_any_but("\"")))).set_name("string-def")
+cstring = rls.r_sequence(
+    rls.r_character("c").ignore_token(),
+    rls.r_enclosure("\"", "\"", mid=rls.r_optional(rls.r_setlist(ch.c_any_but("\"")))).set_name("string-def")
+)
+char = rls.r_enclosure("'", "'", mid=rls.r_optional(rls.r_setlist(ch.c_any_but("'")))).set_name("char-def")
 
 identifier = rls.r_identifier()
 int_ = rls.r_digit()
@@ -180,6 +190,7 @@ attribute_identifier = rls.r_sequence(
 # casts
 casting = rls.r_sequence(
     type_usage,
+    rls.r_optional(rls.r_character("!")),
     rls.r_option(casting_args)
 ).set_name("cast")
 
@@ -265,6 +276,7 @@ value = rls.r_option(
     float,
     t_bool,
     string,
+    cstring,
     char,
     hex_int,
     int_,
@@ -366,10 +378,16 @@ conditional_value = rls.r_sequence(
 attended_expression.add_option(conditional_value)
 
 array_dec_brackets.set_mid_patern(attended_expression)
+array_dec_brackets_explicit.set_mid_patern(int_)
 
 keyword_return = rls.r_sequence(
     k_return,
     rls.r_optional(attended_expression),
+    rls.r_character(";").ignore_token().set_error("';' attendu")
+).set_name("keyword-renvoie")
+
+keyword_casse = rls.r_sequence(
+    k_break,
     rls.r_character(";").ignore_token().set_error("';' attendu")
 ).set_name("keyword-renvoie")
 
@@ -452,7 +470,7 @@ keyword_extern = rls.r_sequence(
 array_def = rls.r_sequence(
     rls.r_sequence(
         rls.r_character("<").ignore_token(),
-        type_array_declaration,
+        type_array_declaration_explicit,
         rls.r_character(">").ignore_token()
     ).ignore_token(),
     
@@ -646,6 +664,7 @@ basic_rulling = [
     forloop,
     whileloop,
     keyword_return,
+    keyword_casse,
     keyword_syscall,
     keyword_extern,
     keyword_inclue,
@@ -668,7 +687,7 @@ func_arguments.set_mid_patern(
     )
 )
 
-casting.sequence[1].add_option(value)
+casting.sequence[2].add_option(value)
 casting_args.set_mid_patern(
     attended_expression
 )

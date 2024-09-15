@@ -10,3 +10,4 @@ inclue "bool.watiH";
 inclue "erreur.watiH";
 inclue "systeme.watiH";
 inclue "iterateurs.watiH";
+inclue "chaine.watiH";

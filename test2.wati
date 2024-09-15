@@ -1,2 +1,176 @@
+%definis ENT32_IMP
 inclue "./std/std.watiH";
 
+fonction <chaine> repr_bin_ent(<ent> x) fait 
+    c = c"";
+    pour i dans [0, 64] fait 
+        b = (x >> (63 - i)) && 1;
+        c[i] = ? '1' si b == 1 sinon '0';
+    fin
+    renvoie c;
+fin
+
+deftype float 4;
+
+fonction <float> ent_en_floatC(<ent> num) fait
+    sign = 0;
+    exponent = 127; // Biais
+
+    // Si num est nul
+    si num == 0 fait
+        renvoie <float>! 0;
+    fin
+
+    // Nombres négatifs
+    si num < 0 fait
+        sign = 1;
+        num = -num;
+    fin
+
+    // On cherche la position du bit le plus significatif
+    highest_bit = 0;
+    
+    i = 31; // 63 car il y a un bit de signe
+    tant que i >= 0 fait
+        si num >> i fait
+            highest_bit = i;
+            i = 0; // equivalent à un break
+        fin
+        i = i - 1;
+    fin
+    
+    // l'exposant
+    exponent = exponent + highest_bit;
+    decal = 64 - highest_bit;
+    mantissa = num << decal;
+    mantissa = mantissa >> (decal);
+
+    
+    ieee_754 = (sign << 31) || (exponent << 23) || mantissa;
+    x = <ent32>ieee_754;
+    renvoie <float>!x;
+fin
+
+fonction <ent> signe (<float> x) fait 
+    b = <ent>!x;
+    s = b >> 31;
+    s = b && 1;
+    renvoie ? -1 si s == 1 sinon 1;
+fin
+
+fonction <ent> exponent (<float> x) fait 
+    b = <ent>!x;
+    b = b >> 23;
+    b = b && 0xff; // Les 11 premiers bits
+    b = b - 127;
+    renvoie b;
+fin
+
+fonction <ent> mantisse (<float> x) fait
+    b = <ent>!x;
+    b = b && 0x7fffff; // Les 11 premiers bits
+    renvoie b;
+fin
+
+fonction <ent> pdd (<ent> m) fait 
+    i = 0;
+    tant que m >= 10 fait 
+        i = i + 1;
+        m = m / 10;
+    fin
+    renvoie i;
+fin
+
+fonction <rien> println (<float> x) fait 
+    //!println(!repr_bin_ent(<ent>!x));
+    //si !signe(x) == -1 fait 
+    //    !print('-');
+    //fin
+    
+    m = !mantisse(x);
+    e = !exponent(x);
+    
+    m = m + 1 * 2 ^ e;
+    
+    factor = 1;
+    
+    p = !pdd(m);
+    chaine_m = !ent_en_chaine(<ent>!m);
+    !print(chaine_m[0]); !print('.'); !print(!decoupe_sup(chaine_m, 1)); !print('E'); !println(p);
+fin
+
+fonction <float> addition (<float> a, <float> b) fait  
+    ae = !exponent(a);
+    am = !mantisse(a) + 1 * 2 ^ ae;
+    
+    be = !exponent(b);
+    bm = !mantisse(b) + 1 * 2 ^ be;
+
+    totM = am + bm;
+
+    renvoie !ent_en_floatC(totM);
+fin
+
+fonction <float> soustraction (<float> a, <float> b) fait  
+    ae = !exponent(a);
+    am = !mantisse(a) + 1 * 2 ^ ae;
+    
+    be = !exponent(b);
+    bm = !mantisse(b) + 1 * 2 ^ be;
+
+    totM = am - bm;
+
+    renvoie !ent_en_floatC(totM);
+fin
+
+fonction <float> multiplication (<float> a, <float> b) fait  
+    ae = !exponent(a);
+    am = !mantisse(a) + 1 * 2 ^ ae;
+    
+    be = !exponent(b);
+    bm = !mantisse(b) + 1 * 2 ^ be;
+
+    totM = am * bm;
+
+    renvoie !ent_en_floatC(totM);
+fin
+
+fonction <float> division (<float> a, <float> b) fait  
+    ae = !exponent(a);
+    am = !mantisse(a) + 1 * 2 ^ ae;
+    //am = !mantisse(a);
+    
+    be = !exponent(b);
+    bm = !mantisse(b) + 1 * 2 ^ be;
+    //bm = !mantisse(b);
+
+    !println(!repr_bin_ent(am));
+    !println(!repr_bin_ent(bm));
+    si be > ae fait 
+        am = am << (be - ae);
+        be = ae;
+    fin sinonsi ae > be fait 
+        bm = bm << (ae - be);
+        be = ae;
+    fin
+    !println(!repr_bin_ent(am));
+    !println(!repr_bin_ent(bm));
+    totM = am / bm;
+    !println(!repr_bin_ent(totM));
+    //totM = <float>!0;
+    //renvoie totM;
+    renvoie !ent_en_floatC(totM);
+fin
+
+
+a = !ent_en_floatC(10);
+
+b = !ent_en_floatC(11);
+
+c = !ent_en_floatC(3);
+
+d = !addition(a, c); // 13
+!println(!addition(d, !ent_en_floatC(7)));
+!println(!soustraction(d, !ent_en_floatC(4))); // 9
+!println(!multiplication(!ent_en_floatC(3), !ent_en_floatC(4))); // 12
+!println(!division(!ent_en_floatC(3), !ent_en_floatC(4))); // 0.75

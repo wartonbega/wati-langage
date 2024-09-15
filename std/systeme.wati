@@ -20,7 +20,7 @@ classe struct_temps contient
 fin
 
 fonction <ent> temps () fait 
-    <[_]ent> m = <[_]ent>!mallom(2 * 8);
+    <[_]ent> m = <[_]ent>(!mallom(2 * 8));
     !gettimeofday(<*rien>m, <*rien>0);
     r = m[0];
     m[0] = 0;

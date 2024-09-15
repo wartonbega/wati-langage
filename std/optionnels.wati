@@ -1,0 +1,35 @@
+
+
+classe <T1, T2> optionnel contient
+    <T1> opt1;
+    <T2> opt2;
+    <ent> opt_dec;
+
+    methode <*optionnel<T1, T2>> constructeur (<*optionnel<T1, T2>> soit) fait 
+        soit = <*optionnel<T1, T2>>(!mallom(!taillede(<optionnel<T1, T2>>)));
+        renvoie soit;
+    fin
+    
+    methode <rien> constructeur_pile (<*optionnel<T1, T2>> soit) fait 
+        soit = <*optionnel<T1, T2>>(!mallom(!taillede(<optionnel<T1, T2>>)));
+    fin
+
+    methode <[_]chr> type (<*optionnel<T1, T2>> soit) fait 
+        si soit.opt_dec == 0 fait
+            !erreur("optionnel.type : le type a été demandé, mais pas encore déterminé");
+        fin sinonsi soit.opt_dec == 1 fait 
+            renvoie !typede(soit.opt1);
+        fin
+        renvoie !typede(soit.opt2);
+    fin
+
+    methode <rien> determine (<*optionnel<T1, T2>> soit, <T1> opt) fait 
+        soit.opt_dec = 1;
+        soit.opt1 = opt;
+    fin
+    
+    methode <rien> determine (<*optionnel<T1, T2>> soit, <T2> opt) fait 
+        soit.opt_dec = 2;
+        soit.opt2 = opt;
+    fin
+fin

@@ -24,8 +24,11 @@ class Document:
         assert not (filename != "" and content != ""), "(intern) : Both name and content cant be assigned"
 
         if filename != "":
-            with open(filename, "r") as f:
-                self.doc = f.read()
+            try:
+                with open(filename, "r") as f:
+                    self.doc = f.read()
+            except:
+                print(f"Erreur lors de l'ouverture du fichier {filename}. Peut être que le fichier n'existe pas")
         else:
              self.doc = content
         

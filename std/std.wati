@@ -13,3 +13,4 @@ inclue "bool.wati";
 inclue "erreur.wati";
 inclue "systeme.wati";
 inclue "iterateurs.wati";
+inclue "chaine.wati";

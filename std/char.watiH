@@ -1,2 +1,5 @@
 fonction <rien> chr.print(<chr> soit);
 fonction <rien> chr.println(<chr> soit);
+
+fonction <bool> "chr._plus_petit_eg" (<chr> soit, <chr> autre);
+fonction <bool> "chr._plus_grand_eg" (<chr> soit, <chr> autre);

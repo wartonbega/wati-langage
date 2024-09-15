@@ -1,0 +1,96 @@
+inclue "./std/std.watiH";
+
+fonction <ent> max (<ent> x, <ent> y) fait 
+    renvoie ? x si x > y sinon y;
+fin
+
+fonction <ent> min (<ent> x, <ent> y) fait 
+    renvoie ? x si x < y sinon y;
+fin
+
+fonction <ent> min (<ent> x, <ent> y, <ent> z) fait 
+    m = !min(y, z);
+    renvoie ? m si m < x sinon x;
+fin
+
+fonction <ent> levenshtein (<chaine> a, <chaine> b) fait 
+    la = !long(a);
+    lb = !long(b);
+    si !min(la, lb) == 0 fait 
+        renvoie !max(la, lb);
+    fin
+
+    si a[0] == b[0] fait 
+        renvoie !levenshtein(!decoupe_sup(a, 1), !decoupe_sup(b, 1));
+    fin
+
+    a_sup = !decoupe_sup(a, 1);
+    b_sup = !decoupe_sup(b, 1);
+    renvoie 1 + !min(
+        !levenshtein(a_sup, b), 
+        !levenshtein(a, b_sup),
+        !levenshtein(a_sup, b_sup)
+    );
+fin
+
+fonction <[_]<[_]ent>> dec_matrice (<ent> m, <ent> n) fait 
+    <[_]<[_]ent>> mat = <[_]<[_]ent>>(!mallom(m * !taillede(<[_]ent>)));
+    pour i dans [0, m] fait 
+        s_mat = <[_]ent>(!mallom(n * !taillede(<ent>)));
+        mat[i] = s_mat;
+        pour j dans [0, n] fait 
+            s_mat[j] = 0;
+        fin
+    fin
+    renvoie mat;
+fin
+
+fonction <rien> print_matrice (<[_]<[_]ent>> mat, <ent> m, <ent> n) fait 
+    pour i dans [0, m] fait 
+        s_mat = mat[i];
+        pour j dans [0, n] fait 
+            !print(s_mat[j]); !print(' ');
+        fin
+        !print('\n');
+    fin
+fin
+
+fonction <ent> levenshtein_opti(<chaine> a, <chaine> b) fait 
+    m = !long(a);
+    n = !long(b);
+    
+    matrice = !dec_matrice(m + 1, n + 1);
+    
+    pour i dans [0, m + 1] fait 
+        s_mat = matrice[i];
+        s_mat[0] = i;
+    fin
+    
+    pour j dans [0, n + 1] fait 
+        s_mat = matrice[0];
+        s_mat[j] = j;
+    fin
+
+    pour j dans [1, n + 1] fait 
+        pour i dans [1, m + 1] fait 
+            cout = 1;
+            si a[i - 1] == b[j - 1] fait 
+                cout = 0;
+            fin
+
+            s_mat = matrice[i];
+            s_mat_prec = matrice[i - 1];
+            s_mat[j] = !min(
+                s_mat_prec[j] + 1,
+                s_mat[j - 1] + 1,
+                s_mat_prec[j - 1] + cout
+            );
+        fin
+    fin
+    s_mat = matrice[m];
+    renvoie s_mat[n];
+fin
+
+mot1 = !input_c(c"Premier mot : "); 
+mot2 = !input_c(c"Second mot : ");
+!print(c"Distance entre "); !print(mot1); !print(c" et "); !print(mot2); !print(c" = "); !print(!levenshtein_opti(mot1, mot2)); !print('\n');

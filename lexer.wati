@@ -1,0 +1,127 @@
+inclue "./std/optionnels.wati";
+
+
+// Fonctions de test sur les jetons
+
+fonction <bool> token_est_operateur (<*token> t) fait 
+    si t.type == 1 || t.type == 5 fait 
+        renvoie Vrai;
+    fin
+    renvoie Faux;
+fin
+
+fonction <bool> token_est_valeur (<*token> t) fait 
+    si t.type == 4 || t.type == 2 fait 
+        renvoie Vrai;
+    fin
+    renvoie Faux;
+fin
+
+// Définition des classes de l'arbre
+
+classe ent_lit contient
+    <chaine> lit;
+
+    methode <rien> constructeur_pile(<*ent_lit> soit, <chaine> lit) fait 
+        soit.lit = lit;
+    fin
+fin
+
+classe operateur contient
+    <chr> op;
+    <*valeur> val1;
+    <*valeur> val2;
+
+    methode <rien> constructeur_pile(<*operateur> soit, <chr> op, <valeur> val1, <valeur> val2) fait
+        soit.op = op;
+        val1_p = <*valeur>(!mallom(!taillede(<valeur>)));
+        val2_p = <*valeur>(!mallom(!taillede(<valeur>)));
+        !chr_copie(!taillede(<valeur>), <[_]chr>(val1_p), <[_]chr>(&val1));
+        !chr_copie(!taillede(<valeur>), <[_]chr>(val2_p), <[_]chr>(&val2));
+        soit.val1 = val1_p;
+        soit.val2 = val2_p;
+    fin
+fin
+
+classe valeur contient 
+    <ent_lit> lit;
+    <operateur> op;
+    <chaine> identifiant;
+    <ent> statut;
+
+    methode <rien> constructeur_pile (<*valeur> soit, <ent_lit> lit) fait 
+        soit.lit = lit;
+        soit.statut = 1;
+    fin
+
+    methode <rien> constructeur_pile (<*valeur> soit, <operateur> op) fait 
+        soit.op = op;
+        soit.statut = 2;
+    fin
+    
+    methode <rien> constructeur_pile (<*valeur> soit, <chaine> id) fait 
+        soit.identifiant = id;
+        soit.statut = 3;
+    fin
+fin
+
+fonction <rien> print (<valeur> soit) fait 
+    si soit.statut == 1 fait 
+        !print(soit.lit.lit);
+    fin sinonsi soit.statut == 2 fait 
+        !print(soit.op.op);
+    fin sinonsi soit.statut == 3 fait 
+        !print(soit.identifiant);
+    fin
+fin
+
+utilise <valeur>dliste;
+
+classe prog contient
+    <*dliste<valeur>> declaration;
+
+    methode <*prog> constructeur (<*prog> soit) fait 
+        soit = <*prog> (!mallom( !taillede(<prog>) ) );
+        soit.declaration = <valeur>dliste();
+        renvoie soit;
+    fin
+fin
+
+fonction <rien> lexer (<*dliste<*token>> toks) fait
+    prog = prog();
+    pour i dans [0, toks.taille] fait
+        tok = toks[i];
+        si !token_est_valeur(tok) && !token_est_operateur(toks[i + 1]) fait 
+            si ~!token_est_valeur(toks[i + 2]) fait
+                !erreur("Le token suivant devrait être une valeur");
+            fin
+            <valeur> val1;
+            <valeur> val2;
+            
+            si tok.type == 2 fait  // Entier litéral
+                val1 = valeur&(ent_lit&(tok.content));
+            fin
+            si tok.type == 4 fait  // Identfiant
+                val1 = valeur&(tok.content);
+            fin
+
+            tok2 = toks[i + 2];
+            si tok2.type == 2 fait  // Entier litéral
+                val2 = valeur&(ent_lit&(tok2.content));
+            fin
+            si tok2.type == 4 fait  // Identfiant
+                val2 = valeur&(tok2.content);
+            fin
+
+            
+            op = toks[i + 1];
+
+            i = i + 2;
+            x = valeur&(operateur&(op.content[0], val1, val2));
+            !println('1');
+            !println(!hex(<ent>(prog.declaration)));
+            !prog.declaration.ajoute(x);
+            !println('2');
+        fin
+    fin
+fin

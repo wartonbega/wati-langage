@@ -4,6 +4,13 @@ deftype ent8 1;
 deftype ent16 2;
 deftype ent32 4;
 
+fonction <ent32> ent32.convertis_depuis(<ent> x);
+fonction <ent16> ent16.convertis_depuis(<ent> x);
+fonction <ent8> ent8.convertis_depuis(<ent> x);
+fonction <ent> ent.convertis_depuis(<ent32> x);
+fonction <ent> ent.convertis_depuis(<ent16> x);
+fonction <ent> ent.convertis_depuis(<ent8> x);
+
 nomenclature <type_t, type_t_2> entiers_impl_op dans fait 
     fonction <type_t> type_t._ou             (<type_t> soit, <type_t_2>x);
     fonction <type_t> type_t._et             (<type_t> soit, <type_t_2>x);
@@ -30,7 +37,7 @@ nomenclature <type_t> entiers_impl dans fait
     fonction <type_t> type_t._puissance (<type_t> soit, <ent> exp);
     fonction <ent> puissance_dix(<type_t> x);
     fonction <ent> puissance_seize(<type_t> x);
-    fonction <[_]chr> ent_en_chaine(<type_t> x);
+    fonction <[_]chr> ent_en_listechr(<type_t> x);
     fonction <[_]chr> hex(<type_t> x);
     fonction <[_]chr> bin(<type_t> x);
     fonction <[_]chr> base(<type_t> x, <ent> base);

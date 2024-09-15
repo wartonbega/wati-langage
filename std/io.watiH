@@ -9,3 +9,6 @@ fonction <rien> print(<[_]chr> x);
 fonction <rien> println(<[_]chr> x);
 fonction <rien> input(<[_]chr> tamp, <ent> taille);
 fonction <rien> exit(<ent> code);
+fonction <chaine> input_c(<chaine> prompt);
+fonction <rien> printf(<[_]chr> source, <[_]chr> arg1);
+fonction <rien> printlnf(<[_]chr> source, <[_]chr> arg1);

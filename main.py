@@ -18,12 +18,13 @@ if __name__ == "__main__":
     parser.add_argument("filename")
     parser.add_argument("-o", "--output", required=False, help="Précise le nom du fichier de sortie (initialement le nom du fichier de départ)")
     parser.add_argument("-i", "--informations", choices=["o", "n"], required=False, help="Affiche les message d'information")
+    parser.add_argument("-t", "--tree", const=True, nargs="?", help="Affiche l'arbre de syntaxe abstrait")
     parser.add_argument("-a", "--asm", const=True, nargs="?", help="Empêche la supression du fichier d'assembleur (pour débugger)")
     parser.add_argument("-O", "--optimiseAsm", const=True, nargs="?", help="Optimise l'assembleur")
     parser.add_argument("-d", "--definis", nargs='+', help="Ajoute un mot-clef à définir lors de la compilation")
     parser.add_argument("-s", "--shared-lib", const=True, nargs="?", help="Compile en tant que librairie partagée")
     parser.add_argument("-I", "--independant", const=True, nargs="?", help="Permet de créer une librairie partagée indépendante (pratique pour le liage)")
-    parser.add_argument("--x11", const=True, nargs="?", help="Liage avec la librairie x11")
+    #parser.add_argument("--x11", const=True, nargs="?", help="Liage avec la librairie x11")
     args = parser.parse_args()
     if args.informations == None or args.informations == "n":
         generator.INFORMATIONS = False
@@ -56,9 +57,9 @@ if __name__ == "__main__":
     args.definis = [] if not args.definis else args.definis
         
     filename = args.filename
-    shared: list[str] = generator.run_code(filename, output_name + ".asm", optimise_asm=optimise_asm, defined=args.definis, shared_lib=shared_lib, independant = inde)
+    shared: list[str] = generator.run_code(filename, output_name + ".asm", optimise_asm=optimise_asm, defined=args.definis, shared_lib=shared_lib, independant = inde, tree = args.tree)
     print("Compilé en assembleur !")
-    print(f"nasm -f{'macho64' if sys.platform == 'darwin' else 'elf64'} -o {output_name}.o {output_name}.asm")
+    print(f"nasm -f{'macho64' if sys.platform == 'darwin' else 'elf64'} -o {output_name}.o {output_name}.asm -w+zeroing")
     os.system(f"nasm -f{'macho64' if sys.platform == 'darwin' else 'elf64'} -o {output_name}.o {output_name}.asm")
     if not shared_lib:
         print("Liage de l'assembleur !")
@@ -66,7 +67,8 @@ if __name__ == "__main__":
             shared_arg = ""
             for i in shared:
                 shared_arg += f" {i}.o"
-            commande = f"gcc {('-e ' + generator.starting_label) if sys.platform == 'darwin' else ''} {output_name}.o {shared_arg} -lc -R/usr/X11/lib -L/usr/X11/lib -lX11 -m64 -o {output_name}.out -Wl,-no_pie"
+            raylib_flags = "libraylib.a -framework OpenGL -framework Cocoa -framework IOKit -framework CoreVideo" 
+            commande = f"gcc {('-e ' + generator.starting_label) if sys.platform == 'darwin' else ''} {output_name}.o {shared_arg} -lc -m64  -o {output_name}.out -Wl,-no_pie"
             print(commande)
             os.system(commande)
         else:

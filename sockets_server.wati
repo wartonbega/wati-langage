@@ -4,9 +4,7 @@
 %definis ENT16_IMP
 %definis ENT32_IMP
 
-inclue "./std/syscall.wati";
-inclue "./std/mallom.wati";
-inclue "./std/entiers.wati";
+inclue "./std/std.watiH";
 
 externe <ent32>_htonl(<ent32>);
 externe <ent16> _htons(<ent16>);
@@ -30,7 +28,7 @@ classe serv_addr contient
 fin
 
 <[1025]chr> sendBuf;
-<*serv_addr> struct = <*serv_addr>!mallom(!taillede(<serv_addr>));
+<*serv_addr> struct = <*serv_addr>(!mallom(!taillede(<serv_addr>)));
 !metmoire(<*rien>struct, '0',  !taillede(<serv_addr>));
 
 listenfd = !socket(__AF_INET, __SOCK_STREAM, 0);
@@ -39,7 +37,7 @@ struct.sin_family = <ent16>__AF_INET;
 struct.sin_addr = !_htonl(<ent32>__INADDR_ANY);
 struct.sin_port = !_htons(<ent16>5000);
 
-!bind(<ent32>listenfd, <[_]chr>struct, <ent32>!taillede(<serv_addr>));
+!bind(<ent32>listenfd, <[_]chr>struct, <ent32>(!taillede(<serv_addr>)));
 !listen(<ent32>listenfd, <ent32>10);
 
 tant que Vrai fait 

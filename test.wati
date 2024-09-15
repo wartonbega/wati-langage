@@ -1,1 +1,212 @@
 inclue "./std/std.watiH";
+inclue "ansi.wati";
+
+externe <ent> _system(<[_]chr>);
+externe <rien> _sleep(<ent>);
+externe <ent> _printf(<[_]chr>, <ent>);
+externe <ent> _printf(<[_]chr>, <chr>);
+externe <ent> _fflush(<ent>);
+
+<ent> __factor = 1;
+
+classe cadre_style contient
+    <ent> style;
+
+
+    methode <*cadre_style> constructeur(<*cadre_style> soit) fait 
+        soit = <*cadre_style>!(!mallom(!taillede(<cadre_style>)));
+        soit.style = 0;
+        renvoie soit;
+    fin
+    
+    methode <rien> constructeur_pile(<*cadre_style> soit) fait 
+        soit.style = 0;
+        // Pour les angles :
+        //  0 : / \
+        //  1 : ┌ ┐ ┘ └
+        //  2 : +
+    fin
+
+    methode <rien> bizote(<*cadre_style> soit) fait 
+        soit.style = 0;
+    fin
+
+    methode <rien> angle(<*cadre_style> soit) fait 
+        soit.style = 1;
+    fin
+    
+    methode <rien> croix(<*cadre_style> soit) fait 
+        soit.style = 2;
+    fin
+
+    methode <chr> haut_gauche(<*cadre_style> soit) fait
+        si soit.style == 0 fait 
+            renvoie '/';
+        fin sinonsi soit.style == 1 fait 
+            renvoie '┌';
+        fin
+        renvoie '+';
+    fin
+    
+    methode <chr> haut_droit(<*cadre_style> soit) fait
+        si soit.style == 0 fait 
+            renvoie '\';
+        fin sinonsi soit.style == 1 fait 
+            renvoie '┐';
+        fin
+        renvoie '+';
+    fin
+    
+    methode <chr> bas_gauche(<*cadre_style> soit) fait
+        si soit.style == 0 fait 
+            renvoie '\';
+        fin sinonsi soit.style == 1 fait 
+            renvoie '└';
+        fin
+        renvoie '+';
+    fin
+    
+    methode <chr> bas_droit(<*cadre_style> soit) fait
+        si soit.style == 0 fait 
+            renvoie '/';
+        fin sinonsi soit.style == 1 fait 
+            renvoie '┘';
+        fin
+        renvoie '+';
+    fin
+fin
+
+classe cadre contient
+    <ent> x;
+    <ent> y;
+    <ent> w;
+    <ent> h;
+    <chaine> nom;
+    <cadre_style> style;
+
+    methode <*cadre> constructeur(<*cadre> soit, <ent> x, <ent> y, <ent> w, <ent> h) fait 
+        soit = <*cadre>!(!mallom(!taillede(<cadre>)));
+        soit.x = x;
+        soit.y = y;
+        soit.w = w;
+        soit.h = h;
+        soit.nom = c"";
+        soit.style = cadre_style&();
+        renvoie soit;
+    fin
+
+    methode <rien> constructeur_pile(<*cadre> soit, <ent> x, <ent> y, <ent> w, <ent> h) fait 
+        soit.x = x;
+        soit.y = y;
+        soit.w = w;
+        soit.h = h;
+        soit.nom = c"";
+        soit.style = cadre_style&();
+    fin
+
+    methode <rien> nomme(<*cadre> soit, <chaine> c) fait 
+        soit.nom = c;
+    fin
+fin
+
+fonction <rien> dessine_cadre(<cadre> cadre) fait 
+    x = cadre.x;
+    y = cadre.y;
+    w = cadre.w;
+    h = cadre.h;
+
+    !positionner_curseur(x, y);
+    pour i dans [x, x + w] fait 
+        !print('-');
+    fin
+
+    !positionner_curseur(x, y + h);
+    pour i dans [x, x + w] fait 
+        !print('-');
+    fin
+    
+    !positionner_curseur(x, y);
+    pour i dans [y, y + h] fait 
+        !print('|');
+        !curseur_gauche(1);
+        !curseur_descend(1);
+    fin
+
+    !positionner_curseur(x + w, y);
+    pour i dans [y, y + h] fait 
+        !print('|');
+        !curseur_gauche(1);
+        !curseur_descend(1);
+    fin
+
+
+    !positionner_curseur(x, y);
+    !print(!cadre.style.haut_gauche());
+    !positionner_curseur(x + w, y);
+    !print(!cadre.style.haut_droit());
+    !positionner_curseur(x + w, y + h);
+    !print(!cadre.style.bas_droit());
+    !positionner_curseur(x, y + h);
+    !print(!cadre.style.bas_gauche());
+
+    l = !long(cadre.nom);
+    si l != 0 fait 
+        // w - 2 car on enlève les deux bords
+        nom = cadre.nom;
+        si l > w - 2 fait 
+            nom = !decoupe_inf(nom, w - 2);
+        fin
+        diff = w - 2 - l;
+        diff_d = diff / 2;
+        
+        !positionner_curseur(x + 1, y);
+        !print(c"-" * diff_d);
+        !print(nom);
+
+    fin
+
+fin
+
+fonction <rien> rectangle(<ent> x, <ent> y, <ent> w, <ent> h) fait 
+    !print("\e[1;47m");
+    pour j dans [y, y + h] fait 
+        !positionner_curseur(x, j);
+        pour i dans [x, x + w] fait 
+            !print(' ');
+        fin
+    fin
+    !print( "\e[1;49m");
+fin
+
+fonction <rien> ecrit_dans_cadre(<cadre> c, <chaine> texte) fait 
+    l = !long(texte);
+    w = c.w - 1;
+    lignes = l / w;
+    reste = l % w;
+    pour i dans [0, lignes] fait 
+        !positionner_curseur(c.x + 1, c.y + 1 + i);
+        pour j dans [0, w] fait 
+            char = texte[i * w + j];
+            si j != 0 || char != ' ' fait 
+                !print(char);
+            fin
+        fin
+    fin
+    !positionner_curseur(c.x + 1, c.y + lignes + 1);
+    pour j dans [0, reste] fait 
+        char = texte[lignes * w + j];
+        si j != 0 || char != ' ' fait 
+            !print(char);
+        fin
+    fin
+fin
+
+!_system("clear");
+cadre = cadre&(2, 2, 20, 5);
+!cadre.style.croix();
+!cadre.nomme(c"testetetetete");
+!dessine_cadre(cadre);
+//!rectangle(3, 3, 20, 5);
+!ecrit_dans_cadre(cadre, c"Voici un petit test qui pourrait aussi bien se continuer");
+
+!println("\n\n\n\n\n\n\n\n");

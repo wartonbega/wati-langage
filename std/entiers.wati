@@ -5,15 +5,74 @@ deftype ent32 4;
 
 inclue "listes.wati";
 
+fonction <ent32> ent32.convertis_depuis(<ent> x) fait 
+    sign = ((x >> 63) && 1) << 31;
+    r = x && 0xffffffff;
+    renvoie <ent32>!(r || sign);
+fin
+
+fonction <ent16> ent16.convertis_depuis(<ent> x) fait 
+    sign = ((x >> 63) && 1) << 15;
+    r = x && 0xffff;
+    renvoie <ent16>!(r || sign);
+fin
+
+fonction <ent8> ent8.convertis_depuis(<ent> x) fait 
+    sign = ((x >> 63) && 1) << 7;
+    r = x && 0xff;
+    renvoie <ent8>!(r || sign);
+fin
+
+fonction <ent> ent.convertis_depuis(<ent32> x) fait 
+    sign = (<ent>!(x) >> 31) && 1;
+    r = <ent>!(x);
+    si <bool>sign fait 
+        r = ~0;
+        r = r && (0xffffffffffffffff << 32);
+        r = r || <ent>!(x);
+    fin
+    renvoie r;
+fin
+
+fonction <ent> ent.convertis_depuis(<ent16> x) fait 
+    sign = (<ent>!(x) >> 15) && 1;
+    r = <ent>!(x);
+    si <bool>sign fait 
+        r = ~0;
+        r = r && (0xffffffffffffffff << 16);
+        r = r || <ent>!(x);
+    fin
+    renvoie r;
+fin
+
+fonction <ent> ent.convertis_depuis(<ent8> x) fait 
+    sign = (<ent>!(x) >> 7) && 1;
+    r = <ent>!(x);
+    si <bool>sign fait 
+        r = ~0;
+        r = r && (0xffffffffffffffff << 8);
+        r = r || <ent>!(x);
+    fin
+    renvoie r;
+fin
+
 nomenclature <type_t, type_t_2> entiers_impl_op dans fait 
     fonction <type_t> type_t._ou             (<type_t> soit, <type_t_2>x) fait renvoie <type_t>( <type_t_2>(soit) || x );   fin
     fonction <type_t> type_t._et             (<type_t> soit, <type_t_2>x) fait renvoie <type_t>( <type_t_2>(soit) && x );   fin
-    fonction <bool> type_t._plus_petit_eg    (<type_t> soit, <type_t_2>x) fait renvoie           <type_t_2>(soit) <= x  ;   fin
-    fonction <bool> type_t._plus_grand_eg    (<type_t> soit, <type_t_2>x) fait renvoie           <type_t_2>(soit) >= x  ;   fin
     fonction <bool> type_t._pas_eg           (<type_t> soit, <type_t_2>x) fait renvoie           <type_t_2>(soit) != x  ;   fin
     fonction <bool> type_t._egal             (<type_t> soit, <type_t_2>x) fait renvoie           <type_t_2>(soit) == x  ;   fin
-    fonction <bool> type_t._plus_petit       (<type_t> soit, <type_t_2>x) fait renvoie           <type_t_2>(soit) <  x  ;   fin
-    fonction <bool> type_t._plus_grand       (<type_t> soit, <type_t_2>x) fait renvoie           <type_t_2>(soit) >  x  ;   fin
+    fonction <bool> type_t._plus_petit       (<type_t> soit, <type_t_2>x) fait 
+        renvoie <type_t_2>(soit) <  x;   
+    fin
+    fonction <bool> type_t._plus_grand       (<type_t> soit, <type_t_2>x) fait 
+        renvoie <type_t_2>(soit) >  x;   
+    fin
+    fonction <bool> type_t._plus_petit_eg    (<type_t> soit, <type_t_2>x) fait 
+        renvoie <type_t_2>(soit) <= x;   
+    fin
+    fonction <bool> type_t._plus_grand_eg    (<type_t> soit, <type_t_2>x) fait 
+        renvoie <type_t_2>(soit) >= x;   
+    fin
     fonction <type_t> type_t._fois           (<type_t> soit, <type_t_2>x) fait renvoie <type_t>( <type_t_2>(soit) *  x );   fin
     fonction <type_t> type_t._div            (<type_t> soit, <type_t_2>x) fait renvoie <type_t>( <type_t_2>(soit) /  x );   fin
     fonction <type_t> type_t._plus           (<type_t> soit, <type_t_2>x) fait renvoie <type_t>( <type_t_2>(soit) +  x );   fin
@@ -67,20 +126,33 @@ nomenclature <type_t> entiers_impl dans fait
         renvoie c;
     fin
 
-    fonction <[_]chr> ent_en_chaine(<type_t> x) fait 
-        si x == 0 fait 
-            <[_] chr> g = <[_]chr>!mallom(1);
+    fonction <[_]chr> ent_en_listechr(<type_t> x) fait 
+            si x == 0 fait 
+            <[_] chr> g = <[_]chr>(!mallom(1));
             g[0] = '0';
             renvoie g;
         fin
+        
+        decal = 0;
+        si x < 0 fait
+            decal = 1;
+            x = -x;
+        fin
+        
         puiss = !puissance_dix(x);
+        <[_]chr> g = !init_liste(puiss + decal + 1);
         max_puiss = puiss;
-        <[_]chr> g = !init_liste(puiss);
+        
+        si <bool>decal fait
+            g[0] = '-';
+        fin
+        g[puiss + decal] = '';
+
         tant que puiss > 0 fait 
             reste = x / 10;
             prime = x % 10;
             puiss = puiss - 1;
-            g[puiss] = <chr>(prime + 48);
+            g[puiss + decal] = <chr>(prime + 48);
             x = reste;
         fin
         renvoie g;
@@ -132,7 +204,7 @@ nomenclature <type_t> entiers_impl dans fait
         fin
         puiss = !puissance_base(x, base);
         max_puiss = puiss;
-        b = !ent_en_chaine(base);
+        b = !ent_en_listechr(base);
         long_base = !long(b);
         <[_]chr> g = !init_liste(puiss + 3 + long_base);
         g[0] = '[';
@@ -154,12 +226,9 @@ nomenclature <type_t> entiers_impl dans fait
     fin
 
     fonction <rien> print(<type_t> x) fait 
-        si x < 0 fait 
-            !print('-');
-            !print(!ent_en_chaine(-x));
-        fin sinon fait
-            !print(!ent_en_chaine(x));
-        fin
+        <[_]chr> str = !ent_en_listechr(x);
+        !print(str);
+        !libere(<*rien>str);
     fin
 
     fonction <rien> println(<type_t> x) fait 

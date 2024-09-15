@@ -1,0 +1,130 @@
+inclue "./std/std.watiH";
+inclue "./std/fichiers.watiH";
+inclue "./std/listes_amorties.wati";
+inclue "./std/linallom.watiH";
+
+
+<ent> __t_egal  = 1; // Signe égal
+<ent> __t_num   = 2; // Entier litéral 
+<ent> __t_pv    = 3; // Point-virgule
+<ent> __t_ident = 4; // Identifiant
+<ent> __t_plus  = 5; // signe plus (+)
+
+classe token contient
+    <ent> type;
+    <chaine> content;
+
+    methode <*token> constructeur (<*token> soit, <ent> type, <chaine> content) fait 
+        soit  = <*token>(!linallom(!taillede(<token>)));
+        soit.type = type;
+        soit.content = content;
+        renvoie soit;
+    fin
+
+fin
+
+fonction <rien> print(<*token> soit) fait 
+    !print_token(soit);
+fin
+
+utilise <*token>dliste;
+
+fonction <rien> print_token (<*token> t) fait 
+    si t.type == 1 fait
+        !print('=');
+    fin sinonsi t.type == 2 fait 
+        !print("N("); !print(t.content); !print(")");
+    fin sinonsi t.type == 3 fait 
+        !print(';');
+    fin sinonsi t.type == 4 fait 
+        !print("I("); !print(t.content); !print(")");
+    fin sinonsi t.type == 5 fait 
+        !print("+");
+    fin
+    !print(' ');
+fin
+
+fonction <ent> long (<[_]<*token>> l) fait 
+    i = 0;
+    tant que l[i] != <*token> 0 fait 
+        i = i + 1;
+    fin
+    renvoie i;
+fin
+
+fonction <ent> parse_ent (<[_]chr> buff, <[_]chr> code, <ent> index) fait 
+    i = 0;
+    tant que !est_nombre(code[i + index]) fait 
+        buff[i] = code[i + index];
+        i = i + 1;
+    fin
+    renvoie i - 1; // Le dernier caractère est pas un nombre
+fin
+
+fonction <bool> ajoute_ident(<*dliste<*token>> toks, <chaine> buff) fait 
+    si !long(buff) != 0 fait 
+        !toks.ajoute(token(__t_ident, buff));
+        renvoie Vrai;
+    fin
+    renvoie Faux;
+fin
+
+fonction <*dliste<*token>> tokenize(<[_]chr> code) fait 
+    buff = c"";
+    buff_i = 0;
+    toks = <*token> dliste();
+    i = 0;
+    tant que i != !long(code) fait
+        si code[i] == '=' fait 
+            si !ajoute_ident(toks, buff) fait
+                buff_i = 0;
+                buff = c"";
+            fin
+            !toks.ajoute(token(__t_egal, c"="));
+        fin sinonsi code[i] == '+' fait 
+            si !ajoute_ident(toks, buff) fait
+                buff_i = 0;
+                buff = c"";
+            fin
+            !toks.ajoute(token(__t_plus, c"+"));
+        fin sinonsi !est_nombre(code[i]) fait 
+            si !ajoute_ident(toks, buff) fait
+                buff_i = 0;
+                buff = c"";
+            fin
+            <chaine> t_buff = c"";
+            i = i + !parse_ent(<[_]chr>(&t_buff), code, i);
+            !toks.ajoute(token(__t_num, t_buff));
+        fin sinonsi code[i] == ';' fait 
+            si !ajoute_ident(toks, buff) fait
+                buff_i = 0;
+                buff = c"";
+            fin
+            !toks.ajoute(token(__t_pv, c";"));
+        fin sinonsi code[i] == ' ' || code[i] == '\n' fait
+            si !ajoute_ident(toks, buff) fait
+                buff_i = 0;
+                buff = c"";
+            fin
+        fin sinon fait 
+            buff[buff_i] = code[i];
+            buff_i = buff_i + 1;
+        fin
+        i = i + 1;
+    fin
+    renvoie toks;
+fin
+
+inclue "lexer.wati";
+
+<[_]chr> buff = <[_]chr>(!mallom(10000));
+
+!lit_fichier("test4.wati", buff, 1024);
+toks = !tokenize(buff);
+pour t dans toks fait 
+    !print_token(t);
+fin
+
+!println("");
+
+!lexer(toks);

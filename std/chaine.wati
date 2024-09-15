@@ -1,0 +1,143 @@
+// Par Anton Appel, le 4/08/2024
+// permet le lien entre <[_]chr> et <chaine>
+// aussi des fonctions de gestion des chaines
+
+fonction <rien> print(<chaine> x) fait 
+    !print(<[_]chr>(&x));
+fin
+
+fonction <rien> println(<chaine> x) fait 
+    !println(<[_]chr>(&x));
+fin
+
+fonction <ent> long(<chaine> x) fait 
+    i = 0;
+    tant que x[i] != '' fait 
+        i = i + 1;
+    fin
+    renvoie i;
+fin
+
+fonction <rien> erreur(<chaine>x) fait 
+    !erreur(<[_]chr>(&x));
+fin
+
+fonction <bool> chaine._egal(<chaine> soit, <chaine> x) fait 
+    p = <[_]chr>(&soit);
+    t = <[_]chr>(&x);
+    renvoie p == t;
+fin
+
+fonction <bool> chaine._pas_eg(<chaine> soit, <chaine> x) fait 
+    p = <[_]chr>(&soit);
+    t = <[_]chr>(&x);
+    renvoie p == t;
+fin
+
+fonction <chaine> chaine._plus(<chaine> soit, <chaine> x) fait 
+    p = <[_]chr>(&soit);
+    t = <[_]chr>(&x);
+    l1 = !long(p);
+    l2 = !long(t);
+    pour i dans [l1, l1 + l2] fait 
+        p[i] = t[i - l1];
+    fin
+    renvoie soit;
+fin
+
+fonction <chaine> chaine._fois(<chaine> soit, <ent> x) fait 
+    q = soit;
+    pour i dans [0, x] fait
+        soit = soit + q;
+    fin
+    renvoie soit;
+fin
+
+fonction <rien> chaine.assigne_index(<*chaine> soit, <ent> index, <chr> valeur) fait 
+    si index >= !taillede(<chaine>) fait 
+        !erreur(c"chaine : La taille de l'index dépasse la taille maximale d'une chaine (128 octets)");
+    fin
+    p = <[_]chr>soit;
+    p[index] = valeur;
+fin
+
+fonction <chaine> ent_en_chaine(<ent> x) fait 
+    si x == 0 fait 
+        renvoie c"0";
+    fin
+    decal = 0;
+    <chaine> g = c"";
+    si x < 0 fait 
+        g[0] = '-';
+        decal = 1;
+        x = -x;
+    fin
+    puiss = !puissance_dix(x);
+    max_puiss = puiss;
+    tant que puiss > 0 fait 
+        reste = x / 10;
+        prime = x % 10;
+        puiss = puiss - 1;
+        g[puiss + decal] = <chr>(prime + 48);
+        x = reste;
+    fin
+    renvoie g;
+fin
+
+fonction <chr> chaine.index(<*chaine> soit, <ent> index) fait 
+    si index >= !taillede(<chaine>) fait 
+        !erreur(c"chaine.index : La taille de l'index dépasse la taille maximale d'une chaine (128 octets)");
+    fin
+    p = <[_]chr>soit;
+    renvoie p[index];
+fin
+
+fonction <chaine> decoupe_inf(<chaine> soit, <ent> index) fait 
+    ret = c"";
+    pour i dans [0, index] fait 
+        ret[i] = soit[i];
+    fin
+    renvoie ret;
+fin
+
+fonction <chaine> decoupe_sup(<chaine> soit, <ent> index) fait 
+    ret = c"";
+    pour i dans [index, !long(<[_]chr>(&soit))] fait 
+        ret[i - index] = soit[i];
+    fin
+    renvoie ret;
+fin
+
+
+fonction <chaine> remplace (<chaine> soit, <ent> x) fait 
+    // remplace le premier '$' par le nombre
+    <ent> index = 0;
+    l = !long(soit);
+
+    tant que soit[index] != '$' fait
+        index = index + 1;
+        si index > l fait 
+            !erreur(c"remplace(chaine,ent) : pas de symbole '$' détécté");
+        fin
+    fin
+    d = !decoupe_inf(soit, index);
+    f = !decoupe_sup(soit, index + 1);
+    nb = !ent_en_chaine(x);
+    renvoie d + nb + f;
+fin
+
+fonction <chaine> remplace (<chaine> soit, <chaine> x) fait 
+    // remplace le premier '$' par la chaine
+    <ent> index = 0;
+    l = !long(soit);
+
+    tant que soit[index] != '$' fait
+        index = index + 1;
+        si index > l fait 
+            !erreur(c"remplace(chaine,ent) : pas de symbole '$' détécté");
+        fin
+    fin
+    d = !decoupe_inf(soit, index);
+    f = !decoupe_sup(soit, index + 1);
+    renvoie d + x + f;
+fin

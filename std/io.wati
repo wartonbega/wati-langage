@@ -15,8 +15,8 @@ fonction <*rien> mallom (<ent> taille);
 
 <ent> __buff_size = 1024;
 
-<[_]chr> __input_chr_tampon = <[_]chr>!mallom(__buff_size);
-<[_]chr> __chr_tampon = <[_]chr>!mallom(2);
+<[_]chr> __input_chr_tampon = <[_]chr>(!mallom(__buff_size));
+<[_]chr> __chr_tampon = <[_]chr>(!mallom(2));
 
 fonction <rien> print(<chr> x) fait 
     __chr_tampon[0] = x;
@@ -38,4 +38,40 @@ fin
 
 fonction <rien> exit(<ent> code) fait
     !exit(<ent8>(code));
+fin
+
+fonction <chaine> input_c (<chaine> prompt) fait 
+    tamp = <[_]chr>(!mallom(!taillede(<chaine>)));
+    
+    !print(prompt);
+    !input(tamp, !taillede(<chaine>));
+
+    t = !long(tamp);
+    
+    si tamp[t - 1] == '\n' fait 
+        tamp[t - 1] = '';
+    fin
+    
+    chaine_r = c"";
+    dest = <[_]chr>(&chaine_r);
+
+    !chr_copie(!taillede(<chaine>), dest, tamp);
+    
+    renvoie chaine_r;
+fin
+
+fonction <rien> printf(<[_]chr> source, <[_]chr> arg1) fait 
+    l = !long(source);
+    pour i dans [0, l] fait 
+        si source[i] == '$' fait
+            !print(arg1);
+        fin sinon fait
+            !print(source[i]);
+        fin
+    fin
+fin
+
+fonction <rien> printlnf(<[_]chr> source, <[_]chr> arg1) fait 
+    !printf(source, arg1);
+    !print('\n');
 fin
