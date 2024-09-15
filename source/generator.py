@@ -14,7 +14,7 @@ macos = sys.platform == "darwin"
 print(f"Compilation pour '{plateform}'")
 
 
-starting_label = "_start" if sys.platform == "darwin" else "_main"
+starting_label = "_start" if sys.platform == "darwin" else "main"
 
 basic = f"""
 default rel
