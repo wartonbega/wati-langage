@@ -18,13 +18,26 @@ fonction <rien> metmoire (<*rien> ptr, <chr> val, <ent> taille) fait
     fin
 fin
 
-fonction <*rien> mallom(<ent> taille) fait 
-    <*rien> r = !_malloc(taille);
-    si <ent>r == 0 fait 
-        !erreur("Impossible d'allouer le bloc de taille demandée");
+%sidef PLATEFORME_DARWIN fait
+    fonction <*rien> mallom(<ent> taille) fait 
+        <*rien> r = !_malloc(taille);
+        si <ent>r == 0 fait 
+            !erreur("Impossible d'allouer le bloc de taille demandée");
+        fin
+        !metmoire(r, '', taille);
+        renvoie r;
     fin
-    !metmoire(r, '', taille);
-    renvoie r;
+fin
+
+%sidef PLATEFORME_LINUX fait
+    fonction <*rien> mallom(<ent> taille) fait 
+        <*rien> r = !_malloc(taille);
+        si <ent>r == 0 fait 
+            !erreur("Impossible d'allouer le bloc de taille demandée");
+        fin
+        !metmoire(r, '', taille);
+        renvoie r;
+    fin
 fin
 
 fonction <rien> libere(<*rien> taille) fait 
