@@ -1,12 +1,16 @@
-inclue "mallom.wati";
-
 classe <type> noeud contient
     <type> contenu;
     <*noeud<type>> proch;
 
     methode <*noeud <type>> constructeur(<*noeud <type>> soit, <type> x) fait
-        soit = <*noeud<type>>(!mallom(16));
+        soit = <*noeud<type>>(!mallom(!taillede(<noeud<type>>)));
         soit.contenu = x;
+        soit.proch = soit;
+        renvoie soit;
+    fin
+    
+    methode <*noeud <type>> constructeur(<*noeud <type>> soit) fait
+        soit = <*noeud<type>>(!mallom(!taillede(<noeud<type>>)));
         soit.proch = soit;
         renvoie soit;
     fin
@@ -21,9 +25,21 @@ classe <type> noeud contient
 
     methode <rien> print(<*noeud <type>> soit) fait 
         si soit.proch == soit fait 
-            !print(soit.contenu);
+            si !typede(soit.contenu) == "chaine" || !typede(soit.contenu) == "liste[chr]" fait
+                !print('"'); !print(soit.contenu); !print('"');
+            fin sinonsi !typede(soit.contenu) == "chr" fait 
+                !print("'"); !print(soit.contenu); !print("'");
+            fin sinon fait 
+                !print(soit.contenu);
+            fin
         fin sinon fait 
-            !print(soit.contenu);
+            si !typede(soit.contenu) == "chaine" || !typede(soit.contenu) == "liste[chr]" fait
+                !print('"'); !print(soit.contenu); !print('"');
+            fin sinonsi !typede(soit.contenu) == "chr" fait 
+                !print("'"); !print(soit.contenu); !print("'");
+            fin sinon fait 
+                !print(soit.contenu);
+            fin
             !print(", ");
             !soit.proch.print();
         fin
@@ -54,22 +70,30 @@ fin
 
 classe <type> liste IT contient
     <*noeud<type>> debut;
-    <ent> taille        ;
+    <ent> taille;
     <ent> dernier_index;
     <*noeud<type>> dernier_noeud;
     <*noeud<type>> iter;
 
     methode <*liste<type>> constructeur(<*liste<type>> soit) fait 
-        soit = <*liste<type>>!mallom(40);
-        soit.debut = <type>noeud(<type>0);
+        soit = <*liste<type>>(!mallom(!taillede(<liste<type>>)));
+        soit.debut = <type>noeud();
         soit.dernier_noeud = soit.debut;
+        soit.dernier_index = 0;
         soit.taille = 0;
         renvoie soit;
     fin
+    
+    methode <rien> constructeur_pile(<*liste<type>> soit) fait 
+        soit.debut = <type>noeud();
+        soit.dernier_noeud = soit.debut;
+        soit.dernier_index = 0;
+        soit.taille = 0;
+    fin
 
     methode <rien> ajoute(<*liste<type>> soit, <type> x) fait 
-        soit.taille = soit.taille + 1;
         !soit.debut.pousse(x);
+        soit.taille = soit.taille + 1;
     fin
 
     methode <rien> print(<*liste<type>> soit) fait 
@@ -89,7 +113,7 @@ classe <type> liste IT contient
             !erreur("!liste.index : L'index est plus grand que la taille de la liste");
         fin
         si index >= soit.dernier_index fait 
-            p = !soit.dernier_noeud.index(index - soit.dernier_index);
+            p = !soit.dernier_noeud.index(index - soit.dernier_index + 1);
             dernier_index = index;
             dernier_noeud = p;
             renvoie p.contenu;
@@ -137,6 +161,3 @@ classe <type> liste IT contient
         renvoie soit.iter.proch == soit.iter || soit.iter == 0;
     fin
 fin
-
-utilise <ent>liste;
-utilise <chr>liste;

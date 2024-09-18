@@ -55,7 +55,7 @@ if __name__ == "__main__":
     if args.independant:
         inde = True
     args.definis = [] if not args.definis else args.definis
-        
+
     filename = args.filename
     shared: list[str] = generator.run_code(filename, output_name + ".asm", optimise_asm=optimise_asm, defined=args.definis, shared_lib=shared_lib, independant = inde, tree = args.tree)
     print("Compilé en assembleur !")
@@ -67,8 +67,8 @@ if __name__ == "__main__":
         for i in shared:
             shared_arg += f" {i}.o"
         if sys.platform == 'darwin':
-            raylib_flags = "libraylib.a -framework OpenGL -framework Cocoa -framework IOKit -framework CoreVideo" 
-            commande = f"gcc {output_name}.o {shared_arg} -lc -m64  -o {output_name}.out -Wl,-no_pie"
+            #raylib_flags = "libraylib.a -framework OpenGL -framework Cocoa -framework IOKit -framework CoreVideo" 
+            commande = f"gcc -e_start {output_name}.o {shared_arg} -lc -m64  -o {output_name}.out -Wl,-no_pie"
             print(commande)
             os.system(commande)
         else:

@@ -205,10 +205,18 @@ sizeof_funcall = rls.r_sequence(
     rls.r_character("!").ignore_token(),
     rls.r_char_sequence("taillede").ignore_token(),
     rls.r_enclosure("(", ")").set_mid_patern(rls.r_option(
+        type_usage
+    ))
+).set_name("taillede")
+
+stack_alloced_funcall = rls.r_sequence(
+    rls.r_character("!").ignore_token(),
+    rls.r_char_sequence("alloue_stack").ignore_token(),
+    rls.r_enclosure("(", ")").set_mid_patern(rls.r_option(
         type_usage,
         string
     ))
-).set_name("taillede")
+).set_name("alloue_stack")
 
 typeof_funcall = rls.r_sequence(
     rls.r_character("!").ignore_token(),
@@ -264,6 +272,7 @@ attribute = rls.r_sequence(
 
 value = rls.r_option(
     sizeof_funcall,
+    stack_alloced_funcall,
     typeof_funcall,
     attr_exist,
     func_exist,
