@@ -6,7 +6,10 @@ line_counter.py
 *.out
 *.o
 __pycache/*.pyc
+test.wati
+test2.wati
 test3.wati
 test4.wati
+test4.watiH
 test.c
 testC
