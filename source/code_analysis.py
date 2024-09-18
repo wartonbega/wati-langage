@@ -5,6 +5,44 @@ python_type = type
 
 INFORMATIONS = False
 
+def levenshtein_dist(a: str, b: str):
+    a = a.lower()
+    b = b.lower()
+    m = len(a)
+    n = len(b)
+    matrice = [[0 for _ in range(n + 1)] for _ in range(m + 1)]
+    
+    for i in range(0, m + 1):
+        matrice[i][0] = i
+
+    for j in range(0, n + 1):
+        matrice[0][j] = j
+
+    for j in range(1, n + 1): 
+        for i in range(1, m + 1):
+            cout = 1
+            if a[i - 1] == b[j - 1]:
+                cout = 0
+
+            matrice[i][j] = min(
+                matrice[i - 1][j] + 1,
+                matrice[i][j - 1] + 1,
+                matrice[i - 1][j - 1] + cout
+            )
+    return matrice[m][n]
+
+def find_best_match(word, l_words):
+    d = levenshtein_dist(word, l_words[0])
+    last_word = l_words[0]
+    for i in l_words[1:]:
+        m = levenshtein_dist(word, i)
+        if m < d:
+            d = m
+            last_word = i
+    if d > 6:
+        print(d, word, last_word)
+        return None
+    return last_word
 
 def error(message, reference):
     print('\033[91m', '\033[1m', "Erreur", '\033[0m', '\033[1m', ' : ', reference, '\033[0m', sep="")
@@ -291,6 +329,10 @@ def operator_type(op, type_1, type_2):
 def authorize_casting(orgn_type, dest_type, ref):
     if orgn_type == "chaine" and dest_type == "liste[chr]":
         warning("La conversion de type entre 'chaine' et 'liste[chr]' est déconseillée, préférez la conversion entre une référence vers une chaine et 'liste[chr]' : *chaine -> liste[chr]", ref)
+    if get_type_info_stack(dest_type):
+        warning("La conversion de type avec un objet alloué sur le stack est déconseillée. On admettra la création de l'objet, rempli par la valeur du casting.", ref)
+    if get_type_info_stack(orgn_type):
+        warning("La conversion de type avec un objet alloué sur le stack est déconseillée. La valeur prise par l'objet correspond à un pointeur vers la valeur de l'objet (attention encore, la valeur est volatile et peut avoir toute les raisons d'être modifiée).", ref)
 
 def get_funcall_name(tok: tok.BasicToken, variables, functions, classes, global_vars) -> str:
     name = tok.child[0].content
@@ -337,7 +379,11 @@ def get_methcall_name(tok: tok.BasicToken, variables, functions, classes, global
         att_name = c.child[0].content
         r = classes[name_t]
         if att_name not in r.att_name:
-            error(f"Attribut inconnu : {att_name}", c.reference)
+            proposition = find_best_match(att_name, r.att_name)
+            if not proposition:
+                error(f"Attribut inconnu : {att_name}", c.reference)
+            else:
+                error(f"Attribut inconnu : {att_name}. Vouliez-vous dire '{proposition}' ?", c.reference)
         i = r.att_name.index(att_name)
         name_t = r.att_type[i]
         ret = (i, r)
@@ -429,10 +475,16 @@ def type(expression: tok.BasicToken, variables:dict, functions:dict, classes:dic
         if name not in functions:
             #for i in functions:
             #    print(i)
-            error(f"Fonction inconnue {name}", expression.reference)
+            proposition = find_best_match(name, list(functions.keys()))
+            if not proposition:
+                error(f"Fonction inconnue {name}", expression.reference)
+            else:
+                error(f"Fonction inconnue {name}. Vouliez-vous dire '{proposition}' ? ", expression.reference)
         return functions[name][2]
     if expression.get_rule() == sizeof_funcall:
         return "ent"
+    if expression.get_rule() == stack_alloced_funcall:
+        return "bool"
     if expression.get_rule() == typeof_funcall:
         return "liste[chr]"
     if expression.get_rule() == attr_exist:
@@ -444,14 +496,22 @@ def type(expression: tok.BasicToken, variables:dict, functions:dict, classes:dic
     if expression.get_rule() == methcall:
         name = get_methcall_name(expression, variables, functions, classes, global_vars)
         if name not in functions:
-            error(f"Methode inconnue {name}", expression.reference)
+            prop = find_best_match(name, list(functions.keys()))
+            if not prop:
+                error(f"Methode inconnue {name}", expression.reference)
+            else:
+                error(f"Methode inconnue {name}. Vouliez-vous dire {prop} ?", expression.reference)
         return functions[name][2]
     if expression.get_rule() == identifier:
         if expression.content in variables:
             return variables[expression.content][0]
         if expression.content in global_vars:
             return global_vars[expression.content]
-        error(f"Identifiant inconnu : '{expression.content}'", expression.reference)
+        prop = find_best_match(expression.content, list(variables.keys()))
+        if not prop:
+            error(f"Identifiant inconnu : '{expression.content}'", expression.reference)
+        else:
+            error(f"Identifiant inconnu : '{expression.content}'. Vouliez-vous dire '{prop}' ?", expression.reference)
     if expression.get_rule() == int_ or expression.get_rule() == hex_int:
         return "ent"
     if expression.get_rule() == float:
@@ -516,7 +576,11 @@ def type(expression: tok.BasicToken, variables:dict, functions:dict, classes:dic
                 error(f"Classe inconnue : {name_t} (ou n'a jamais été initialisé)", c.reference)
             r = classes[name_t]
             if att_name not in r.att_name:
-                error(f"Attribut inconnu à la classe '{name_t}' : {att_name}", c.reference)
+                prop = find_best_match(att_name, r.att_name)
+                if not prop:
+                    error(f"Attribut inconnu à la classe '{name_t}' : {att_name}", c.reference)
+                else:
+                    error(f"Attribut inconnu à la classe '{name_t}' : {att_name}. Vouliez vous dire '.{prop}' ? ", c.reference)
             i = r.att_name.index(att_name)
             if is_ptr(r.att_type[i]):
                 name_t = get_ptr_type(r.att_type[i])

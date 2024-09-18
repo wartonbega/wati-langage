@@ -550,8 +550,6 @@ class Generator:
             self.generation.append(f"  {LEA_INST} rsp, [rsp + {size}]")
 
     def g_instruction(self, tok: tok.BasicToken):
-        # if self.name == starting_label:
-        #   tok.print(0)
         if tok.get_rule() == vardef:
             self.g_vardef(tok)
         elif tok.get_rule() == scope:
@@ -801,7 +799,6 @@ class Generator:
             error(f"Type inconnu : '{name2}'", token.child[1].reference)
 
     def g_extern(self, token: tok.BasicToken):
-        # token.print(0)
         ret_type = token.child[0]
         type_t = gettype(ret_type)
         name = token.child[1].content
@@ -813,7 +810,6 @@ class Generator:
         self.extern_functions[name] = og_name
 
     def g_utilise(self, token: tok.BasicToken):
-        # token.print()
         name = token.child[1].content
         type_usage_opt = token.child[0]
         if (
@@ -828,7 +824,11 @@ class Generator:
                 f"Attention : déjà utilisé : '{name + get_class_type(type_usage_opt)}' : {token.reference}"
             )
         else:
-            error(f"Nom inconnu de classe ou de nomenclature : {name}", token.reference)
+            proposition = find_best_match(name, list(self.undetermined_nomenclature.keys()) + list(self.classes.keys()))
+            if not proposition:
+                error(f"Nom inconnu de classe ou de nomenclature : {name}", token.reference)
+            else:
+                error(f"Nom inconnu de classe ou de nomenclature : {name}. Vouliez-vous dire '{proposition}' ?", token.reference)
 
     def g_nomenclature(self, token: tok.BasicToken):
         name = token.child[1].content
@@ -864,8 +864,6 @@ class Generator:
         return type_name
 
     def g_classdef(self, token: tok.BasicToken):
-        # if self.name == starting_label :
-        #    token.print(0)
         # if self.name != starting_label:
         #    error("Ne peut pas définir de classe en dehors de '_start'", token.reference)
         type_intern_def = token.child[0]
@@ -1196,7 +1194,11 @@ class Generator:
         else:
             args = args.child[0].child
         if footprint_name not in self.functions:
-            error(f"Fonction inconnue : '{footprint_name}'", token.reference)
+            proposition = find_best_match(footprint_name, list(self.functions.keys()))
+            if not proposition:
+                error(f"Fonction inconnue : '{footprint_name}", token.reference)
+            else:  
+                error(f"Fonction inconnue : '{footprint_name}. Vouliez-vous dire '{proposition}' ?", token.reference)
 
         func_gen, f_args, ret_type, _ = self.functions[footprint_name]
         if func_gen.arg_num - 1 != len(args):
@@ -1233,8 +1235,7 @@ class Generator:
             t = self.g_attribute_identifier_place(soit.child[0], soit.child[1:-1])
         else:
             t = self.g_statement(soit_bis)
-        
-        self.pop(arg_register[0], t)
+        self.pop("rax", t)
         for i in range(len(args)):
             self.pop(arg_register[len(args) - i], f_args_type[len(args) - i])
         self.generation.append(f"  call {self.nasm_footprint_name(footprint_name)}")
@@ -1289,8 +1290,6 @@ class Generator:
         self.g_classdef(token)
 
     def g_classcall(self, token: tok.BasicToken):
-        # if self.name == starting_label:
-        #    token.print(0)
         class_type_opt = token.child[0]
         name = token.child[1].content
 
@@ -1310,7 +1309,11 @@ class Generator:
 
         args = token.child[3]
         if name not in self.classes:
-            error(f"Nom de classe inconnue (2): '{name}'", token.child[1].reference)
+            proposition = find_best_match(name, list(self.classes.keys()))
+            if not proposition:
+                error(f"Nom de classe inconnue (2): '{name}'", token.child[1].reference)
+            else:
+                error(f"Nom de classe inconnue (2): '{name}'. Vouliez vous dire {proposition} ? ", token.child[1].reference)
         clss = self.classes[name]
         size = sum([type_size(t) for t in clss.att_type])
 
@@ -1654,7 +1657,11 @@ class Generator:
             self.push_reg(f"r12", self.global_vars[n])
             return self.global_vars[n]
         if not n in self.variables:
-            error(f"Identifiant inconnu '{n}'", token.reference)
+            proposition = find_best_match(n, list(self.variables_info.keys()))
+            if not proposition:
+                error(f"Identifiant inconnu '{n}'", token.reference)
+            else:
+                error(f"Identifiant inconnu '{n}'. Vouliez-vous dire '{proposition}' ?", token.reference)
 
         type_t, pos, _, _ = self.variables_info[n]
         shift = 0
@@ -2091,9 +2098,8 @@ class Generator:
                 self.global_vars,
             )
             allow_call_cast = isinstance(token.child[1], tok.t_empty)
-            authorize_casting(type_t_orgn, type_t_dest, token.reference)
             footprint_name = f"{type_t_dest}.convertis_depuis({type_t_orgn})"
-            if footprint_name in self.functions and allow_call_cast:
+            if footprint_name in self.functions:
                 if self.functions[footprint_name][2] != type_t_dest:
                     error(f"Le type de retour de la fonction {footprint_name} devrait être {type_t_dest}, pas {type_t_orgn}", token.reference)
                 self.g_statement(token.child[2])
@@ -2101,14 +2107,32 @@ class Generator:
                 self.gen(f"  call {self.nasm_footprint_name(footprint_name)}")
                 self.push_reg("rax", type_t_dest)
             else:
+                # Si la fonction de casting safe existe
+                # alors il n'y a pas de raison de lever un warning
+                authorize_casting(type_t_orgn, type_t_dest, token.reference) 
                 if not type_exists(type_t_dest):
                     error(f"Type inconnu : '{type_t_dest}'", token.reference)
                 size = type_size(type_t_dest)
                 t = self.g_statement(token.child[2])
                 self.pop("rax", t)
-                self.gen("  xor rbx, rbx")
                 if get_type_info_stack(type_t_dest):
-                    self.gen(f"  mov rbx, rax")
+                    if get_type_info_stack(type_t_orgn):
+                        self.gen(f"  mov rdi, multisize_rbx")
+                        self.gen(f"  mov rsi, rax")
+                        self.gen(f"  mov rdx, {type_size(type_t_orgn)}")
+                        self.gen(f"  call memcopy")
+                        self.gen(f"  mov rbx, multisize_rbx")
+                    else:
+                        self.gen("  ;; on copie la valeur de rax dans un registre multitaille")
+                        self.gen(f"  push rax")
+                        self.gen(f"  mov rax, multisize_rax")
+                        self.gen(f"  mov rdx, {type_size(type_t_orgn)}")
+                        self.gen(f"  call initiate_data_zero")
+                        self.gen(f"  pop rax")
+                        self.gen(f"  mov qword [multisize_rax], rax")
+                        self.gen(f"  mov rbx, multisize_rax")
+                        self.gen(f"  mov qword [multisize_rax_size], {type_size(type_t_orgn)}")
+                        self.gen("")
                 else:
                     self.gen(f"  mov {reg_size[size][1]}, {reg_size[size][0]}")
                 self.push_reg("rbx", type_t_dest)
@@ -2118,6 +2142,11 @@ class Generator:
         if token.get_rule() == funcall:
             self.g_funcall(token)
             return type(token, self.variables_info, self.functions, self.classes, self.global_vars)
+        if token.get_rule() == stack_alloced_funcall:
+            type_t = gettype(t)
+            self.gen(f"  mov rax, {int(get_type_info_stack(type_t))}")
+            self.push_reg("rax", "bool")
+            return "bool"
         if token.get_rule() == sizeof_funcall:
             t = token.child[0].child[0]
             if t.get_rule() == string:
@@ -2213,7 +2242,7 @@ class Generator:
             return type(token, self.variables_info, self.functions, self.classes, self.global_vars)
         if token.get_rule() == attribute_identifier:
             type_t = self.g_attribute_identifier(token.child[0], token.child[1:])
-            return type(token, self.variables_info, self.functions, self.classes, self.global_vars)
+            return type_t
         if token.get_rule() == not_op:
             type_t = type(
                 token,
@@ -2371,9 +2400,9 @@ class Generator:
             # On présume que c'est un identifiant (sinon caca)
             _, s_index, _, _ = self.variables_info[name.content]
             decal = sum(self.sim_stack[s_index:])
-            name_t = "*" + name_t
+            name_t = "*" + name_t # On veut le transformer en pointeur, car on en prend la référence
 
-            self.gen(f"  {LEA_INST} rax, [rsp + {decal}]")
+            self.gen(f"  lea rax, [rsp + {decal}]")
             self.push_reg("rax", name_t)
         else:
             self.g_statement(name)
@@ -2382,8 +2411,6 @@ class Generator:
             self.pop("rax", name_t)
             if is_ptr(name_t):
                 name_t = get_ptr_type(name_t)
-            #elif is_liste(name_t):
-            #    name_t = get_liste_type(name_t)
             if name_t not in self.classes:
                 error(f"Nom de classe inconnue (1): '{name_t}'", c.reference)
             r = self.classes[name_t]
@@ -2395,10 +2422,10 @@ class Generator:
             i = r.att_name.index(att_name)
             decal_size = sum([type_size(t) for t in r.att_type[:i]])
             if decal_size != 0:
-                self.generation.append(f"  add rax, {decal_size}")
-            size = type_size(r.att_type[i])
+                self.generation.append(f"  mov r12, {decal_size}")
+                self.generation.append(f"  add rax, r12")
             name_t = r.att_type[i]
-            if j == len(attributes) - 1:
+            if j == len(attributes) - 1: # Tout dernier
                 self.push_reg("rax", "*" + name_t)
             else:
                 if get_type_info_stack(name_t):
@@ -2411,6 +2438,9 @@ class Generator:
         return "*" + name_t
 
     def g_attribute_identifier(self, name: tok.BasicToken, attributes: list[tok.BasicToken]):
+        if not attributes:
+            t = self.g_identifier(name)
+            return t
         name_t = self.g_attribute_identifier_place(name, attributes)
         if not is_ptr(name_t):
             error(f"[INTERN] Le type d'une référence vers un objet dans un attribut devrait être un pointeur", attributes[-1].reference)
@@ -2431,7 +2461,6 @@ class Generator:
 
     def g_array_modif(self, token: tok.BasicToken):
         self.gen("\n  ;; Modification d'une valeur dans un 'array'")
-        # token.print()
         array_value = token.child[2]
         attributs_modif = token.child[3]
         index = token.child[4].child[0]
@@ -2458,7 +2487,11 @@ class Generator:
             else:
                 name = array_value.content
                 if name not in self.variables:
-                    error(f"Nom de variable inconnue : '{name}'", token.reference)
+                    proposition = find_best_match(name, self.variables)
+                    if not proposition:
+                        error(f"Nom de variable inconnue : '{name}'", token.reference)
+                    else:
+                        error(f"Nom de variable inconnue : '{name}'. Vouliez-vous dire '{proposition}' ?", token.reference)
                 type_t, place, _, _ = self.variables_info[name]
                 self.gen(f"  {LEA_INST} rax, [rsp + {sum(self.sim_stack[place:])}]")
                 self.push_reg("rax", "*" + type_t)
@@ -2617,8 +2650,6 @@ class Generator:
         self.variables_info[name] = (type, 0, False, False)
 
     def g_vardef(self, token: tok.BasicToken):
-        # if self.name == starting_label:
-        #    token.print(0)
         opt_type_usage = token.child[0]
         opt_ptr_modif = token.child[1]
         name = token.child[2].content
