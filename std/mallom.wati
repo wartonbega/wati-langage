@@ -1,6 +1,6 @@
-inclue "entiers.wati";
-inclue "erreur.wati";
-inclue "bool.wati";
+inclue "entiers.watiH";
+inclue "erreur.watiH";
+inclue "bool.watiH";
 
 %sidef PLATEFORME_DARWIN fait
     externe <*rien> _malloc(<ent>);

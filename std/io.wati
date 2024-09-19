@@ -1,8 +1,8 @@
-inclue "syscall.wati";
-inclue "listes.wati";
-inclue "entiers.wati";
-inclue "tuples.wati";
-inclue "mallom.wati";
+inclue "syscall.watiH";
+inclue "listes.watiH";
+inclue "entiers.watiH";
+inclue "mallom.watiH";
+inclue "chaine.watiH";
 
 fonction <*rien> mallom (<ent> taille);
 

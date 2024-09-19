@@ -2,6 +2,11 @@
 // permet le lien entre <[_]chr> et <chaine>
 // aussi des fonctions de gestion des chaines
 
+inclue "io.watiH";
+inclue "entiers.watiH";
+inclue "erreur.watiH";
+inclue "listes.watiH";
+
 fonction <rien> print(<chaine> x) fait 
     !print(<[_]chr>(&x));
 fin

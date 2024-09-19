@@ -2,15 +2,3 @@
 %definis ENT16_IMP
 %definis ENT32_IMP
 %definis ENT_IMP
-
-inclue "syscall.wati";
-inclue "mallom.wati";
-inclue "io.wati";
-inclue "listes.wati";
-inclue "entiers.wati";
-inclue "char.wati";
-inclue "bool.wati";
-inclue "erreur.wati";
-inclue "systeme.wati";
-inclue "iterateurs.wati";
-inclue "chaine.wati";

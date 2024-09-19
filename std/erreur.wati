@@ -1,6 +1,7 @@
-inclue "syscall.wati";
-inclue "listes.wati";
-inclue "entiers.wati";
+inclue "syscall.watiH";
+inclue "listes.watiH";
+inclue "entiers.watiH";
+inclue "systeme.watiH";
 
 %sidef PLATEFORME_MACOS fait
     externe <*ent16> ___error();
@@ -11,7 +12,7 @@ fin
 
 fonction <rien> erreur (<[_]chr> x) fait 
     !println(x);
-    !exit(0);
+    !exit(<ent8>!0);
 fin
 
 <ent> __EPERM = 1;
@@ -119,9 +120,8 @@ fin
 <ent> __ETIME = 101;
 <ent> __EOPNOTSUPP = 102;
 <ent> __ELAST = 102;
-<ent> __ERESTART = <ent>(<ent16>(-1));
-<ent> __EJUSTRETURN = <ent>(<ent16>(-2));
-
+<ent> __ERESTART = -1;
+<ent> __EJUSTRETURN = -2;
 
 %sidef PLATEFORME_MACOS fait
     fonction <rien> errno() fait 

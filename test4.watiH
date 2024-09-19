@@ -1,1 +1,2 @@
-
+inclue "./std/std.watiH";
+fonction <rien> test (<ent> x, <ent> y);

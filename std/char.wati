@@ -1,6 +1,6 @@
 
-inclue "mallom.wati";
-inclue "io.wati";
+inclue "mallom.watiH";
+inclue "io.watiH";
 
 fonction <rien> "chr.print"(<chr> soit) fait 
     !print(soit);

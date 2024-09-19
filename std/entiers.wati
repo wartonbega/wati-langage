@@ -1,9 +1,16 @@
+%definis ENT8_IMP
+%definis ENT16_IMP
+%definis ENT32_IMP
+%definis ENT_IMP
 
 deftype ent8 1;
 deftype ent16 2;
 deftype ent32 4;
 
-inclue "listes.wati";
+inclue "listes.watiH";
+inclue "mallom.watiH";
+inclue "io.watiH";
+inclue "erreur.watiH";
 
 fonction <ent32> ent32.convertis_depuis(<ent> x) fait 
     sign = ((x >> 63) && 1) << 31;

@@ -1,0 +1,4 @@
+inclue "./std/std.watiH";
+inclue "test4.watiH";
+
+fonction <ent> plusun(<ent> x);

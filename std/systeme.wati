@@ -1,5 +1,7 @@
-inclue "syscall.wati";
-inclue "entiers.wati";
+inclue "mallom.watiH";
+inclue "io.watiH";
+inclue "syscall.watiH";
+inclue "entiers.watiH";
 
 %sidef PLATEFORME_MACOS fait
     externe <rien> _sleep(<ent>);
@@ -7,12 +9,11 @@ fin
 %sidef PLATEFORME_LINUX fait
     externe <rien> sleep(<ent>);
 fin
-
 __petit_boutien = Faux;
 __gros_boutien = Faux;
 
 test_boutiennete = 0x1234;
-si <ent8>test_boutiennete == 0x12 fait 
+si <ent8>!(test_boutiennete) == 0x12 fait 
     __gros_boutien = Vrai;
 fin sinon fait 
     __petit_boutien = Vrai;

@@ -55,11 +55,11 @@ def warning(message, reference):
     print("\t\033[1m", message, "\033[0m")
 
 def information(message, reference:str|None=None):
-    if INFORMATIONS:
-        print("\033[95m", "Info", "\033[0m : ",'\033[1m', sep="", end="")
-        if reference:
-            print(reference, '\033[0m', sep="")
-        print("\t\033[1m", message, "\033[0m")
+    #print("\033[95m", "Info", "\033[0m : ",'\033[1m', sep="", end="")
+    #if reference:
+    #    print(reference, '\033[0m', sep="")
+    #print("\033[1m", message, "\033[0m")
+    ...
 
 # "ent", "bool", "liste", "chr", "ptr", "chaine"
 

@@ -232,7 +232,7 @@ class LabelGenerator:
     def __init__(self) -> None:
         self.count = 0
 
-    def label(self, modif="", base="Label"):
+    def label(self, base, modif="", ):
         lab = f"{base}{modif}{self.count}"
         self.count += 1
         return lab
@@ -681,7 +681,7 @@ class Generator:
         filename += head
         header_file = False
         if (
-            head.split(".")[-1].lower() == "watih" and self.name == starting_label
+            head.split(".")[-1].lower() == "watih" #and self.name == starting_label ????????????????????????????????????????????????????????????????
         ):  # Meaning a header
             header_file = True
             _lab = self.nasm_footprint_name(filename)
@@ -714,7 +714,7 @@ class Generator:
 
             self.gen(f";; debut de {filename}")
             g.generate_code(True)
-            information(f"Importé '{filename}'", token.reference)
+            #information(f"Importé '{filename}'", token.reference)
 
             # La règle :
             # Si c'est un header et que le fichier est déclaré indépendant, alors on n'execute pas le code qui y est produit
@@ -1441,7 +1441,7 @@ class Generator:
         if c_type != "bool":
             error(f"La condition d'un 'sinonsi' doit être de type 'bool', pas '{c_type}'")
         self.pop("rax", c_type)
-        lab = labels.label()
+        lab = labels.label(self.name)
         self.generation.append("  test rax, rax")
         self.generation.append(f"  jz {lab}")
         self.g_scope(tok.child[1])
@@ -1457,8 +1457,8 @@ class Generator:
         c_type = self.g_statement(condition)
         # TODO: checker l'erreur si c'est pas un booléen
         self.pop("rax", c_type)  # The condition
-        if_lab = labels.label()  # The if stmt label
-        if_lab_end = labels.label("End")  # The end label
+        if_lab = labels.label(base=self.name)  # The if stmt label
+        if_lab_end = labels.label(base=self.name + ".End")  # The end label
         self.generation.append("  test rax, rax")  # The test
         self.generation.append(f"  jz {if_lab}")  # is it false ?
 
@@ -1476,8 +1476,8 @@ class Generator:
     def g_while(self, token: tok.BasicToken):
         condition = token.child[0]
         code = token.child[1]
-        label_begin = labels.label("WhileBegin")
-        label_end = labels.label("WhileEnd")
+        label_begin = labels.label(base=self.name + ".WhileBegin")
+        label_end = labels.label(base=self.name + ".WhileEnd")
         self.generation.append(f"{label_begin}:")
         c_type = self.g_statement(condition)
         self.pop("rax", c_type)  # The condition
@@ -1572,8 +1572,8 @@ class Generator:
             self.move_stack_index(0, t, "rax")
             self.gen(f"  call {footprint_n_deb}")
 
-            labdeb = labels.label("debut", "forloop")
-            labfin = labels.label("fin", "forloop")
+            labdeb = labels.label(base=self.name + "debut", modif = "forloop")
+            labfin = labels.label(base=self.name + "fin", modif = "forloop")
 
             self.gen(f"{labdeb}:")
 
@@ -1627,8 +1627,8 @@ class Generator:
             self.variables.append(var_name)
             pos = len(self.sim_stack)
             self.variables_info[var_name] = ("ent", pos, False, False)
-            labdeb = labels.label("debut", "forloop")
-            labfin = labels.label("fin", "forloop")
+            labdeb = labels.label(self.name + "debut", "forloop")
+            labfin = labels.label(self.name + "fin", "forloop")
             self.loops_stack.append(labfin)
             # Début de la boucle
             # Sur le stack on a [index, val1, val2, ...]
@@ -1707,8 +1707,8 @@ class Generator:
         self.generation.append("  or rax, rbx")
 
     def g_operator_less_than(self, float=False):
-        lab1 = labels.label("Lt")
-        lab2 = labels.label("Lt")
+        lab1 = labels.label(self.name + ".Lt")
+        lab2 = labels.label(self.name + ".Lt")
         self.generation.append("  cmp rax, rbx")
         self.generation.append(f"  jns {lab2}")
         self.generation.append("  mov rax, 1")
@@ -1718,8 +1718,8 @@ class Generator:
         self.generation.append(f"{lab1}:")
 
     def g_operator_less_eq_than(self, float=False):
-        lab1 = labels.label("Lt")
-        lab2 = labels.label("Lt")
+        lab1 = labels.label(self.name + ".LEt")
+        lab2 = labels.label(self.name + ".LEt")
         self.generation.append("  inc rbx")
         self.generation.append("  cmp rax, rbx")
         self.generation.append(f"  jns {lab2}")
@@ -1730,8 +1730,8 @@ class Generator:
         self.generation.append(f"{lab1}:")
 
     def g_operator_more_than(self, float=False):
-        lab1 = labels.label("Mt")
-        lab2 = labels.label("Mt")
+        lab1 = labels.label(self.name + ".Mt")
+        lab2 = labels.label(self.name + ".Mt")
         self.generation.append("  inc rbx")
         self.generation.append("  cmp rax, rbx")
         self.generation.append(f"  js {lab2}")
@@ -1742,8 +1742,8 @@ class Generator:
         self.generation.append(f"{lab1}:")
 
     def g_operator_more_eq_than(self, float=False):
-        lab1 = labels.label("Mt")
-        lab2 = labels.label("Mt")
+        lab1 = labels.label(self.name + "Mt")
+        lab2 = labels.label(self.name + "Mt")
         self.generation.append("  cmp rax, rbx")
         self.generation.append(f"  js {lab2}")
         self.generation.append("  mov rax, 1")
@@ -1753,8 +1753,8 @@ class Generator:
         self.generation.append(f"{lab1}:")
 
     def g_operator_equals(self, float=False):
-        lab1 = labels.label("Eq")
-        lab2 = labels.label("Eq")
+        lab1 = labels.label(self.name + "Eq")
+        lab2 = labels.label(self.name + "Eq")
         self.generation.append("  cmp rax, rbx")
         self.generation.append(f"  je {lab1}")
         self.generation.append("  mov rax, 0")
@@ -1764,8 +1764,8 @@ class Generator:
         self.generation.append(f"{lab2}:")
 
     def g_basic_eq(self, float=False):
-        lab1 = labels.label("Eq")
-        lab2 = labels.label("Eq")
+        lab1 = labels.label(self.name + "Eq")
+        lab2 = labels.label(self.name + "Eq")
         self.generation.append("  cmp rax, rbx")
         self.generation.append(f"  je {lab1}")
         self.generation.append("  mov rax, 0")
@@ -1775,8 +1775,8 @@ class Generator:
         self.generation.append(f"{lab2}:")
 
     def g_operator_not_equals(self, float=False):
-        lab1 = labels.label("Neq")
-        lab2 = labels.label("Neq")
+        lab1 = labels.label(self.name + "Neq")
+        lab2 = labels.label(self.name + "Neq")
         self.generation.append("  cmp rax, rbx")
         self.generation.append(f"  jne {lab1}")
         self.generation.append("  mov rax, 0")
@@ -1786,8 +1786,8 @@ class Generator:
         self.generation.append(f"{lab2}:")
 
     def g_basic_neq(self):
-        lab1 = labels.label("Neq")
-        lab2 = labels.label("Neq")
+        lab1 = labels.label(self.name + "Neq")
+        lab2 = labels.label(self.name + "Neq")
         self.generation.append("  cmp rax, rbx")
         self.generation.append(f"  jne {lab1}")
         self.generation.append("  mov rax, 0")
@@ -2099,7 +2099,7 @@ class Generator:
             )
             allow_call_cast = isinstance(token.child[1], tok.t_empty)
             footprint_name = f"{type_t_dest}.convertis_depuis({type_t_orgn})"
-            if footprint_name in self.functions:
+            if footprint_name in self.functions and allow_call_cast:
                 if self.functions[footprint_name][2] != type_t_dest:
                     error(f"Le type de retour de la fonction {footprint_name} devrait être {type_t_dest}, pas {type_t_orgn}", token.reference)
                 self.g_statement(token.child[2])
@@ -2366,8 +2366,8 @@ class Generator:
                     f"Le type de la condition devrait être de type 'bool', pas '{condition_type}'",
                     token.reference,
                 )
-            lab1 = labels.label(modif="cond_val")
-            lab_end = labels.label(modif="cond_val_end")
+            lab1 = labels.label(self.name, modif="cond_val")
+            lab_end = labels.label(self.name, modif="cond_val_end")
 
             self.gen(f"  ;; valeur conditionnelle : ? x si test sinon y")
             

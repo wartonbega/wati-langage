@@ -1,4 +1,5 @@
-inclue "listes.wati";
+inclue "listes.watiH";
+inclue "io.watiH";
 
 fonction <bool> "bool._egal" (<bool> soit, <ent> x) fait 
     renvoie <ent>(soit) == x;

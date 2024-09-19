@@ -1,5 +1,5 @@
 
-inclue "mallom.wati";
+inclue "mallom.watiH";
 
 classe <t1, t2> tuple contient
     <t1> premier;

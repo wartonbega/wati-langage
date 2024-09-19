@@ -1,5 +1,5 @@
-inclue "entiers.wati";
-inclue "listes.wati";
+inclue "entiers.watiH";
+inclue "listes.watiH";
 
 %sidef PLATEFORME_DARWIN fait
     externe <*rien> _malloc(<ent>);

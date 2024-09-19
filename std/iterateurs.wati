@@ -1,5 +1,5 @@
-inclue "mallom.wati";
-inclue "io.wati";
+inclue "mallom.watiH";
+inclue "io.watiH";
 
 // l'itérateur le plus basique, génère un interval [a, b] de naturels
 classe plage IT contient 

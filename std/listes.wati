@@ -1,6 +1,7 @@
-inclue "entiers.wati";
-inclue "mallom.wati";
-inclue "io.wati";
+inclue "entiers.watiH";
+inclue "mallom.watiH";
+inclue "io.watiH";
+inclue "char.watiH";
 
 fonction <chr> chr._plus (<chr> soit, <ent> x) fait 
     renvoie <chr>(<ent>(soit) + x);
