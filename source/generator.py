@@ -685,7 +685,9 @@ class Generator:
         ):  # Meaning a header
             header_file = True
             _lab = self.nasm_footprint_name(filename)
-            self.sharded_library_imported.append(filename.removesuffix(".watiH"))
+            fname_removed_suffix = filename.removesuffix(".watiH")
+            if fname_removed_suffix not in self.sharded_library_imported:
+                self.sharded_library_imported.append(filename.removesuffix(".watiH"))
             if not self.inde:
                 self.gen(f"  call {_lab[:-1]}.shared_lib")
                 self.extern_functions[f"{_lab[:-1]}.shared_lib"] = (
