@@ -556,18 +556,6 @@ attributedef = rls.r_sequence(
     rls.r_character(";").ignore_token().set_error("';' attendu")
 ).set_name("attributedef")
 
-class_scope.set_mid_patern(
-    rls.r_sequence(
-        rls.r_optional(rls.r_patern_repetition(attributedef).set_name("attributes")),
-        rls.r_optional(rls.r_patern_repetition(
-            rls.r_option(
-                methodedef,
-                methodedef_dec
-            )
-        ).set_name("methodes")),
-    ).ignore_token()
-)
-
 classdef = rls.r_sequence(
     k_classe,
     rls.r_optional(
@@ -721,6 +709,19 @@ extern_func_parenth.set_mid_patern(
 
 brackets.set_mid_patern(
     attended_expression
+)
+
+class_scope.set_mid_patern(
+    rls.r_sequence(
+        rls.r_optional(rls.r_patern_repetition(attributedef).set_name("attributes")),
+        rls.r_optional(rls.r_patern_repetition(utilise_k).set_name("Utilisations")),
+        rls.r_optional(rls.r_patern_repetition(
+            rls.r_option(
+                methodedef,
+                methodedef_dec
+            )
+        ).set_name("methodes")),
+    ).ignore_token()
 )
 
 scope.set_evaluation(basic_rulling, tokenise, try_tokenise)
