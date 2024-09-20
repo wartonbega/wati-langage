@@ -15,6 +15,12 @@ classe plage IT contient
         renvoie soit;
     fin
     
+    methode <rien> constructeur_pile (<*plage> soit, <ent> dep, <ent> arr) fait 
+        soit.depart = dep;
+        soit.arrivee = arr;
+        soit.courant = dep;
+    fin
+    
     methode <*plage> constructeur (<*plage> soit, <ent> arr) fait 
         soit = <*plage>(!mallom(!taillede(<plage>)));
         soit.depart = 0;
@@ -22,9 +28,16 @@ classe plage IT contient
         soit.courant = 0;
         renvoie soit;
     fin
+    
+    methode <rien> constructeur_pile (<*plage> soit, <ent> arr) fait 
+        soit.depart = 0;
+        soit.arrivee = arr;
+        soit.courant = 0;
+    fin
 
-    methode <rien> debut (<*plage> soit) fait 
+    methode <*plage> debut (<*plage> soit) fait 
         soit.courant = soit.depart;
+        renvoie soit;
     fin
 
     methode <bool> fin (<*plage> soit) fait

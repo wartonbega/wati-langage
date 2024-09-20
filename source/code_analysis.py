@@ -411,6 +411,9 @@ def get_methcall_name(tok: tok.BasicToken, variables, functions, classes, global
     return name
 
 def get_type_info_stack(type: str):
+    
+    if not type_exists(type):
+        error(f"Type inconnu '{type}'", "Global:0:0")
     if is_ptr(type):
         return TYPES_INFO["ptr"]
     if is_liste(type):

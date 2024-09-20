@@ -38,8 +38,9 @@ nomenclature <type_t> entiers_impl dans fait
     fonction <ent> puissance_dix(<type_t> x);
     fonction <ent> puissance_seize(<type_t> x);
     fonction <[_]chr> ent_en_listechr(<type_t> x);
-    fonction <[_]chr> hex(<type_t> x);
-    fonction <[_]chr> bin(<type_t> x);
+    fonction <chaine> ent_en_chaine(<type_t> x);
+    fonction <chaine> hex(<type_t> x);
+    fonction <chaine> bin(<type_t> x);
     fonction <[_]chr> base(<type_t> x, <ent> base);
     fonction <rien> print(<type_t> x);
     fonction <rien> println(<type_t> x);

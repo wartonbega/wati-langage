@@ -4,8 +4,10 @@ classe plage IT contient
     <ent> courant;
 fin
 
-fonction <*plage> "*plage.constructeur" (<*plage> soit, <ent> dep, <ent> arr);
-fonction <*plage> "*plage.constructeur" (<*plage> soit, <ent> arr);
-fonction <rien>   "*plage.debut" (<*plage> soit);
-fonction <bool>   "*plage.fin" (<*plage> soit);
-fonction <ent>    "*plage.suivant" (<*plage> soit);
+fonction <*plage> "plage.constructeur" (<*plage> soit, <ent> dep, <ent> arr);
+fonction <*plage> "plage.constructeur" (<*plage> soit, <ent> arr);
+fonction <rien>   "plage.constructeur_pile" (<*plage> soit, <ent> dep, <ent> arr);
+fonction <rien>   "plage.constructeur_pile" (<*plage> soit, <ent> arr);
+fonction <*plage> "plage.debut" (<*plage> soit);
+fonction <bool>   "plage.fin" (<*plage> soit);
+fonction <ent>    "plage.suivant" (<*plage> soit);

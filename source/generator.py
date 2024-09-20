@@ -289,6 +289,7 @@ class Generator:
         self.allow_stack_alloc = True
 
         self.sim_stack = []
+        self.sim_stack_type = []
         self.scopes = [(0, 0)]  # index in self.variables
         self.variables = []  # identifiers
         self.variables_info = {}  # identifier : (type, stack, extern)
@@ -422,6 +423,7 @@ class Generator:
             self.gen(f"  mov rdi, qword [PSI_save_rdi]")
             self.gen(f"\n")
         self.sim_stack.append(size)
+        self.sim_stack_type.append(type)
     
     def move_stack_index(self, index: int, type: str, register: str):
         size = self.sim_stack[index - 1]
@@ -468,29 +470,35 @@ class Generator:
                 len(self.sim_stack) != 0
             ), f"Le stack est vide {self.reference}, {self.name}, {self.sim_stack}"
             s = self.sim_stack.pop()
+            self.sim_stack_type.pop()
             if s == 8:
                 self.gen(f"  pop {register}")
             else:
                 self.gen(f"  {LEA_INST} rsp, [rsp - {s}]")
         else:
             s = self.sim_stack.pop()
+            self.sim_stack_type.pop()
             assert type_size(type) == s, f"La taille de l'objet et la taille sur le stack ne correspondent pas : !taillede({type}) = {type_size(type)}, stack[-1] = {s}"
             if type_size(type) != s:
                 error(f"La taille de l'objet et la taille sur le stack ne correspondent pas : !taillede({type}) = {type_size(type)}, stack[-1] = {s}", "")
+            
             self.gen(f"  mov qword [POP_save_rdx], rdx")
             self.gen(f"  mov qword [POP_save_rsi], rsi")
             self.gen(f"  mov qword [POP_save_rdi], rdi")
             self.gen(f"  mov qword [POP_save_rax], rax")
+            
             self.gen(f"  mov rdx, {s}")
             self.gen(f"  mov qword [multisize_{register}_size], rdx")
             self.gen(f"  mov rsi, rsp") # Le pointeur sur le stack
             self.gen(f"  mov rdi, multisize_{register}") # Le register multisize
             self.gen(f"  call memcopy")
-            self.gen(f"  {LEA_INST} rsp, [rsp + {s}] ;; pop") # On diminue le stack
+            self.gen(f"  lea rsp, [rsp + {s}] ;; pop") # On diminue le stack
+            
             self.gen(f"  mov rdx, qword [POP_save_rdx]")
             self.gen(f"  mov rsi, qword [POP_save_rsi]")
             self.gen(f"  mov rdi, qword [POP_save_rdi]")
             self.gen(f"  mov rax, qword [POP_save_rax]")
+            
             self.gen(f"  mov {register}, multisize_{register}")
 
     def push_reg(self, register: str, type: str):
@@ -507,9 +515,11 @@ class Generator:
                 self.gen(f"  ;; rax est déjà dans rax")
             self.gen(f"  call multisize_reg_check")
             self.sim_stack.append(type_size(type))
+            self.sim_stack_type.append(type)
         else:
             self.gen(f"  push {register}")
             self.sim_stack.append(8)
+            self.sim_stack_type.append(type)
         
 
     def g_empty_vars(self):
@@ -522,6 +532,7 @@ class Generator:
                 self.variables_info.__delitem__(name)
         for i in range(s, len(self.sim_stack)):
             q = self.sim_stack.pop()
+            self.sim_stack_type.pop()
             size += q
             names += str(q) + ", "
         if size != 0:
@@ -537,7 +548,7 @@ class Generator:
     def begin_scope(self):
         self.scopes.append((len(self.variables), len(self.sim_stack)))
 
-    def end_scope(self, rec = -1):
+    def end_scope(self):
         n, s = self.scopes.pop()
         size = 0
         for i in range(n, len(self.variables)):
@@ -546,6 +557,7 @@ class Generator:
                 self.variables_info.__delitem__(name)
         for i in range(s, len(self.sim_stack)):
             size += self.sim_stack.pop()
+            self.sim_stack_type.pop()
         if size != 0:
             self.generation.append(f"  {LEA_INST} rsp, [rsp + {size}]")
 
@@ -645,7 +657,7 @@ class Generator:
             )
             if type_t != self.ret_type:
                 error(
-                    f"Le type de retour '{type_t}' ne correspond pas au type attendu : '{self.ret_type}'",
+                    f"{self.name} : Le type de retour '{type_t}' ne correspond pas au type attendu : '{self.ret_type}'",
                     token.reference,
                 )
             self.g_statement(ret)
@@ -795,9 +807,9 @@ class Generator:
     def g_convertype(self, token: tok.BasicToken):
         name1 = token.child[0].content
         name2 = token.child[1].content
-        if name1 not in TYPES:
+        if not type_exists(name1):
             error(f"Type inconnu : '{name1}'", token.child[0].reference)
-        if name2 not in TYPES:
+        if not type_exists(name2):
             error(f"Type inconnu : '{name2}'", token.child[1].reference)
 
     def g_extern(self, token: tok.BasicToken):
@@ -814,17 +826,12 @@ class Generator:
     def g_utilise(self, token: tok.BasicToken):
         name = token.child[1].content
         type_usage_opt = token.child[0]
-        if (
-            name in self.undetermined
-            and name + get_class_type(type_usage_opt) not in self.classes
-        ):
+        if name in self.undetermined and name + get_class_type(type_usage_opt) not in self.classes:
             self.generate_undetermined(name, type_usage_opt)
         elif name in self.undetermined_nomenclature:
             self.generate_undetermined_nomenclature(name, type_usage_opt)
         elif name + get_class_type(type_usage_opt) in self.classes:
-            print(
-                f"Attention : déjà utilisé : '{name + get_class_type(type_usage_opt)}' : {token.reference}"
-            )
+            warning(f"Attention : déjà utilisé : '{name + get_class_type(type_usage_opt)}'", token.reference)
         else:
             proposition = find_best_match(name, list(self.undetermined_nomenclature.keys()) + list(self.classes.keys()))
             if not proposition:
@@ -881,7 +888,8 @@ class Generator:
         iterator: Bool = not isinstance(token.child[2], tok.t_empty)
 
         attributes = token.child[3].child[0]
-        methodes = token.child[3].child[1]
+        utilisations = token.child[3].child[1]
+        methodes = token.child[3].child[2]
 
         att_names = [att.child[1].content for att in attributes.child]
         att_types = [gettype(att.child[0]) for att in attributes.child]
@@ -905,13 +913,16 @@ class Generator:
             operators_type["!="][type_int(name)][i] = "bool"
             operators_type["!="][i][type_int(name)] = "bool"
 
+        for util in utilisations.child:
+            self.g_utilise(util)
+
         methodes_def = {}
         for m in methodes.child:
             ret_type = gettype(m.child[0])
             f_name = f"{name}." + m.child[1].content
             args = m.child[2]
             footprint_name = self.footprint_name_def(f_name, args)
-            if footprint_name[1:-1] in TYPES and m.child[1].content in OP_FUNC:
+            if  type_exists(footprint_name[1:-1]) and m.child[1].content in OP_FUNC:
                 modify_operators(
                     m.child[1].content, name, footprint_name[1:-1], ret_type
                 )
@@ -1356,6 +1367,7 @@ class Generator:
             self.gen(f"  call initiate_data_zero")
 
             self.sim_stack.append(classe_size)
+            self.sim_stack_type.append(name)
 
             for i, v in enumerate(args):
                 type_t = type(
@@ -1505,107 +1517,138 @@ class Generator:
                 self.classes,
                 self.global_vars,
             )
-            if not is_ptr(type_t):
-                error(
-                    f"La valeur dans la boucle 'pour' doît être un objet",
-                    value.reference,
-                )
-            type_t = get_ptr_type(type_t)
+            if not is_ptr(type_t) and not get_ptr_type(type_t):
+                error(f"La valeur dans la boucle 'pour' doît être un objet", value.reference)
+            
+            if is_ptr(type_t):
+                type_t = get_ptr_type(type_t)
+            
             if type_t not in self.classes:
                 error(f"La classe '{type_t}' n'existe pas", value.reference)
+            
             clss: Classes = self.classes[type_t]
             if not clss.iterator:
                 error(f"L'objet doit être un itérateur", value.reference)
+            
             fname_deb = f"{type_t}.debut(*{type_t})"
-            fname_svt = f"{type_t}.suivant(*{type_t})"
-            fname_fin = f"{type_t}.fin(*{type_t})"
-            if (
-                fname_deb not in self.functions
-                or fname_fin not in self.functions
-                or fname_svt not in self.functions
-            ):
-                error(
-                    f"Un itérateur doit posséder une méthode '.debut(*soit)', une méthode '.suivant(*soit)' et une méthode '.fin(*soit)'",
-                    value.reference,
-                )
-
+            
             f_debG: Generator
             f_deb_rettype: str
+            f_debG, _, f_deb_rettype, _ = self.functions[fname_deb]
+            
+            if fname_deb not in self.functions:
+                error(f"Un itérateur doit posséder une méthode '.debut(*soit)'", value.reference)
+            if f_deb_rettype == "rien":
+                error(f"Le type de retour de la méthode '{fname_deb}' ne doit pas être 'rien'", value.reference)
+                
+            # La méthode .début renvoie l'itérateur
+            # On a donc besoin de travailler sur l'itérateur renvoyé (qui peut être du type de 'soit')
+            generator_type = f_deb_rettype
+                
+            if is_ptr(generator_type):
+                fname_svt = f"{get_ptr_type(generator_type)}.suivant({generator_type})"
+                fname_fin = f"{get_ptr_type(generator_type)}.fin({generator_type})"
+            elif get_type_info_stack(generator_type):
+                fname_svt = f"{generator_type}.suivant(*{generator_type})"
+                fname_fin = f"{generator_type}.fin(*{generator_type})"
+            else:
+                error(f"L'itérateur doit être un objet (ou un pointeur)", value.reference)
+                
+            if fname_fin not in self.functions or fname_svt not in self.functions:
+                error(f"Un itérateur doit posséder une méthode '.suivant(*soit)' et une méthode '.fin(*soit)'", value.reference)
+
             f_svtG: Generator
             f_svt_rettype: str
             f_finG: Generator
             f_fin_rettype: str
-            f_debG, _, f_deb_rettype, _ = self.functions[fname_deb]
             f_svtG, _, f_svt_rettype, _ = self.functions[fname_svt]
             f_finG, _, f_fin_rettype, _ = self.functions[fname_fin]
             if f_fin_rettype != "bool":
-                error(
-                    f"Le type de retour de la méthode '{fname_fin}' doit être 'bool', pas '{f_fin_rettype}'",
-                    value.reference,
-                )
-            if f_deb_rettype != "rien":
-                error(f"La méthode '{fname_deb}' doit être 'rien'", value.reference)
+                error(f"Le type de retour de la méthode '{fname_fin}' doit être 'bool', pas '{f_fin_rettype}'", value.reference)
             if f_svt_rettype == "rien":
-                error(
-                    f"La méthode '{fname_svt}' ne doit pas être 'rien'", value.reference
-                )
+                error(f"Le type de retour de la méthode '{fname_svt}' ne doit pas être 'rien'", value.reference)
 
             footprint_n_deb = self.nasm_footprint_name(fname_deb)
             footprint_n_svt = self.nasm_footprint_name(fname_svt)
             footprint_n_fin = self.nasm_footprint_name(fname_fin)
-            self.gen(f"  mov rax, 0")
-            self.push_reg("rax", f_svt_rettype)
-            if var_name in self.variables:
-                error(
-                    f"La variable '{var_name}' est déjà définie",
-                    token.child[0].reference,
-                )
+            
+            if var_name in self.variables: # On ne peut pas réutiliser une nom de variable
+                error(f"La variable '{var_name}' est déjà définie. Pas de réutilisation d'un nom de variable déjà utilisé", token.child[0].reference)
+            
+            self.gen(f"  mov rax, 0") # On initialise la première valeur
+            self.push_reg("rax", f_svt_rettype) # Qui est mise sur le stack (type : suivant.rettype)
+            
             self.variables.append(var_name)
-            self.variables_info[var_name] = (
-                f_svt_rettype,
-                len(self.sim_stack),
-                False,
-                False,
-            )
-            pos = len(self.sim_stack)
+            self.variables_info[var_name] = (f_svt_rettype, len(self.sim_stack), False, False)
+            pos = len(self.sim_stack) # On note la position du curseur
 
-            t = self.g_statement(value)
-            #self.gen("mov rax, qword [rsp]")
-            self.move_stack_index(0, t, "rax")
+            # Selon le type de l'objet, on ne le manipule pas pareil
+            type_self_obj = type(value, self.variables_info, self.functions, self.classes, self.global_vars)
+            clear_self_obj = False # Un drapeau qui nous permet de savoir si il faudra enlever du stack l'objet de départ
+            if get_type_info_stack(type_self_obj):
+                self.g_statement(value)
+                self.gen(f"  mov rax, rsp")
+                type_self_obj = f"*{type_self_obj}"
+                self.push_reg("rax", type_self_obj)
+                clear_self_obj = True
+            else:
+                self.g_statement(value)
+            
+            self.pop("rax", type_self_obj)
             self.gen(f"  call {footprint_n_deb}")
-
+            self.push_reg("rax", generator_type) # l'itérateur est dedans
+            
+            # Plusieurs cas, si l'objet est sur le stack, on ne veut en manipuler que la référence
+            # Sinon, on laisse le pointeur
+            if get_type_info_stack(f_deb_rettype):
+                self.gen(f"  mov rax, rsp")
+                self.push_reg("rax", "*" + generator_type) # On y met la référence
+            
+            # Définintion les labels pour jump
             labdeb = labels.label(base=self.name + "debut", modif = "forloop")
             labfin = labels.label(base=self.name + "fin", modif = "forloop")
-
             self.gen(f"{labdeb}:")
 
-            self.gen("mov rax, [rsp]")
+            # On met dans rax le pointeur en tant que premier argument de !iter.suivant(*soit)
+            self.gen("mov rax, qword [rsp]")
             self.gen(f"  call {footprint_n_svt}")
+            
+            # Puis on écrit au bon endroit dans la mémoire
             decal = sum(self.sim_stack[pos:])
             self.gen(f"  mov qword [rsp + {decal}], rax")
 
+            # Le code
             self.g_scope(scope)
-
-            self.gen("mov rax, [rsp]")
-            self.gen(f"  call {footprint_n_fin}")
+            
+            # On remet le pointeur vers l'itérateur en mémoire
+            self.gen("mov rax, qword [rsp]")
+            self.gen(f"  call {footprint_n_fin}") # Appel de la fonction de test de la fin de la boucle
+            
+            # On écrit les test conditionnels pour savoir si la boucle est terminée
             self.gen(f"  cmp rax, 0")
             self.gen(f"  jpe {labdeb}")
-            self.pop("rax", "*" + type_t)  # L'itérateur
-            self.pop("rax", f_svt_rettype)  # L'indexateur
+
+            # On supprime grossièrement tout ce qu'on a mis sur le stack            
+            dec = sum(self.sim_stack[pos - 1:])
+            self.sim_stack = self.sim_stack[:pos - 1]
+            self.sim_stack_type = self.sim_stack_type[:pos - 1]
+            self.gen(f"  lea rsp, [rsp + {dec}]")
+
             self.variables.pop(self.variables.index(var_name))
             self.variables_info.__delitem__(var_name)
+            
         elif value == forloop_brackets:
             value = value.child[0]
             val1 = value.child[0]
             val2 = value.child[1]
-            t1 = type(
+            t1 = type( # La borne basse
                 val1,
                 self.variables_info,
                 self.functions,
                 self.classes,
                 self.global_vars,
             )
-            t2 = type(
+            t2 = type( # La borne haute
                 val2,
                 self.variables_info,
                 self.functions,
@@ -1621,17 +1664,17 @@ class Generator:
             self.g_statement(val1)
             self.gen("  mov rax, qword [rsp]")
             self.push_reg("rax", "ent")
-            if var_name in self.variables:# and self.variables_info[var_name][0] != "ent":
-                error(
-                    f"La variable '{var_name}' est déjà définie",# et n'a pas le type 'ent'",
-                    token.child[0].reference,
-                )
+            
+            if var_name in self.variables:
+                error(f"La variable '{var_name}' est déjà définie", token.child[0].reference)
+            
             self.variables.append(var_name)
             pos = len(self.sim_stack)
             self.variables_info[var_name] = ("ent", pos, False, False)
+            
             labdeb = labels.label(self.name + "debut", "forloop")
             labfin = labels.label(self.name + "fin", "forloop")
-            self.loops_stack.append(labfin)
+            
             # Début de la boucle
             # Sur le stack on a [index, val1, val2, ...]
             self.gen(f"{labdeb}:")
@@ -1648,7 +1691,7 @@ class Generator:
             self.pop("rax", "ent")  # L'itérateur
             self.pop("rax", "ent")  # La borne haute/basse (jsp)
             self.pop("rax", "ent")  # La borne haute/basse
-            self.loops_stack.pop()
+            
             self.variables.pop(self.variables.index(var_name))
             self.variables_info.__delitem__(var_name)
 
@@ -1988,6 +2031,7 @@ class Generator:
             self.gen(f"  mov rdx, {type_size(type_t_list)}")
             self.gen(f"  call memcopy")
             self.sim_stack.append(type_size(type_t_list))
+            self.sim_stack_type.append(type_t_list)
         else:
             self.gen(f"  lea rdx, [rdx * {type_size(type_t_list)}]")
             self.generation.append(f"  {LEA_INST} rax, [rax + rdx]")
@@ -2044,6 +2088,7 @@ class Generator:
             if len(content) >= c_size:
                 error(f"La longueure d'une chaine doit être maximum {c_size}", token.reference)
             self.sim_stack.append(c_size)
+            self.sim_stack_type.append(c_size)
             #self.gen(f"  mov qword [CSTR_save_rdx], rdx")
             #self.gen(f"  mov qword [CSTR_save_rdi], rdi")
             #self.gen(f"  mov qword [CSTR_save_rsi], rsi")
@@ -2164,7 +2209,7 @@ class Generator:
                 type_t = "ptr"
             elif is_liste(type_t):
                 type_t = "liste"
-            if type_t not in TYPES:
+            if not type_exists(type_t):
                 error(f"Type inconnu : {type_t}", t.reference)
             size = TYPES_SIZE[type_t]
             self.gen(f"  mov rax, {size}")
@@ -2238,7 +2283,8 @@ class Generator:
             return type(token, self.variables_info, self.functions, self.classes, self.global_vars)
         if token.get_rule() == classcall:
             self.g_classcall(token)
-            return type(token, self.variables_info, self.functions, self.classes, self.global_vars)
+            t = type(token, self.variables_info, self.functions, self.classes, self.global_vars)
+            return 
         if token.get_rule() == array_accession:
             self.g_array_access(token)
             return type(token, self.variables_info, self.functions, self.classes, self.global_vars)
@@ -2274,7 +2320,7 @@ class Generator:
                 self.classes,
                 self.global_vars,
             )
-            if type_t not in TYPES:
+            if not type_exists(type_t):
                 error(f"Type inconnu : {type_t}", token.reference)
             size = TYPES_SIZE[type_t] if type_t != "rien" else 1
             t = self.g_statement(token.child[0])
@@ -2630,7 +2676,7 @@ class Generator:
         self.pop("rbx", c_type)
         decal = sum(self.sim_stack[pos:])
 
-        if c_type not in TYPES:
+        if not type_exists(c_type):
             error(f"Type inconnu : {c_type}", name_og.reference)
         size_t = TYPES_SIZE[c_type] if c_type != "rien" else 1
 
@@ -2722,6 +2768,7 @@ class Generator:
                     self.variables_info[name] = (got_type, 0, False, True)
             else:
                 self.sim_stack.pop()
+                self.sim_stack_type.pop()
                 self.generation.pop()
                 self.generation.pop()
                 self.generation.pop()

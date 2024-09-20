@@ -29,6 +29,7 @@ class Document:
                     self.doc = f.read()
             except:
                 print(f"Erreur lors de l'ouverture du fichier {filename}. Peut être que le fichier n'existe pas")
+                exit(1)
         else:
              self.doc = content
         

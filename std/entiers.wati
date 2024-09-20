@@ -11,6 +11,7 @@ inclue "listes.watiH";
 inclue "mallom.watiH";
 inclue "io.watiH";
 inclue "erreur.watiH";
+inclue "chaine.watiH";
 
 fonction <ent32> ent32.convertis_depuis(<ent> x) fait 
     sign = ((x >> 63) && 1) << 31;
@@ -165,13 +166,36 @@ nomenclature <type_t> entiers_impl dans fait
         renvoie g;
     fin
 
-    fonction <[_]chr> hex(<type_t> x) fait 
+    fonction <chaine> ent_en_chaine(<type_t> x) fait 
         si x == 0 fait 
-            renvoie "0x0";
+            renvoie c"0";
+        fin
+        decal = 0;
+        <chaine> g = c"";
+        si x < 0 fait 
+            g[0] = '-';
+            decal = 1;
+            x = -x;
+        fin
+        puiss = !puissance_dix(x);
+        max_puiss = puiss;
+        tant que puiss > 0 fait 
+            reste = x / 10;
+            prime = x % 10;
+            puiss = puiss - 1;
+            g[puiss + decal] = <chr>(prime + 48);
+            x = reste;
+        fin
+        renvoie g;
+    fin
+
+    fonction <chaine> hex(<type_t> x) fait 
+        si x == 0 fait 
+            renvoie c"0x0";
         fin
         puiss = !puissance_seize(x);
         max_puiss = puiss;
-        <[_]chr> g = !init_liste(puiss + 2);
+        g = c"";
         g[0] = '0';
         g[1] = 'x';
         tant que puiss > 0 fait 
@@ -188,13 +212,13 @@ nomenclature <type_t> entiers_impl dans fait
         renvoie g;
     fin
     
-    fonction <[_]chr> bin(<type_t> x) fait 
+    fonction <chaine> bin(<type_t> x) fait 
         si x == 0 fait 
-            renvoie "0";
+            renvoie c"0";
         fin
         puiss = !puissance_base(x, 2);
         max_puiss = puiss;
-        <[_]chr> g = !init_liste(puiss);
+        <chaine> g = c"";
         tant que puiss > 0 fait 
             reste = x / 2;
             prime = x % 2;
@@ -233,9 +257,8 @@ nomenclature <type_t> entiers_impl dans fait
     fin
 
     fonction <rien> print(<type_t> x) fait 
-        <[_]chr> str = !ent_en_listechr(x);
+        <chaine> str = !ent_en_chaine(x);
         !print(str);
-        !libere(<*rien>str);
     fin
 
     fonction <rien> println(<type_t> x) fait 
