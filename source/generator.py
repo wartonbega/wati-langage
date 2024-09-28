@@ -532,7 +532,10 @@ class Generator:
                 self.variables_info.__delitem__(name)
         for i in range(s, len(self.sim_stack)):
             q = self.sim_stack.pop()
-            self.sim_stack_type.pop()
+            type = self.sim_stack_type.pop()
+            if f"{type}.destructeur(*{type})" in self.functions:
+                self.generation.append(f"  lea rax, [rsp + {size}]")
+                self.generation.append(f"  call {self.nasm_footprint_name(f"{type}.destructeur(*{type})")}")
             size += q
             names += str(q) + ", "
         if size != 0:
@@ -556,8 +559,12 @@ class Generator:
             if not name in self.global_vars:
                 self.variables_info.__delitem__(name)
         for i in range(s, len(self.sim_stack)):
-            size += self.sim_stack.pop()
-            self.sim_stack_type.pop()
+            q = self.sim_stack.pop()
+            type = self.sim_stack_type.pop()
+            if f"{type}.destructeur(*{type})" in self.functions:
+                self.generation.append(f"  lea rax, [rsp + {size}]")
+                self.generation.append(f"  call {self.nasm_footprint_name(f"{type}.destructeur(*{type})")}")
+            size += q
         if size != 0:
             self.generation.append(f"  {LEA_INST} rsp, [rsp + {size}]")
 

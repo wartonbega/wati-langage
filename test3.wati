@@ -15,5 +15,3 @@ fin
 pour k dans l fait 
     !print(c"l contient : "); !println(k);
 fin
-
-!l.destructeur(); // sera bientot supprimé
