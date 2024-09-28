@@ -1,5 +1,4 @@
 from source.syntax import *
-import numpy as np
 
 python_type = type
 

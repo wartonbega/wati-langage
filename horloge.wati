@@ -22,7 +22,7 @@ l = <ent>dliste();
 !l.ajoute(31719);
 !l.ajoute(1040);
 
-<[__COL * __LIG]chr> __buf_rend;
+<[_]chr> __buf_rend = <[_]chr>(!mallom(__COL * __LIG));
 
 fonction <rien> affiche_buf () fait 
     pour i dans [0, __COL * __LIG] fait 
