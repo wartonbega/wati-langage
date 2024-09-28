@@ -15,12 +15,11 @@ fonction <*rien> mallom (<ent> taille);
 
 <ent> __buff_size = 1024;
 
-<[_]chr> __input_chr_tampon = <[_]chr>(!mallom(__buff_size));
-<[_]chr> __chr_tampon = <[_]chr>(!mallom(2));
 
 fonction <rien> print(<chr> x) fait 
-    __chr_tampon[0] = x;
-    !write(__stdout, __chr_tampon, 1);
+    tamp = c"";
+    tamp[0] = x;
+    !write(__stdout, <[_]chr>(&tamp), 1);
 fin
 
 fonction <rien> println(<chr> x) fait 

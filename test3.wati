@@ -1,0 +1,19 @@
+inclue "./std/std.watiH";
+inclue "./std/listes_amorties.wati";
+
+
+pour i dans [0, 10] fait 
+    !print(i); !println(c" : Bonjour tout le monde !");
+fin
+
+l = <ent>dliste&(); // On crée une liste amortie d'entiers, qui sera allouée sur le stack (&)
+
+pour i dans plage&(0, 10) fait // Une autre manière de faire des boucles, ici avec un itérateur 
+    !l.ajoute(i * i);
+fin
+
+pour k dans l fait 
+    !print(c"l contient : "); !println(k);
+fin
+
+!l.destructeur(); // sera bientot supprimé

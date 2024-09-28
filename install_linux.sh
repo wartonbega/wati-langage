@@ -1,6 +1,8 @@
 #!/bin/bash
 ./compile_std.sh
 
+python3 -m pip install typing_extensions
+
 python3 ./config/config.py
 
 echo "pour compiler : python3 main.py [nom_du_fichier.wati]"
