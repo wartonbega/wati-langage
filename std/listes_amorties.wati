@@ -24,6 +24,17 @@ classe <Type> dliste IT contient
     fin
 
     methode <rien> destructeur (<*dliste<Type>> soit) fait
+
+        // Méthode dangereuse pour le moment car 
+        // elle est appelée partout sans se poser de question
+        //methode <rien> copie (<*dliste<Type>> soit) fait 
+        //    !println("Je suis copié");
+        //    <[_]Type> nouv = <[_]Type>(!mallom(!taillede(<Type>) * (soit.max + 1))); // on prend un de plus pour éviter les débordement de mémoire
+        //    pour i dans [0, soit.taille] fait 
+        //        nouv[i] = soit.mem[i];
+        //    fin
+        //    soit.mem = nouv;
+        //fin
         !libere(<*rien>(soit.mem));
     fin
     
@@ -32,7 +43,6 @@ classe <Type> dliste IT contient
         <[_]Type> nouv = <[_]Type>(!mallom(!taillede(<Type>) * (soit.max + 1))); // on prend un de plus pour éviter les débordement de mémoire
         pour i dans [0, soit.taille] fait 
             nouv[i] = soit.mem[i];
-            soit.mem[i] = <Type>0;
         fin
         !libere(<*rien>soit.mem);
         soit.mem = nouv;
@@ -66,7 +76,7 @@ classe <Type> dliste IT contient
         si index < 0 fait
             index = soit.taille + index;
             si index < 0 fait
-                !erreur("!dliste.index : L'index est plus grand que la taille de la liste");
+                !erreur("!dliste.index : L'index est plus petit que 0");
             fin
         fin
         si index >= soit.taille fait 
@@ -88,8 +98,12 @@ classe <Type> dliste IT contient
         !print('[');!print(' ');
         pour i dans [0, soit.taille] fait
             e = soit.mem[i];
-            !print(e);
-            !print(' ');
+            si !typede(e) == "chaine" || !typede(e) == "liste[chr]" fait 
+                !print('"'); !print(e); !print('"'); !print(' ');
+            fin sinon fait
+                !print(e);
+                !print(' ');
+            fin
         fin
         !println(']');
     fin
@@ -113,6 +127,9 @@ classe <Type> dliste_it IT contient
     methode <rien> constructeur_pile(<*dliste_it<Type>> soit, <*dliste<Type>> liste) fait 
         soit.index = 0;
         soit.liste = liste;
+        si liste.taille == 0 fait 
+            !erreur("dliste (itérateur) : ne peut pas itérer sur une liste vide !");
+        fin
     fin
 
     methode <Type> suivant(<*dliste_it<Type>> soit) fait 

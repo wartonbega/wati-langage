@@ -2,16 +2,49 @@ inclue "./std/std.watiH";
 inclue "./std/listes_amorties.wati";
 
 
-pour i dans [0, 10] fait 
-    !print(i); !println(c" : Bonjour tout le monde !");
+// Pivot sur une liste en place
+
+utilise <ent>dliste;
+
+fonction <dliste<ent>> pivote (<dliste<ent>> L, <ent> index_p) fait 
+    pivot = L[index_p];
+    ipre = index_p + 1;
+    ider = L.taille - 1;
+    tant que ipre < ider fait 
+        si L[ipre] > pivot && L[ider] <= pivot fait 
+            c = L[ipre];
+            L[ipre] = L[ider];
+            L[ider] = c;
+        fin
+        
+        si L[ipre] <= pivot fait 
+            ipre = ipre + 1;
+        fin
+        si L[ider] > pivot fait 
+            ider = ider - 1;
+        fin
+    fin
+
+    si L[ipre] > pivot fait 
+        ipre = ipre - 1;
+    fin
+    c = L[ipre];
+    L[ipre] = pivot;
+    L[index_p] = c;
+    renvoie L;
 fin
 
-l = <ent>dliste&(); // On crée une liste amortie d'entiers, qui sera allouée sur le stack (&)
+l = <ent>dliste&();
 
-pour i dans plage&(0, 10) fait // Une autre manière de faire des boucles, ici avec un itérateur 
-    !l.ajoute(i * i);
-fin
-
-pour k dans l fait 
-    !print(c"l contient : "); !println(k);
-fin
+!l.ajoute(3);
+!l.ajoute(4);
+!l.ajoute(8);
+!l.ajoute(7);
+!l.ajoute(9);
+!l.ajoute(0);
+!l.ajoute(1);
+!l.ajoute(2);
+!l.ajoute(6);
+!l.println();
+!pivote(l, 0);
+!l.println();

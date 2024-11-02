@@ -1,12 +1,30 @@
 inclue "./std/std.watiH";
 inclue "ansi.wati";
 
-externe <ent> _system(<[_]chr>);
-externe <rien> _sleep(<ent>);
-externe <ent> _printf(<[_]chr>, <ent>);
-externe <ent> _printf(<[_]chr>, <chr>);
-externe <ent> _fflush(<ent>);
-
+%sidef PLATEFORME_MACOS fait
+    externe <ent> _system(<[_]chr>);
+    externe <rien> _sleep(<ent>);
+    externe <ent> _printf(<[_]chr>, <ent>);
+    externe <ent> _printf(<[_]chr>, <chr>);
+    externe <ent> _fflush(<ent>);
+fin
+%sidef PLATEFORME_LINUX fait 
+    // On crée des alias entre les fonctions '_' et les fonctions utilisées par la bibliothèque standar sous linux
+    externe <ent>  system(<[_]chr>);
+    falias _system(<[_]chr>), system(<[_]chr>);
+    
+    externe <rien> sleep(<ent>);
+    falias _sleep(<ent>), sleep(<ent>);
+    
+    externe <ent>  printf(<[_]chr>, <ent>);
+    falias _printf(<[_]chr>, <ent>), printf(<[_]chr>, <ent>);
+    
+    externe <ent>  printf(<[_]chr>, <chr>);
+    falias _printf(<[_]chr>, <chr>), printf(<[_]chr>, <chr>);
+    
+    externe <ent>  fflush(<ent>);
+    falias _fflush(<ent>), fflush(<ent>);
+fin
 <ent> __factor = 1;
 
 classe cadre_style contient
@@ -200,13 +218,12 @@ fonction <rien> ecrit_dans_cadre(<cadre> c, <chaine> texte) fait
         fin
     fin
 fin
-
 !_system("clear");
 cadre = cadre&(2, 2, 20, 5);
 !cadre.style.croix();
-!cadre.nomme(c"testetetetete");
+!cadre.nomme(c"Voici un test");
 !dessine_cadre(cadre);
 //!rectangle(3, 3, 20, 5);
 !ecrit_dans_cadre(cadre, c"Voici un petit test qui pourrait aussi bien se continuer");
 
-!println("\n\n\n\n\n\n\n\n");
+!println("\n\n\n\n\n");

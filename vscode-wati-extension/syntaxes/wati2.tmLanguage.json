@@ -63,7 +63,7 @@
         "keywords-others": {
             "patterns": [
                 {
-                    "match": "\\b(inclue|renvoie|casse|deftype|nomenclature|utilise|externe|syscall)\\b",
+                    "match": "\\b(inclue|renvoie|casse|deftype|nomenclature|utilise|externe|syscall|falias)\\b",
                     "name": "keyword.other.wati"
                 }
             ]

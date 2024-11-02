@@ -66,6 +66,7 @@ k_return = rls.r_char_sequence("renvoie").ignore_token()
 k_break = rls.r_char_sequence("casse").ignore_token()
 k_include = rls.r_char_sequence("inclue").ignore_token()
 k_typedef = rls.r_char_sequence("deftype").ignore_token()
+k_aliasfun = rls.r_char_sequence("falias").ignore_token()
 k_type_convert = rls.r_char_sequence("convertype").ignore_token()
 k_syscall = rls.r_char_sequence("syscall").ignore_token()
 k_extern = rls.r_char_sequence("externe").ignore_token()
@@ -143,6 +144,7 @@ type_names.add_option(type_usage)
 scope = rls.r_enclosure("fait", "fin").set_name("scope{}")
 class_scope = rls.r_enclosure("contient", "fin").set_name("classe-scope{}")
 parenthesis = rls.r_enclosure("(", ")")
+extern_func_parenth = rls.r_enclosure("(", ")")
 func_arguments = rls.r_enclosure("(", ")")
 casting_args = rls.r_enclosure("(", ")").set_name("casting-arg()")
 brackets = rls.r_enclosure("[", "]")
@@ -209,6 +211,16 @@ sizeof_funcall = rls.r_sequence(
     ))
 ).set_name("taillede")
 
+fpconversion_funcall = rls.r_sequence(
+    rls.r_character("!").ignore_token(),
+    rls.r_char_sequence("conversiongp").ignore_token(),
+    rls.r_enclosure("(", ")").set_mid_patern(rls.r_sequence(
+        type_usage,
+        rls.r_character(",").ignore_token(),
+        None
+    ))
+).set_name("conversiongp")
+
 stack_alloced_funcall = rls.r_sequence(
     rls.r_character("!").ignore_token(),
     rls.r_char_sequence("alloue_stack").ignore_token(),
@@ -272,6 +284,7 @@ attribute = rls.r_sequence(
 
 value = rls.r_option(
     sizeof_funcall,
+    fpconversion_funcall,
     stack_alloced_funcall,
     typeof_funcall,
     attr_exist,
@@ -357,6 +370,8 @@ attended_expression = rls.r_option(
 )
 
 typeof_funcall.sequence[2].set_mid_patern(attended_expression)
+fpconversion_funcall.sequence[2].mid.sequence[2] = attended_expression
+
 
 attr_exist.sequence[2].set_mid_patern(
     rls.r_sequence(
@@ -413,6 +428,32 @@ keyword_typedef = rls.r_sequence(
     rls.r_character(";").ignore_token().set_error("';' attendu")
 ).set_name("keyword-typedef")
 
+keyword_func_alias = rls.r_sequence(
+    k_aliasfun,
+    rls.r_option(
+        rls.r_sequence(
+            identifier,
+            rls.r_character(".").ignore_token(),
+            identifier
+        ).set_name("funcdef-methode"),
+        identifier,
+        string
+    ),
+    extern_func_parenth,
+    rls.r_character(',').ignore_token(),
+    rls.r_option(
+        rls.r_sequence(
+            identifier,
+            rls.r_character(".").ignore_token(),
+            identifier
+        ).set_name("funcdef-methode"),
+        identifier,
+        string
+    ),
+    extern_func_parenth,
+    rls.r_character(";").ignore_token()
+)
+
 keyword_type_convert = rls.r_sequence(
     k_type_convert,
     rls.r_identifier().set_error("Expected identifier"),
@@ -450,8 +491,6 @@ keyword_syscall = rls.r_sequence(
     rls.r_option(listed_value, attended_expression).set_error("Une valeur est attendue"),
     rls.r_character(";").ignore_token().set_error("';' attendu")
 ).set_name("keyword-inclue")
-
-extern_func_parenth = rls.r_enclosure("(", ")")
 
 extern_argument_def = rls.r_sequence(
     type_usage,
@@ -666,6 +705,7 @@ basic_rulling = [
     keyword_extern,
     keyword_inclue,
     keyword_typedef,
+    keyword_func_alias,
     keyword_type_convert,
     scope,
     vardef,

@@ -303,7 +303,7 @@ class Generator:
         self.functions: dict[
             str : Tuple[Generator, list[tok.BasicToken], str, bool]
         ] = {}
-
+        self.aliases = {}
         self.loops_stack = [] # The labels
 
         self.basic_end = end
@@ -332,9 +332,11 @@ class Generator:
             for i in range(self.arg_num):
                 self.push_reg(arg_register[i], self.args_type[self.args_name[i]])
             if self.name == starting_label and not self.shared_lib:
-                self.gen("  mov rax, plateforme_name")
-                self.gen("  mov qword [__plateforme], rax")
-                self.gen("  sub rsp, 8 ;; alignement du stack sur 8 bits")
+                self.gen(f"  mov rax, plateforme_name")
+                self.gen(f"  mov qword [__plateforme], rax ;; variable globale : nom de la plateforme (linux, etc)")
+                self.gen(f"  mov rax, {MULTISIZE_REGISTER_MULTIPILCATOR * 8}")
+                self.gen(f"  mov qword [__maxtaille_gptr], rax ;; variable globale : taille maximum des gros pointeurs")
+                self.gen(f"  sub rsp, 8 ;; alignement du stack sur 8 bits")
 
         found_ret = False
         for i, tok in enumerate(self.toks):
@@ -359,15 +361,14 @@ class Generator:
     def add_function(self, name, value):
         self.functions[name] = value
 
-    def generate_func(
-        self,
-    ):  # Quand des nouvelles fonctions sont définies dans une fonction pendant
+    def generate_func(self):  
+        # Quand des nouvelles fonctions sont définies dans une fonction pendant
         # la génération, ça merde. Donc il faut faire tampon
         function_stack = list(self.functions.keys())
         if self.name == starting_label:
             while len(function_stack) != 0:
                 i = function_stack.pop(0)
-                if self.functions[i][0] != None:  # and self.functions[i][0].used:
+                if self.functions[i][0] != None and i not in self.aliases:  # and self.functions[i][0].used:
                     c = copy.copy(self.functions)
                     self.functions[i][0].functions = c
                     # print(list(c.keys()))
@@ -413,11 +414,41 @@ class Generator:
             self.gen(f"  mov qword [PSI_save_rsi], rsi")
             self.gen(f"  mov qword [PSI_save_rdi], rdi")
             decal = sum(self.sim_stack[index:])
+            
             self.gen(f"  {LEA_INST} rsi, [rsp + {decal}]")
+            
+            # # Si une fonction de copie existe, alors on l'appel
+            # fprint_name = f"{type}.copie(*{type})"
+            # if fprint_name in self.functions:
+            #     # Elle renvoie un nouvel objet sur le stack
+            #     _, _, rettype, _ = self.functions[fprint_name]
+            #     if rettype != type:
+            #         error(f"Le type de retour de '{type}.copie(*{type})' devrait être 'type'")
+            #     self.gen(f"  mov rax, rsi")
+            #     self.gen(f"  call {self.nasm_footprint_name(fprint_name)}")
+            #     # Donc ce qu'on analyse c'est l'objet renvoyé
+            #     self.gen(f"  mov rsi, rax")
+            
             self.gen(f"  {LEA_INST} rsp, [rsp - {size}]")
             self.gen(f"  mov rdi, rsp")
             self.gen(f"  mov rdx, {size}")
             self.gen(f"  call memcopy")
+            
+            # Si une fonction de copie existe, alors on l'appel
+
+            # [TODO] : il faut plus de contexte à la fonction : 
+            #       - est-ce que c'est quand on la passe en argument
+            #       - est ce que c'est quand on recherche la valeur d'une variable
+            # etc ...
+            fprint_name = f"{type}.copie(*{type})"
+            if fprint_name in self.functions:
+                # Elle ne renvoie rien, et ne modifie que le nouvel objet qui est sur le stack
+                _, _, rettype, _ = self.functions[fprint_name]
+                if rettype != "rien":
+                    error(f"Le type de retour de '{fprint_name}' devrait être 'rien'")
+                self.gen(f"  mov rax, rsp")
+                self.gen(f"  call {self.nasm_footprint_name(fprint_name)}")
+            
             self.gen(f"  mov rdx, qword [PSI_save_rdx]")
             self.gen(f"  mov rsi, qword [PSI_save_rsi]")
             self.gen(f"  mov rdi, qword [PSI_save_rdi]")
@@ -607,6 +638,8 @@ class Generator:
             self.g_inclue(tok)
         elif tok.get_rule() == keyword_typedef:
             self.g_typdef(tok)
+        elif tok.get_rule() == keyword_func_alias:
+            self.g_falias(tok)
         elif tok.get_rule() == keyword_type_convert:
             self.g_convertype(tok)
         elif tok.get_rule() == keyword_extern:
@@ -723,6 +756,7 @@ class Generator:
             g = Generator(toks, name=filename, shared_lib=self.shared_lib)
             g.sim_stack = self.sim_stack
             g.functions = self.functions
+            g.aliases = self.aliases
             g.classes = self.classes
             g.declared_string = self.declared_string
             g.variables = self.variables
@@ -810,6 +844,37 @@ class Generator:
         for i in range(len(operators_type["!="])):
             operators_type["!="][type_int(name)][i] = "bool"
             operators_type["!="][i][type_int(name)] = "bool"
+
+    def g_falias(self, token: tok.BasicToken):
+        name = token.child[0]
+        if name.get_rule() == string:
+            name = name.child[0].content
+        elif isinstance(name.get_rule(), rls.r_sequence):
+            name = name.child[0].content + "." + name.child[1].content
+        else:
+            name = name.content
+        args = token.child[1]
+        name = self.footprint_name_def(name, args)
+
+        name_bis = token.child[2]
+        if name_bis.get_rule() == string:
+            name_bis = name_bis.child[0].content
+        elif isinstance(name_bis.get_rule(), rls.r_sequence):
+            name_bis = name_bis.child[0].content + "." + name_bis.child[1].content
+        else:
+            name_bis = name_bis.content
+        args = token.child[3]
+        name_bis = self.footprint_name_def(name_bis, args)
+
+        if name_bis not in self.functions:
+            proposition = find_best_match(name_bis, list(self.functions.keys()))
+            if not proposition:
+                error(f"La fonction '{name_bis}' n'existe pas", token.reference)
+            else:
+                error(f"La fonction '{name_bis}' n'existe pas. Vouliez-vous dire '{proposition}' ?", token.reference)
+        self.functions[name] = self.functions[name_bis]
+        self.aliases[name] = name_bis
+
 
     def g_convertype(self, token: tok.BasicToken):
         name1 = token.child[0].content
@@ -960,6 +1025,7 @@ class Generator:
 
             func.real_name = footprint_name
             func.functions = self.functions
+            func.aliases = self.aliases
             func.classes = self.classes
             func.declared_string = self.declared_string
             func.global_vars = self.global_vars
@@ -1001,7 +1067,6 @@ class Generator:
         ret_type = token.child[0]
         type_t = gettype(ret_type)
         name = token.child[1]
-        name = token.child[1]
         if name.get_rule() == string:
             name = name.child[0].content
         elif isinstance(name.get_rule(), rls.r_sequence):
@@ -1030,6 +1095,7 @@ class Generator:
         )
         func.real_name = name
         func.functions = self.functions
+        func.aliases = self.aliases
         func.classes = self.classes
         func.declared_string = self.declared_string
         func.global_vars = self.global_vars
@@ -1089,6 +1155,7 @@ class Generator:
         )
         func.real_name = footprint_name
         func.functions = self.functions
+        func.aliases = self.aliases
         func.classes = self.classes
         func.declared_string = self.declared_string
         func.global_vars = self.global_vars
@@ -1140,15 +1207,15 @@ class Generator:
         else:
             args = args.child[0].child
 
+        while footprint_name in self.aliases:
+            footprint_name = self.aliases[footprint_name]
         if footprint_name in self.extern_functions:
             types = []
             for arg in args:
                 types.append(
                     self.g_statement(arg)
                 )
-            if footprint_name in self.functions and self.functions[footprint_name][
-                -1
-            ] in ["func", "dec"]:
+            if footprint_name in self.functions and self.functions[footprint_name][-1] in ["func", "dec"]:
                 order = arg_register[: len(args)]
             else:
                 order = ["rdi", "rsi", "rdx", "r10", "r8", "r9"][: len(args)]
@@ -1163,10 +1230,12 @@ class Generator:
             # les fonction externes peuvent avoir besoin d'un allignement 8 bits
             alig = sum(self.sim_stack)
             rest = 8 - alig % 8
-            if rest != 8:
+            if rest != 0:
                 self.gen(f"  sub rsp, {rest} ;; alignement")
+            else:
+                self.gen(f"  ;; pas d'alignement, (le stack est déjà alligné sur 8 bits)")
             self.gen(f"  call {self.extern_functions[footprint_name]}")
-            if rest != 8:
+            if rest != 0:
                 self.gen(f"  add rsp, {rest} ;; remise d'alignement")
             _, _, ret_type, _ = self.functions[footprint_name]
             if ret_type != "rien":
@@ -1395,7 +1464,6 @@ class Generator:
             # on met la reférence sur le stack
             self.gen(f"  mov rax, rsp")
             self.gen(f"  call {self.nasm_footprint_name(footprint_name)}")  # Grossier
-            #self.push_reg("rax", ret_type)
             return 8  # La taille d'un pointeur
         else:
             footprint_name = f"{name}.constructeur"
@@ -1582,8 +1650,16 @@ class Generator:
             if var_name in self.variables: # On ne peut pas réutiliser une nom de variable
                 error(f"La variable '{var_name}' est déjà définie. Pas de réutilisation d'un nom de variable déjà utilisé", token.child[0].reference)
             
-            self.gen(f"  mov rax, 0") # On initialise la première valeur
-            self.push_reg("rax", f_svt_rettype) # Qui est mise sur le stack (type : suivant.rettype)
+            if get_type_info_stack(f_svt_rettype):
+                self.gen(f"  lea rsp, [rsp - {type_size(f_svt_rettype)}]")
+                self.sim_stack.append(type_size(f_svt_rettype))
+                self.sim_stack_type.append(f_svt_rettype)
+                self.gen(f"  mov rax, rsp")
+                self.gen(f"  mov rdx, {type_size(f_svt_rettype)}")
+                self.gen(f"  call initiate_data_zero")
+            else: 
+                self.gen(f"  mov rax, 0") # On initialise la première valeur
+                self.push_reg("rax", f_svt_rettype) # Qui est mise sur le stack (type : suivant.rettype)
             
             self.variables.append(var_name)
             self.variables_info[var_name] = (f_svt_rettype, len(self.sim_stack), False, False)
@@ -2191,13 +2267,19 @@ class Generator:
                     self.gen(f"  mov {reg_size[size][1]}, {reg_size[size][0]}")
                 self.push_reg("rbx", type_t_dest)
             return type_t_dest
+        if token.get_rule() == fpconversion_funcall:
+            value = token.child[0].child[0].child[1]
+            value_type = type(value, self.variables_info, self.functions, self.classes, self.global_vars)
+            type_dest = gettype(token.child[0].child[0].child[0])
+            self.g_statement(value)
+            return type_dest
         if token.get_rule() == parenthesis or token.get_rule() == casting_args:
             return self.g_statement(token.child[0])
         if token.get_rule() == funcall:
             self.g_funcall(token)
             return type(token, self.variables_info, self.functions, self.classes, self.global_vars)
         if token.get_rule() == stack_alloced_funcall:
-            type_t = gettype(t)
+            type_t = gettype(token.child[0].child[0])
             self.gen(f"  mov rax, {int(get_type_info_stack(type_t))}")
             self.push_reg("rax", "bool")
             return "bool"
@@ -2291,7 +2373,7 @@ class Generator:
         if token.get_rule() == classcall:
             self.g_classcall(token)
             t = type(token, self.variables_info, self.functions, self.classes, self.global_vars)
-            return 
+            return t
         if token.get_rule() == array_accession:
             self.g_array_access(token)
             return type(token, self.variables_info, self.functions, self.classes, self.global_vars)
@@ -2331,12 +2413,21 @@ class Generator:
                 error(f"Type inconnu : {type_t}", token.reference)
             size = TYPES_SIZE[type_t] if type_t != "rien" else 1
             t = self.g_statement(token.child[0])
-            self.pop(f"{reg_size[size][0]}", t)
-            self.gen("  xor rbx, rbx")
-            self.gen(f"  mov {reg_size[size][1]}, {word_size[size]} [rax]")
-            #print(token.reference)
-            #print(type_t)
-            self.push_reg("rbx", type_t) # TODO:?
+            if get_type_info_stack(type_t):
+                self.pop("rsi", t)
+                self.gen(f"  mov rdi, multisize_rax")
+                self.gen(f"  mov rdx, {size}")
+                self.gen(f"  mov qword [multisize_rax_size], rdx")
+                self.gen(f"  call memcopy")
+                self.gen(f"  mov rax, multisize_rax")
+                self.push_reg("rax", type_t)
+            else:
+                self.pop(f"{reg_size[size][0]}", t)
+                self.gen("  xor rbx, rbx")
+                self.gen(f"  mov {reg_size[size][1]}, {word_size[size]} [rax]")
+                #print(token.reference)
+                #print(type_t)
+                self.push_reg("rbx", type_t) # TODO:?
             return type_t
         if token.get_rule() == dereferencement:
             size = 8  # un pointeur
@@ -2818,18 +2909,27 @@ class Generator:
         return r
 
 
+def def_glob_var_begin(name, type, g: Generator):
+    g.global_vars[name] = type
+    g.variables.append(name)
+    g.variables_info[name] = (type, 0, True, True)
+    
 def generate(
     g: Generator, optimise: bool, defined: list[str], shared: bool, independant: bool
 ):
     clear_str = "`\\033[2J\\033[H`"
     g.used = True
     g.inde = independant
-    g.global_vars["__plateforme"] = "liste[chr]"
-    g.variables.append("__plateforme")
-    g.variables_info["__plateforme"] = ("liste[chr]", 0, True, True)
+    
+    # Définition d'une variable globale
+    def_glob_var_begin("__plateforme", "liste[chr]", g) # Le nom de la variable
+    def_glob_var_begin("__maxtaille_gptr", "ent", g)
+
+    # On définis un mot-clef processeur
     g.defined.append(f"PLATEFORME_{sys.platform.upper()}")
     g.declared_string.append(clear_str)
     information("Définis : ", f"PLATEFORME_{sys.platform.upper()}")
+    
     for d in defined:
         g.defined.append(d.upper())
         information("Définis : ", d.upper())
@@ -2856,14 +2956,19 @@ def generate(
     g.gen("  ;; Variables pour sauver les registres dans la generation de chaine")
     for r in ["rdx", "rsi", "rdi"]:
         g.gen(f"  CSTR_save_{r} resq 1")
+    
     g.gen("\n")
+    
     if shared:
+        # Si le fichier est en mode partagé (-s)
         for r in octo_reg:
+            # On importe les registres-multitaille
             g.gen(f"  ;; multisize_{r} est de taille {MULTISIZE_REGISTER_MULTIPILCATOR * 8}")
             g.gen(f"  extern multisize_{r}_size")
             g.gen(f"  extern multisize_{r}")
     else:
         for r in octo_reg:
+            # Sinon on les créé
             g.gen(f"  ;; multisize_{r} est de taille {MULTISIZE_REGISTER_MULTIPILCATOR * 8}")
             g.gen(f"  global multisize_{r}_size")
             g.gen(f"  multisize_{r}_size resq 1")

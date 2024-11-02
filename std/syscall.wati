@@ -21,6 +21,7 @@ fin
     <ent> __syscall_socket = 97;
     <ent> __syscall_connect = 98;
     <ent> __syscall_mmap = 197;
+    <ent> __syscall_gettimeofday = 116;
 fin 
 
 %sidef PLATEFORME_LINUX fait 
@@ -32,6 +33,7 @@ fin
     __syscall_connect = 42;
     __syscall_mmap = 9;
     __syscall_exit = 60;
+    __syscall_gettimeofday = 96;
 fin
 
 //1	AUE_EXIT	ALL	{ void exit(int rval); } 
@@ -258,8 +260,9 @@ fin
 //#endif /* SOCKETS */
 //115	AUE_NULL	ALL	{ int nosys(void); }   { old vtrace }
 //116	AUE_GETTIMEOFDAY	ALL	{ int gettimeofday(struct timeval *tp, struct timezone *tzp); } 
+
 fonction <ent> gettimeofday(<*rien> timeval, <*rien> timezone) fait 
-    syscall 116, timeval, timezone;
+    syscall __syscall_gettimeofday, timeval, timezone;
     renvoie sys_ret_;
 fin
 

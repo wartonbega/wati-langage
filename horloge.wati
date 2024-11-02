@@ -60,19 +60,19 @@ fonction <rien> met (<ent> x, <ent> y, <chr> c) fait
 fin
 
 fonction <rien> affiche_nbr (<ent> x, <ent> y, <ent> c) fait 
-    pour i dans [0, __FONT_LIG] fait 
+    pour i dans [0, __FONT_LIG + 2] fait 
         pour j dans [0, __FONT_COL] fait 
             si <bool>((c >> ((__FONT_LIG - i + 1) * __FONT_COL + j))&&1) fait 
-                !met(j + x, i + y, '#');
+                !met(j + x, i - y, '#');
             fin sinon fait 
-                !met(j + x, i + y, ' ');
+                !met(j + x, i - y, ' ');
             fin
         fin
     fin
 fin
 
 fonction <rien> met_nombre(<ent> pos, <ent> num, <*dliste<ent>> table) fait 
-    si num == -1 fait 
+    si num == -1 fait
         !affiche_nbr(pos * (__FONT_COL + 1), 1, table[10]);
         renvoie;
     fin
@@ -84,7 +84,7 @@ fonction <rien> met_nombre(<ent> pos, <ent> num, <*dliste<ent>> table) fait
         p[0]= <chr>('0' + num/10);
         p[1]= <chr>('0' + num%10);
     fin
-    pour i dans [0, !long(p)] fait
+    pour i dans [0, 2] fait
         n = !chr_en_ent(p[i]); 
         !affiche_nbr((i + pos) * (__FONT_COL + 1), 1, table[n]);
     fin

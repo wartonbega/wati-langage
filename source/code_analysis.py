@@ -38,8 +38,7 @@ def find_best_match(word, l_words):
         if m < d:
             d = m
             last_word = i
-    if d > 6:
-        print(d, word, last_word)
+    if d > 6 or d == len(last_word):
         return None
     return last_word
 
@@ -372,7 +371,7 @@ def get_methcall_name(tok: tok.BasicToken, variables, functions, classes, global
     if is_ptr(name_t):
         name_t = get_ptr_type(name_t)
     if name_t not in classes:
-        error(f"Classe inconnue : {name_t} (ou n'a jamais été initialisé)", tok.reference)
+        error(f"Classe inconnue : {name_t} (ou n'a jamais été initialisé) (soit, methcall)", tok.reference)
     
     for c in tok.child[0].child[1:-1]:
         att_name = c.child[0].content
@@ -389,7 +388,7 @@ def get_methcall_name(tok: tok.BasicToken, variables, functions, classes, global
         if is_ptr(name_t):
             name_t = get_ptr_type(name_t)
         if name_t not in classes:
-            error(f"Classe inconnue : {name_t} (ou n'a jamais été initialisé)", c.reference)
+            error(f"Classe inconnue : {name_t} (ou n'a jamais été initialisé) (arg, methcall)", c.reference)
     
     final = tok.child[0].child[-1].child[0].content
     name = name_t + "." + final
@@ -410,8 +409,8 @@ def get_methcall_name(tok: tok.BasicToken, variables, functions, classes, global
     return name
 
 def get_type_info_stack(type: str):
-    
     if not type_exists(type):
+        print(TYPES)
         error(f"Type inconnu '{type}'", "Global:0:0")
     if is_ptr(type):
         return TYPES_INFO["ptr"]
@@ -570,12 +569,12 @@ def type(expression: tok.BasicToken, variables:dict, functions:dict, classes:dic
         if is_ptr(name_t):
             name_t = get_ptr_type(name_t)
         if name_t not in classes:
-            error(f"Classe inconnue : {name_t} (ou n'a jamais été initialisé)", c.reference)
+            error(f"Classe inconnue : {name_t} (ou n'a jamais été initialisé) (attr ident soit)", c.reference)
         ret = (0, classes[name_t])
         for c in expression.child[1:]:
             att_name = c.child[0].content
             if name_t not in classes:
-                error(f"Classe inconnue : {name_t} (ou n'a jamais été initialisé)", c.reference)
+                error(f"Classe inconnue : {name_t} (ou n'a jamais été initialisé) (attr ident arg)", c.reference)
             r = classes[name_t]
             if att_name not in r.att_name:
                 prop = find_best_match(att_name, r.att_name)
@@ -611,6 +610,9 @@ def type(expression: tok.BasicToken, variables:dict, functions:dict, classes:dic
         if condition_type != "bool":
             error(f"Le type de la condition devrait être de type 'bool', pas '{condition_type}'", expression.reference)
         return type1
+    if expression.get_rule() == fpconversion_funcall:
+        type_dest = expression.child[0].child[0].child[0]
+        return gettype(type_dest)
     assert False, f"Unimplemented rule : {expression.get_rule().name if expression.get_rule().name != '' else expression.get_rule()}. Reference : {expression.reference}"
     
 def gettype(token: tok.BasicToken) -> str:

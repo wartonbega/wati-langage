@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 import os, sys
 import source.generator as generator
 import argparse
