@@ -1,6 +1,13 @@
 inclue "std.watiH";
 
-externe <ent>_write(<ent>, <[_]chr>, <ent>);
+%sidef PLATEFORME_MACOS fait 
+    externe <ent>_write(<ent>, <[_]chr>, <ent>);
+fin
+
+%sidef PLATEFORME_LINUX fait
+    externe <ent>write(<ent>, <[_]chr>, <ent>);
+    falias _write(<ent>, <[_]chr>, <ent>), write(<ent>, <[_]chr>, <ent>);
+fin
 
 fonction <ent> lit_fichier(<[_]chr> nom, <[_]chr> tampon, <ent> taille) fait
     flags = __O_RDWR;

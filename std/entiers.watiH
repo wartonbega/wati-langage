@@ -74,3 +74,4 @@ utilise <ent> entiers_impl;
 
 fonction <ent> chr_en_ent (<chr> x);
 fonction <ent> liste_en_ent(<[_]chr> liste);
+fonction <ent> chaine_en_ent(<chaine> liste);

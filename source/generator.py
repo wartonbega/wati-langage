@@ -2928,7 +2928,7 @@ def generate(
     # On définis un mot-clef processeur
     g.defined.append(f"PLATEFORME_{sys.platform.upper()}")
     g.declared_string.append(clear_str)
-    information("Définis : ", f"PLATEFORME_{sys.platform.upper()}")
+    print("Définis : ", f"PLATEFORME_{sys.platform.upper()}")
     
     for d in defined:
         g.defined.append(d.upper())

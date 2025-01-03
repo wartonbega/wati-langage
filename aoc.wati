@@ -1,0 +1,42 @@
+inclue "./std/std.wati";
+inclue "./std/fichiers.wati";
+inclue "./std/listes_amorties.wati";
+
+buf = <[_]chr>(!mallom(19139));
+
+r = !lit_fichier("input.txt", buf, 19139);
+
+<chaine> inter = c"";
+dec = 0;
+
+utilise <ent>dliste;
+
+fonction <*dliste<ent>> separe (<chaine> bout) fait 
+    list = <ent>dliste();
+    temp = c"";
+    c = 0;
+    pour i dans [0, !long(bout)] fait 
+        si bout[i] == ' ' fait 
+            !list.ajoute(!chaine_en_ent(temp));
+            temp = c"";
+            c = 0;
+        fin sinon fait 
+            temp[c] = bout[i];
+            c = c + 1;
+        fin
+    fin
+    !list.ajoute(!chaine_en_ent(temp));
+    renvoie list;
+fin
+
+pour i dans [0, !long(buf)] fait 
+    si buf[i] != '\n' fait
+        inter[dec] = buf[i];
+        dec = dec + 1;
+    fin sinon fait 
+        list = !separe(inter);
+        !list.println();
+        inter = c"";
+        dec = 0;
+    fin
+fin

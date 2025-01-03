@@ -321,3 +321,16 @@ fonction <ent> liste_en_ent(<[_]chr> liste) fait
     fin
     renvoie x;
 fin
+
+fonction <ent> chaine_en_ent(<chaine> liste) fait 
+    l = !long(liste);
+    x = 0;
+    dix = 1;
+    i = l - 1;
+    tant que i >= 0 fait 
+        x = x + !chr_en_ent(liste[i]) * dix;
+        dix = dix * 10;
+        i = i - 1;
+    fin
+    renvoie x;
+fin
